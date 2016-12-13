@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EPG TEST</title>
+    <link href="http://cdn.bootcss.com/bootstrap/4.0.0-alpha.4/css/bootstrap.css" rel="stylesheet">
+    <style>
+        .form-control {
+            width: 70%;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .btn {
+            vertical-align: middle;
+        }
+        .small {
+            width: 30%;
+        }
+        .ssmall {
+            width: 14%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>EPG接口测试页面</h2>
+        <div class="form-group">
+            <label for="size">分页大小(chnsize)</label>
+            <input type="number" id="size" name="size" class="form-control small" value=10>
+            <label for="page">页数(chnoffset)</label>
+            <input type="number" id="page" name="page" class="form-control small" value=0>
+            <div class="btn btn-primary" id="listbtn" >查询channel/list接口</div>
+        </div>
+        <div class="form-group">
+            <label for="channel">频道号(chnid)</label>
+            <input type="number" name="channel" id="channel" class="form-control ssmall" value=1>
+            <label for="size">分页大小(programsize)</label>
+            <input type="number" id="csize" name="csize" class="form-control ssmall" value=10>
+            <label for="page">页数(programoffset)</label>
+            <input type="number" id="cpage" name="cpage" class="form-control ssmall" value=0>
+            <div class="btn btn-primary" id="channelbtn" >查询channel/info接口</div>
+        </div>
+        <div class="form-group">
+            <label for="page">频道号(programid)</label>
+            <input type="number" id="pro" name="pro" class="form-control small" value=0>
+            <div class="btn btn-primary" id="probtn" >查询channel/program接口</div>
+        </div>
+        <div class="form-group">
+            <label for="playinfo">频道号(chnid)</label>
+            <input type="number" id="palychannel" name="palychannel" class="form-control small" value=1>
+            <div class="btn btn-primary" id="palychannelbtn" >查询频道播放详情接口</div>
+        </div>
+        <pre class="report" id="report"></pre>
+    </div>
+    <script src="http://cdn.bootcss.com/jquery/1.12.2/jquery.min.js"></script>
+    <script>
+        <%= message %>
+    </script>
+    <script>
+        var host = 'http://58.247.47.106:3001';
+        var uuid = 'abcd';
+        var opersys_ver = 'st1.0';
+        var hardware_ver = 'stpc';
+        var session = '';
+        var token = '';
+        function getToken() {
+            var defer = $.Deferred();
+            var url = host +  '/v1/system/token';
+            $.post(url,JSON.stringify({uuid : uuid}), function(data) {
+                token = data.res.token;
+                defer.resolve(data);
+            });
+            return defer.promise();
+        }
+        function getReport() {
+            var defer = $.Deferred();
+            var url = host +  '/v1/system/report';
+            $.post(url,JSON.stringify({uuid : uuid,opersys_ver : opersys_ver, hardware_ver : hardware_ver}), function(data) {
+                session = data.res.sessionid;
+                defer.resolve(data.res.sessionid);
+            });
+            return defer.promise();
+        }
+        function getList() {
+            var url = host +  '/v1/channel/list';
+            var chnsize = parseInt($('#size').val(),10);
+            var chnoffset = parseInt($('#page').val(),10);
+            $.post(url,JSON.stringify({sessionid:session,token:token,chnsize:chnsize,chnoffset:chnoffset}), function(data) {
+                render(data.res);
+            });
+        }
+        function getChannel() {
+            var id = parseInt($('#channel').val(),10);
+            var url = host +  '/v1/channel/info?chnid=' + id;
+            var programsize = parseInt($('#csize').val(),10);
+            var programoffset = parseInt($('#cpage').val(),10);
+            $.post(url,JSON.stringify({sessionid:session,token:token,programsize:programsize,programoffset:programoffset}), function(data) {
+                render(data.res);
+            });
+        }
+        function getPro() {
+            var url = host +  '/v1/channel/program';
+            var id = parseInt($('#pro').val(),10);
+            $.post(url,JSON.stringify({sessionid:session,token:token,programid: id}), function(data) {
+                render(data.res);
+            });
+        }
+        function getPlayinfo(){
+          var id = parseInt($('#palychannel').val(),10);
+          var url = host +  '/v1/channel/playing';
+          $.post(url,JSON.stringify({sessionid:session,token:token,channelid: id}), function(data) {
+              render(data.res);
+          });
+        }
+        function init() {
+            $('#listbtn').on('click', getList);
+            $('#channelbtn').on('click', getChannel);
+            $('#probtn').on('click', getPro);
+            $('#palychannelbtn').on('click', getPlayinfo);
+        }
+        function render(str) {
+            $('#report').html(renderJSON(str));
+        }
+        function renderJSON(data,compress/*是否为压缩模式*/){/* 格式化JSON源码(对象转换为JSON文本) */
+            var indentChar = '    ';
+            var draw=[],last=false,This=this,line=compress?'':'\n',nodeCount=0,maxDepth=0;
+
+            var notify=function(name,value,isLast,indent/*缩进*/,formObj){
+                nodeCount++;/*节点计数*/
+                for (var i=0,tab='';i<indent;i++ )tab+=indentChar;/* 缩进HTML */
+                    tab=compress?'':tab;/*压缩模式忽略缩进*/
+                maxDepth=++indent;/*缩进递增并记录*/
+                if(value&&value.constructor==Array){/*处理数组*/
+                    draw.push(tab+(formObj?('"'+name+'":'):'')+'['+line);/*缩进'[' 然后换行*/
+                    for (var i=0;i<value.length;i++)
+                        notify(i,value[i],i==value.length-1,indent,false);
+                    draw.push(tab+']'+(isLast?line:(','+line)));/*缩进']'换行,若非尾元素则添加逗号*/
+                }else   if(value&&typeof value=='object'){/*处理对象*/
+                    draw.push(tab+(formObj?('"'+name+'":'):'')+'{'+line);/*缩进'{' 然后换行*/
+                    var len=0,i=0;
+                    for(var key in value)len++;
+                        for(var key in value)notify(key,value[key],++i==len,indent,true);
+                            draw.push(tab+'}'+(isLast?line:(','+line)));/*缩进'}'换行,若非尾元素则添加逗号*/
+                    }else{
+                        if(typeof value=='string')value='"'+value+'"';
+                        draw.push(tab+(formObj?('"'+name+'":'):'')+value+(isLast?'':',')+line);
+                    };
+                };
+                var isLast=true,indent=0;
+                notify('',data,isLast,indent,false);
+                return draw.join('');
+            }
+        getReport()
+        .then(getToken())
+        .then(init());
+
+
+    </script>
+</body>
+</html>

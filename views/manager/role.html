@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户权限管理</title>
+    <link rel="stylesheet" type="text/css" href="../../lib/css/bootstrap.min.css"></head>
+    <style>
+[ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .x-ng-cloak {
+            display:none !important;
+        }    
+        body {
+            font-family: 'Microsoft YaHei';
+        }
+
+        ul {
+            list-style: none;
+            font-size: 16px;
+            padding: 0;
+            margin: 0;            
+        }
+        .channel-item {
+            height: 80px;
+            vertical-align: middle;
+            margin: 5px;
+            /*padding-left: 80px;*/
+            position: relative;
+        }
+        .inline {
+            display: inline-block;
+        }
+        .container {
+            min-width: 1280px !important;
+        }
+        .channel-item .inline {
+            line-height: 80px;
+            text-align: center;
+            text-overflow: ellipsis;
+            overflow: auto;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    
+        .channel-currentstream {
+            height: 65px;
+        }
+        .channel-thead .inline {
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;            
+        }
+
+        .channel-name {
+            width: 200px;
+        }
+        .channel-thumb {
+            width: 65px;
+            height: 65px;
+            position: relative;
+            top: -35px;
+            left: 5px;
+        }
+
+        .channel-thumb-title {
+            width: 60px;
+            position: relative;
+            left: 8px;
+        }
+
+        .channel-opt {
+            width: 150px;
+        }
+        .channel-desc {
+            width: 200px;
+        }
+        .channel-currentstream {
+            width: 350px;
+        }
+        .channel-control {
+            width: 260px;
+        }
+        .channel-thead {
+            margin: 5px;
+            /*padding-left: 120px;*/
+        }
+        .page-header {
+            position: relative;
+
+        }
+        .search-panel {
+            position: absolute;
+            right: 210px;
+            bottom: 10px;
+        }
+        nav {
+            text-align: center;
+        }
+        .channel-currentstream {
+            overflow: visible !important;
+            position: relative;
+        }
+
+        .hover-panel {
+            display: none;
+            position: absolute;
+            width: auto;
+            height: auto;
+            background: #428bca;
+            z-index: 90;
+            top: -20px;
+            left: -90px;
+            border-radius: 10px;
+            color: #fff;
+        }
+
+        .channel-currentstream:hover .hover-panel {
+            display: block;
+        }
+
+        .scroll-con {
+            height: 100%;
+            overflow: hidden;
+        }
+        .channel-currentstream span{
+            display: block;
+            height: 25px;
+            line-height: 25px;
+            margin-top: 5px;
+            padding: 0 10px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap; 
+        }
+        .addBtn {
+            position: absolute;
+            right: 445px;
+            bottom: 10px;
+        }
+        .addBtn a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .editing {
+            background-color: rgba(0, 0, 0, 0.0392157);
+        }
+
+        .editing-show {
+            display: none;
+        }
+
+        .editing .editing-show {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body ng-app="user" ng-controller="userCtrl">
+    <header class="page-header container">
+        <h1>用户权限管理</h1>
+        <a href="./login">返回主页</a>
+        <div class="search-panel">
+            <label for="usertype">用户角色选择</label> 
+            <select name="usertype" id="usertype" ng-model="topSelect" ng-options="k as v for (k,v) in permissionMap">
+            </select>
+<!--             <label for="search-ipt">用户搜索</label>
+            <input type="text" class="search-ipt" id="search-ipt" placeholder=""/> -->
+        </div>
+    </header>
+    <div class="container" ng-cloak>
+        <div class="channel-thead">
+            <div class="channel-name inline">用户名</div>
+            <div class="channel-desc inline">用户权限</div>
+            <div class="channel-opt inline">用户权限选择</div>
+            <div class="channel-opt inline">封禁用户</div>
+            <div class="channel-control inline">用户权限编辑</div>
+        </div>
+       <ul>
+           <li class="channel-item" ng-class="{true: 'editing', false: ''}[models[$index].editing]" ng-repeat="u in vm.users | filter:searchFilter">
+
+               <div class="channel-name inline">{{u.name}}</div>
+               <div class="channel-desc inline">{{u.permissionName}}</div>
+               <div class="channel-opt inline">
+                   <select class="editing-show" name="usertype" id="usertype" ng-model="models[$index].permission" ng-options="k as v for (k,v) in permissionMap"></select>
+               </div>
+               <div class="channel-opt inline">
+                   <div class="btn btn-danger editing-show" ng-click="onUserDisable(u,$index)" ng-if="models[$index].permission != -1">封禁用户</div>
+                   <div class="btn btn-primary editing-show" ng-click="onUserable(u,$index)" ng-if="models[$index].permission == -1">解封用户</div>
+               </div>
+               <div class="channel-control inline">
+                   <div class="btn btn-primary" ng-click="onUserEdit(u,$index)" ng-if="!models[$index].editing">编辑</div>
+                   <div class="btn btn-primary" ng-click="onUserSubmit(u,$index)" ng-if="models[$index].editing">提交</div>
+               </div>               
+           </li>          
+       </ul>
+       <nav>
+<!--           <ul class="pagination">
+            <li class="active"><a href="#">1</a></li>
+            <li><a href="#">2</a></li>
+            <li><a href="#">3</a></li>
+            <li><a href="#">4</a></li>
+            <li><a href="#">5</a></li>
+        </ul> -->
+        <div ng-if="needPage" pagination count="page.count" pageSize="page.pageSize" currentPage="page.currentPage"></div>
+    </nav>       
+    </div>    
+   <script src="../../lib/angular.js"></script>
+   <script src="../../javascripts/manage/role.js"></script>
+</body>
+</html>

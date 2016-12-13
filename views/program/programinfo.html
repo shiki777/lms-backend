@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>节目信息</title>
+        <link rel="stylesheet" type="text/css" href="../../lib/css/jquery.ui.min.css">
+        <link rel="stylesheet" type="text/css" href="../../stylesheets/common/common.css">
+        <link rel="stylesheet" type="text/css" href="../../stylesheets/program/programinfo.css">
+    </head>
+    <body>
+        <div class="bodybox" id="bodybox">
+            <div>
+                <h1 id="infotitle" class="infotitle">节目详情</h1>
+                <a id="backlist-a" href="./programlist">返回列表</a>
+                <br>
+                <a id="reedit-a" style="display:none;cursor:pointer;">重新编辑</a>
+            </div>
+            <label class="checkuppass-title" id="checkuppass-title"></label>
+            <div>
+                <label>节目名称(必填)</label>
+                <br>
+                <input placeholder="请输入节目名称" class="ipt" id="proname-ipt">
+            </div>
+            <div style="margin-top:20px;">
+                <label>节目分类(必填)</label>
+                <br>
+                <select name="selectType" id="selectType">
+                    <option value="1">直播</option>
+                    <option value="2">点播</option>
+                </select>
+            </div>
+            <div style="margin-top:20px;">
+                <label>节目类型</label>
+                <br>
+                <input placeholder="请输入节目类型:电影、广告、电视剧……" class="ipt" id="protype-ipt">
+            </div>
+            <div style="margin-top:20px;">
+                <label>节目状态(必填)</label>
+                <br>
+                <select name="selectStatus" id="selectStatus">
+                    <option value="1">激活</option>
+                    <option value="2">失效</option>
+                    <option value="3">删除</option>
+                </select>
+            </div>
+            <div style="margin-top:20px;">
+                <label>投放地区</label>
+                <br>
+                <input name="region" id="region-japan" type="checkbox" class="checkbox" value="日本"/>
+                <label for="region-japan">日本</label>
+                <input name="region" id="region-UnMainland" type="checkbox" class="checkbox" style="margin-left:100px;" value="非大陆地区"/>
+                <label for="region-UnMainland">非大陆地区</label>
+            </div>
+            <div style="margin-top:20px">
+                <label>节目简介</label>
+                <br>
+                <textarea placeholder="请输入节目简介" id="programbrief" name="programbrief" rows="6"></textarea>
+                <!--<input placeholder="请输入节目简介" class="ipt" id="programbrief" name="programbrief"></input>-->
+            </div>
+            <div id="iconBox" class="iconBox">
+                <label>节目图标(必填)</label>
+                <br>
+                <img id="icon">
+                <input type="file" id="changeicon-ipt" class = "changeicon-ipt" name="changeicon-ipt" input enctype="multipart/form-data">
+                <!--<div class="normal-btn" id="uploadicon-btn">上传节目图标</div>-->
+            </div>
+            <div id="live-mark" style="margin-top:20px">
+                <label>直播URL</label>
+                <br>
+                <input placeholder="请输入要上传的直播URL" class="ipt" id="livevideourl">
+            </div>
+            <div id="circle-mark" style="margin-top:20px">
+                <label>点播资源</label>
+                <br>
+                <input type="file" class="circle-resource-ipt" id="uploadsource-ipt" name="uploadsource-ipt" input enctype="multipart/form-data">
+            </div>
+            <div id="upactiveblock" style="margin-top:20px">
+                <div class="normal-btn" id="uploadsource-btn">上传资源</div>
+                <div id= "progress-bk" class="progress-bk">
+                    <div id="progress" class="progress">0%</div>
+                </div>
+                <div id="calc-md5-count" class="calc-md5-count">计算md5块:</div>
+            </div>
+            <div id="sourceidblock" style="margin-top:20px">
+                <label>点播资源地址(只读-上传资源生成)</label>
+                <br>
+                <input class="ipt" placeholder="轮播资源地址" readonly="readonly" id="unique-code-id">
+                <a class="normal-btn" id="download-btn" href="" download="" style="display:none;color:#fff;font-size:18px;text-decoration:none;">下载资源</a>
+            </div>
+            <div id="stime-mark" style="margin-top:20px">
+                <label>节目开始时间(必填)</label>
+                <br>
+                <input placeholder="请输入开始时间:YYYY-MM-DD HH:MM:SS" class="ipt" id="starttime-ipt">
+            </div>
+            <div id="etime-mark" style="margin-top:20px">
+                <label>节目结束时间(必填)</label>
+                <br>
+                <input placeholder="请输入结束时间:YYYY-MM-DD HH:MM:SS" class="ipt" id="endtime-ipt">
+            </div>
+            <div id="dutime-mark" style="margin-top:20px">
+                <label>节目时长,单位：秒(S)(只读-上传资源生成)</label>
+                <br>
+                <input placeholder="只读节目时长" class="ipt" id="durationtime-ipt">
+            </div>
+            <!--<div style="margin-top:20px">
+                <label>节目价格,单位：人民币(RMB)</label>
+                <br>
+                <input placeholder="请输入价格" class="ipt" id="price-ipt">
+            </div>-->
+            <div style="margin-top:20px">
+                <label>节目归属ID(必填)</label>
+                <br>
+                <input placeholder="请输入版权归属ID" class="ipt" id="ownerid-ipt">
+            </div>
+            <div style="margin-top:20px">
+                <label>视频视角</label>
+                <br>
+                <input placeholder="请输入视频视角，取值60---130" class="ipt" id="video-viewangle">
+            </div>
+            <div style="margin-top:20px;">
+                <label>投影方式</label>
+                <br>
+                <select name="selectProjectStyle" id="selectProjectStyle">
+                    <option value="0">360-3D-Left and Right</option>
+                    <option value="1">360-3D-Up and Down</option>
+                    <option value="2">360-2D</option>
+                    <option value="3">180-3D-Left and Right</option>
+                    <option value="4">180-3D-Up and Down</option>
+                    <option value="5">180-2D</option>
+                    <option value="6">2D</option>
+                </select>
+            </div>
+            <div style="margin-top:20px;">
+                <label>控制模式</label>
+                <br>
+                <select name="selectCtrlModel" id="selectCtrlModel">
+                    <option value="0">陀螺仪</option>
+                    <option value="1">触摸</option>
+                    <option value="2">陀螺仪+触摸</option>
+                </select>
+            </div>
+            <div style="margin-top:20px;">
+                <label>单双目</label>
+                <br>
+                <select name="selectEyeStyle" id="selectEyeStyle">
+                    <option value="0">单目</option>
+                    <option value="1">双目</option>
+                </select>
+            </div>
+            <!--<div class="normal-btn" id="modify-btn">修改节目</div>-->
+            <div class="normal-btn" id="submit-btn">确定</div>
+            <div style="display:none;" id="refusereasonbox">
+                <label style="margin-left:5px;">拒绝原因</label>
+                <br>
+                <select name="reasonselect" id="reasonselect" style="width:350px;margin-left:5px;">
+                    <option value="色情内容">1.色情内容</option>
+                    <option value="涉嫌政治">2.涉嫌政治</option>
+                    <option value="版权问题">3.版权问题</option>
+                    <option value="广告或者垃圾信息">4.广告或者垃圾信息</option>
+                </select>
+                <br><br>
+                <label>其他原因</label>
+                <br>
+                <textarea placeholder="其他原因，手动填写" id="reasontextmsg" name="reasontextmsg" style="width:350px;" rows="3"></textarea>
+                <br>
+                <div class="normal-btn" id="fail_ok-btn">确定</div>
+                <div class="normal-btn" id="fail_cancel-btn">取消</div>
+            </div>
+            <div class="normal-btn" id="checkpass-btn">审核通过</div>
+            <div class="normal-btn dangerbtn" id="checkrefuse-btn">审核不过</div>
+        </div>
+        <script src="../../lib/jquery.min.js"></script>
+        <script src="../../lib/jquery.ui.min.js"></script>
+        <script src="../../lib/cookie.min.js"></script>
+        <script src="../../lib/spark-md5.js"></script>
+        <script src="../../javascripts/program/programinfo.js"></script>
+    </body>
+</html>

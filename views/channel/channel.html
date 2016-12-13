@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>频道详情页面</title>
+     <style>
+        [ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .x-ng-cloak {
+            display:none !important;
+        }
+    </style>
+     <style>
+        body {
+            font-family: 'Microsoft YaHei';
+        }
+        .form-group {
+            position: relative;
+        }
+        .ng-cloak {
+            display: none;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 980px;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .form-control-style1 {
+            width: 50%;
+            margin-right: 51px;
+            display: inline-block;
+        }
+        .form-control-style2 {
+            width: 30%;
+            display: inline-block;         
+        }
+        .form-control-style3 {
+            width: 15%;
+            display: inline-block;    
+            margin-right: 20px;     
+        }   
+        .form-control-style4 {
+            width: 10%;
+            display: inline-block;    
+            margin-right: 20px;     
+        }                
+
+        .stream-wrap {
+            position: relative;
+            /*padding-bottom: 35px;*/
+        }
+
+        .add-stream-btn {
+            position: absolute;
+            left: 0px;
+            bottom: 10px;
+        }
+
+        .program-panel {
+            width: 100%;
+        }
+
+        .programlist-panel {
+            margin-top: 15px;
+            height: 10px;
+            background: #428bca;
+            width: 100%;
+        }
+
+        .programlist-block {
+            height: 70px;
+            background: #000;
+            float: left;
+            font-size: 0;
+            cursor: pointer;
+            position: relative;
+        }
+        .programlist-block img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .programlist-info {
+            display: none;
+            position: absolute;
+            z-index: 100;
+            width: 200px;
+            height: 120px;
+            background: #fff;
+            border: solid 1px #ccc;
+            border-radius: 4px;
+            top: 35px;
+            left: 0px;
+            color: #000;
+            font-size: 12px;
+        }
+        .programlist-block:hover .programlist-info{
+            display: block;
+        }
+
+        .programlist-info p {
+            height: 18px;
+            line-height: 18px;
+            padding: 0;
+            margin: 2px;
+        }
+        .mode4 .programlist-info img {
+            width: auto;
+            height: 56px;
+        }
+        .programlist-info img {
+            width: auto;
+            height: 40px;            
+        }
+        .programlist-info .btn {
+            /*margin-left: 20px;*/
+        }
+
+        .programlist-detail {
+            height: 70px;
+            margin-bottom: 15px;
+        }
+
+        .query-result {
+            margin: 0 auto;
+            width: 840px;
+            margin-top: 10px;
+            max-height: 640px;
+        }
+
+        .query-result .programlist-info {
+            display: block;
+            position: static;
+            float: left;
+            height: 125px;
+            margin-right: 10px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .mode4 .query-result .programlist-info {
+            height: 150px;
+        }
+
+        .query-result .programlist-info:hover {
+            background: #ccc;
+        }
+        .selected-pro .programlist-info:hover {
+            background: #fff;
+        }
+        .selected-pro .programlist-info {
+            cursor: default;
+        }
+
+        .info-wrap {
+            position: relative;
+        }
+        .info-remove {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            width: 18px;
+            height: 18px;
+            text-align: center;
+            line-height: 18px;
+            cursor: pointer;
+            padding: 0;
+            font-size: 12px;
+        }
+
+        .program-thumb {
+            height: 60px;
+            width: auto;
+            border: 0;
+        }
+
+        .program-table {
+            position: relative;
+        }
+
+        .program-table tr,
+        .program-table tr td {
+            height: 60px;
+            line-height: 60px !important;
+            text-align: center;
+        }
+        .program-table thead tr {
+            height: 30px;
+            line-height: 30px !important;
+        }
+
+        .program-table th {
+            text-align: center;
+            height: 30px;
+        }
+
+        .channel-schedule-list {
+            list-style: none;
+            min-height: 20px;
+        }
+
+        .channel-schedule-list li.nav-item {
+            float: left;
+            padding: 0 5px;
+            position: static;
+            margin: 0 10px;
+            border: none 0;
+            cursor: pointer;
+            white-space: nowrap;      
+        }
+
+        .channel-schedule-list .nav-item-selected {
+            background-color: #2c99ff;
+            color: #fff;
+            cursor: default;
+        }
+
+        .channel-schedule-list li.nav-item:hover {
+            color: blue;
+        }
+
+        .channel-schedule-list li.nav-sep {
+           float: left;
+           height: 20px;
+           width: 0;
+           padding: 0;
+           margin: 0 0 4px 0;
+           border: none 0;
+           border-left: 1px solid #d8d8d8;
+       }
+
+       .program-table-con {
+        position: relative;
+    }
+    .gap-tips {
+        width: 30px;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -30px;
+    }
+
+    .tip-panel {
+        background: red;
+        position: absolute;
+        color: #fff;
+        height: 20px;
+        left:-105px;
+        line-height: 20px;
+        width: 130px;
+        border-radius: 5px;
+        text-align: center;
+    }     
+    .hide {
+        display: none;
+    }
+    .mode4 .popup{
+        display: inline-block;
+        vertical-align: middle;
+        pointer-events: visible;
+        margin: 30px auto;
+    }    
+
+    .popup {
+        margin: 5px auto;
+    }
+
+    .add-program-panel {
+        width: 900px;
+        background: #4f9fcf;
+    }
+    .popup-container {
+        width: 100vw;
+        height: 100vh;
+        text-align: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        pointer-events: none;
+    }
+    .mode1 .popup-container {
+        pointer-events: inherit;
+    }
+    .mode2 .popup-container {
+        pointer-events: inherit;
+    }
+    .mode3 .popup-container {
+        pointer-events: inherit;
+    }        
+    .wrap-line {
+        margin-bottom: 5px;
+    }
+    .past-item {
+        background: rgb(205, 224, 246);
+    }
+    .show-thumb {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        left: -75px;
+        top: 11px;
+    }
+    .pro-wrap {
+        max-height: 640px;
+        overflow-y:auto;
+        width: 103%;
+    }
+
+    .pro-wrap2 {
+        max-height: 265px;
+        overflow-y:auto;
+        width: 103%;        
+    }
+
+    .mode4 .pro-wrap2 {
+        max-height: 315px;
+    }
+
+    .mode1 .pro-wrap2 {
+        max-height: 242px;
+    }
+    .query-result2 {
+        max-height: 478px;
+    }
+    .pro-wrap3 {
+        max-height: 315px;
+        overflow-y:auto;
+        width: 103%;        
+    }
+    .error {
+        margin-left: 5px;
+        color: #d9534f;
+        font-weight: bold;
+    }      
+    .pname {
+        display: inline-block;
+        max-width: 50px;
+        overflow: hidden;
+         vertical-align: middle; 
+        height: 18px;
+        line-height: 18px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+    }
+    .firstline {
+        vertical-align: middle;
+    }       
+    .middle {
+        display: inline-block;
+        vertical-align: middle;
+    } 
+
+    .reject-ipt {
+        margin-bottom: 15px;
+    }
+
+    .checkfailpanel {
+        height: 300px;
+    }
+    </style>
+</head>
+<body ng-app="channelapp" ng-controller="channelctrl">
+        <script>
+            (function () {var e, f = [], g = 0, h = [];function k(a) { a && (f = a, window.addEventListener ? window.addEventListener("resize", l) : window.attachEvent && window.attachEvent("onresize", l)); a = document.documentElement ? document.documentElement.clientWidth : document.body.clientWidth; var b = f, c = f.length; if (!(1 > c))if (a < b[0])m(1); else if (a > b[c - 1])m(c + 1); else for (var d = 0; d < c; d++)if (a >= b[d] && a < b[d + 1]) { m(d + 2); break } }function l() { k(); for (var a = h.length, b = 0; b < a; b++)h[b]() }function m(a) { if (g != a) { var b; e || (e = document.body || document.getElementsByTagName("body")); b = e; var c = b.className, c = /mode[1-9]/.exec(c) ? c.replace(/mode[1-9]/, "mode" + a) : c + (("" == c ? "" : " ") + "mode" + a); b.className = c; g = a } };
+                window.setPageStyle = k; window.getPageStyle = function () { return g }; window.onPageStyleChange = function (a) { h.push(a) };})();setPageStyle([1080, 1270, 1460]);
+        </script>
+
+    <header class="page-header container">
+        <h1>频道详情页<span ng-if="isUnchecked">审核</span></h1>
+        <a href="./channellist">返回主页</a>
+    </header>
+    <div class="container">
+    <div ng-if="isUnchecked">
+    <h2 style="color:red; margin-top: 0 !important;" ng-if="!isSuper" ng-cloak>审核不过原因：{{failmessage}}</h2>
+    <a ng-href="{{editUrl}}">重新编辑</a>
+    </div>
+    <!-- 表单开始 -->
+        <form action="#" role="form" id="form1" name="form1" ng-submit="formsubmit()">
+            <div class="form-group">
+                <label for="channelname">频道名称(必填)</label><span class="error" ng-if="!form1.channelname.$valid">频道名称不可为空</span>
+                <input type="text" ng-disabled="isUnchecked" class="form-control" id="channelname" name="channelname" placeholder="输入频道名称" ng-model="channel.name"/ required>
+            </div>    
+            <div class="form-group">
+                <label for="channelname">频道上片标识号(必填)</label><span class="error" ng-if="!form1.channelmid.$valid">频道上片标识号不可为空</span>
+                <input type="text" ng-disabled="isUnchecked" class="form-control" id="channelmid" name="channelmid" placeholder="输入频道名称" ng-model="channel.mid"/ required>
+            </div>                
+            <div class="form-group">
+                <label for="channelDesc">频道简介</label>
+                <input type="text" ng-disabled="isUnchecked" class="form-control" id="channelDesc" placeholder="输入频道简介" ng-model="channel.description"/>
+            </div>
+            <div class="form-group">
+                <label for="channelDesc">频道人气系数(必填)</label>
+                <input type="number" ng-disabled="isUnchecked" class="form-control" id="channelDesc" placeholder="输入频道人气系数" ng-model="channel.userOnlineRatio"/>
+            </div> 
+            <div class="form-group">
+                <label for="channelIndex">频道权重(越高排名越靠前)</label>
+                <input type="number" ng-disabled="isUnchecked" class="form-control" id="channelIndex" placeholder="输入频道权重" ng-model="channel.index"/>
+            </div>                           
+            <div class="form-group">
+                <label for="channelIcon">频道图标</label>
+                <input ng-disabled="isUnchecked" onchange="angular.element(this).scope().iconChanged()" ng-model="iconmodel" type="file" class="form-control" id="channelIcon" placeholder="上传频道图标" accept="image/*"/>
+                <img ng-if="thumbicon" class="show-thumb" ng-src="{{thumbicon}}">
+            </div>   
+            <div class="form-group">
+                <label for="channelbg">频道背景图</label>
+                <input ng-disabled="isUnchecked" onchange="angular.element(this).scope().bgChanged()" type="file" class="form-control" id="channelbg" placeholder="上传频道背景图" accept="image/*"/>
+                <img ng-if="bgicon" class="show-thumb" ng-src="{{bgicon}}">
+            </div>    
+            <div class="form-group">
+                <label for="channelbg">频道高亮背景图</label>
+                <input ng-disabled="isUnchecked" onchange="angular.element(this).scope().bgChanged2()" type="file" class="form-control" id="channelbg2" placeholder="上传频道高亮背景图" accept="image/*"/>
+                <img ng-if="bgicon2" class="show-thumb" ng-src="{{bgicon2}}">
+            </div>                
+            <!--流地址展示，不可编辑  -->
+            <div id="stream-wrap" class="stream-wrap">
+                直播地址(不可修改)
+                <!-- <div id="addstreamButton" class="btn btn-primary add-stream-btn" ng-click="addLive()">添加直播流</div> -->
+                <div class="form-group" ng-repeat="(k,v) in lives">
+                    <label for="channelStream">频道流地址</label>
+                    <input type="text" class="form-control form-control-style1" disabled="disabled"  placeholder="输入频道流地址" ng-model="lives[k].url"/>
+                    <label for="channelStreams1">画质</label>
+                    <select ng-disabled="isUnchecked" class="form-control form-control-style3" ng-model="lives[k].value" disabled="disabled">
+                        <option value="1080P">蓝光</option>
+                        <option value="720P">超清</option> 
+                        <option value="480P">流畅</option>                                                            
+                    </select>
+                    <!-- <div class="btn btn-danger" ng-click="deleteLive(k)">删除流</div> -->
+                </div>                                             
+            </div>
+            <!-- 频道清晰度选择 -->
+            <div class="form-group">
+                <label for="channelclear">频道清晰度(多选)</label>
+                <input ng-disabled="isUnchecked" type="checkbox" name="channelclear" ng-true-value="true" ng-false-value="false" ng-model="resolutions[0]"/>蓝光
+                <input ng-disabled="isUnchecked" type="checkbox" name="channelclear" ng-true-value="true" ng-false-value="false" ng-model="resolutions[1]"/>超清
+                <input ng-disabled="isUnchecked" type="checkbox" name="channelclear" ng-true-value="true" ng-false-value="false" ng-model="resolutions[2]"/>流畅
+            </div>
+            <!-- 频道默认清晰度选择 -->
+            <div class="form-group">
+                <label for="channeldefaultclear">频道默认清晰度(单选)</label>
+                <input ng-disabled="isUnchecked || !resolutions[0]" type="radio" name="channeldefaultclear" value="蓝光" ng-model="channel.defaultPlayUrlSelect"/>蓝光
+                <input ng-disabled="isUnchecked || !resolutions[1]" type="radio" name="channeldefaultclear" value="超清" ng-model="channel.defaultPlayUrlSelect"/>超清
+                <input ng-disabled="isUnchecked || !resolutions[2]" type="radio" name="channeldefaultclear" value="流畅" ng-model="channel.defaultPlayUrlSelect"/>流畅
+            </div>   
+            <div class="form-group" ng-if="channel.defaultPlayUrl">
+                <label for="channelIndex">默认流地址</label>
+                <input type="text" ng-disabled="true" ng-model="channel.defaultPlayUrl" class="form-control"/>
+            </div>               
+            <div class="form-group">
+                <label for="channelauth">频道观看权限</label>
+                <input ng-disabled="isUnchecked" type="radio" name="channelauth" value="1" ng-model="channel.vip"/>
+                需要VIP
+                <input ng-disabled="isUnchecked" type="radio" name="channelauth" value="0" ng-model="channel.vip"/>不需要VIP
+            </div>   
+            <div class="form-group">
+                <label for="channelBelongs">频道所属大类</label>
+                <select ng-disabled="isUnchecked" name="channelBelongs" id="channelBelongs" class="form-control" ng-model="channel.belongs">
+                    <option value="世界">世界</option>
+                    <option value="网红">网红</option>
+                    <option value="百家">百家</option>
+                </select>
+            </div>            
+            <div class="form-group">
+                <label for="channelArea">频道投放地区</label>
+                <span style="color:red">（成人内容只允许投放非大陆地区）</span>
+                <select ng-disabled="isUnchecked" name="channelArea" id="channelArea" class="form-control" ng-model="channel.region">
+                    <option value="1">大陆</option>
+                    <option value="2">日本</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="channelStatus">频道状态</label>
+                <select ng-disabled="isUnchecked" name="channelArea" id="channelStatus" class="form-control" ng-model="channel.status">
+                    <option value="1">直播中</option>
+                    <option value="2">关闭</option>
+                </select>
+            </div>            
+            <div class="form-group">
+                <label for="channelType">频道分类信息</label>
+                <select ng-disabled="isUnchecked" name="channelArea" id="channelType" class="form-control" ng-model="channel.classify">
+                    <option value="直播">直播</option>
+                    <option value="轮播">轮播</option>
+                </select>
+            </div>                                                          
+        </form>
+        <!-- 表单结束 -->
+        <!-- 节目单panel开始 -->
+        <div id="program-panel" class="program-panel">
+            <h3>节目单</h3>
+            <div id="program-info">
+                <!-- <div class="currentday">开始日期: 2016/9/20 </div>   -->
+                <div class="channel-schedule">
+                    <ul class="channel-schedule-list">
+                        <div ng-repeat="(k,v) in programList">
+                        <li class="nav-item" ng-class="isNavSelected(k)" ng-click="onTabClick(k)">{{k}}</li>
+                          <li class="nav-sep"></li>                      
+                      </div>
+                      <div style="clear:both"></div>
+                  </ul>
+                </div>                
+            </div>
+            <div class="program-table-wrap">
+                <div class="program-table-con" ng-repeat="(k,v) in programList" ng-class="isTableShow(k)">
+                    <table class="table table-bordered program-table">
+                        <thead>
+                            <tr>
+                                <th width="15%">节目时间</th>
+                                <th width="15%">节目名称</th>
+                                <th width="10%">节目类型</th>
+                                <th width="15%">节目时常</th>
+                                <th width="10%">节目图标</th>
+                                <th width="25%">节目简介</th>
+                                <th width="10%">节目操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="p in programList[k]" ng-class="showTableList(p)">
+                                <td>{{getProtime(p)}}</td>
+                                <td><a href="{{getLink(p.id)}}">{{getProgramDetail(p.id).name}}</a></td>
+                                <td>{{getProgramDetail(p.id).type}}</td>
+                                <td>{{getProDuration(p)}}</td>
+                                <td><img ng-src={{getProgramDetail(p.id).picture}} alt="" class="program-thumb"></td>
+                                <td>{{getProgramDetail(p.id).description}}</td>
+                                <td><div class="btn btn-danger" ng-click="onRemoveBtnClick(p)">移除节目</div></td> 
+                            </tr>                                                           
+                        </tbody>
+                    </table>      
+                    <!-- 空隙提示容器  -->
+                    <div class="gap-tips" ng-cloak>
+                       <div class="tip-panel" ng-style="getgapstyle(gap.index)" ng-repeat="gap in gaps[k]">节目间有间隙--></div>
+                   </div>                                    
+                </div>
+               </div>
+           </div>
+           <div class="btn-list" ng-if="!isUnchecked">
+               <div class="btn btn-primary" id="add-program" ng-click="submit()">提交</div>
+               <div class="btn btn-primary" id="add-program" ng-click="addDay()">添加下一日</div>
+               <div class="btn btn-primary" id="add-program" ng-click="onAddBtnClick()">添加节目</div>
+               <div class="btn btn-primary" id="put-program" ng-click="onBatchAddBtnClick()">批量导入轮播节目</div>
+               <div class="btn btn-primary" id="managerall-program" ng-click="onBatchEditBtnClick()">管理轮播节目</div>
+               <div class="btn btn-info" ng-click="tipGap()">检查排期间隙</div>
+               <div class="btn btn-info" ng-click="showPast()">查看过期节目(天为单位)</div>
+               <div class="btn btn-danger" ng-click="deletePast()">删除过期节目</div>
+           </div>
+           <div class="btn-list" ng-if="isUnchecked && isSuper">
+               <div class="btn btn-primary" ng-click="onCheckSuccess()">审核通过</div>
+               <div class="btn btn-danger" ng-click="checkfailPanelVisible(true);">审核不通过</div>
+           </div>
+          
+    </div>
+    <div class="popup-container" ng-class="{true: '', false: 'hide'}[popPanelVisible]" ng-cloak>
+    <form id="popup" name="popup">
+        <!-- 添加节目面板 --> 
+        <div class="add-program-panel popup" ng-class="{true: '', false: 'hide'}[addPanelVisibleStatus]" ng-cloak>
+            <div class="channel-time">
+                <label for="name-program">频道开始时间(不填默认从最早的时间开始填充)</label>
+                <input type="text" class="form-control form-control-style3" name="nameprogram" id="name-program" placeholder=""/ ng-model="addtime" ng-pattern="/^[0-9]{2}:[0-9]{2}$/"><span class="error" ng-if="!popup.nameprogram.$valid">时间格式为00:30</span>
+            </div>
+            <div>选择节目：(区间之内)</div>
+            <label for="name-program">节目名称</label>
+            <input type="text" class="form-control form-control-style3" id="name-program" placeholder="" ng-model="addp1"/>    
+            <label for="name-program">节目类型</label>
+            <select name="xxx" id="xxx" class="form-control form-control-style4" ng-model="adds1">
+                <option value="">全部</option>
+                <option value="直播">直播</option>
+                <option value="点播">点播</option>
+            </select>
+            <div class="query-result clearfix">
+            <div class="pro-wrap">
+                <div class="programlist-info" ng-repeat="p in allPrograms | filter:programFliter" ng-click="onProgramAdd(p)">
+                    <p class="firstline"><span class="middle">节目名称：</span> <span class="pname">{{p.name}}</span> <span class="middle">{{p.type}}</span> </p>
+                    <p ng-if="p.type=='点播'">时长：{{formatDuration(p.duration)}}</p>
+                    <p ng-if="p.type=='直播'">起始时间：{{formatDate(p.start)}}</p>
+                    <p ng-if="p.type=='直播'">结束时间: {{formatDate(p.end)}}</p>
+                    <p>{{p.desc}}</p>
+                    节目图标
+                    <img ng-src="{{p.picture}}" alt=""></div>
+                </div>                    
+            </div>
+            <div class="btn btn-primary" ng-click="onAddBtnCloseClick()">关闭</div>
+        </div>
+       <!-- 批量导入块 -->           
+       <div class="addbatch-con add-program-panel popup " ng-class="{true: '', false: 'hide'}[addbatchPanelVisibleStatus]" ng-cloak>
+           <label for="start-program">轮播开始时间</label><span class="error" ng-if="!popup.sp1.$valid">格式为2016.01.01 00:00</span>
+           <input type="text" class="form-control form-control" id="start-program" name="sp1" placeholder="如2016.10.1 17:00" ng-model="batchs" ng-pattern="/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\s[0-9]{2}:[0-9]{2}$/"/>           
+           <label for="end-program">轮播结束时间</label><span class="error" ng-if="!popup.ep1.$valid">格式为2016.01.01 00:00</span>
+           <input type="text" class="form-control form-control" id="end-program" name="ep1" placeholder="如2016.10.1 17:00" ng-model="batche" ng-pattern="/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\s[0-9]{2}:[0-9]{2}$/"/>           
+           <div>选择点播节目</div>
+           <label for="name-program">节目名称</label>
+           <input type="text" class="form-control form-control-style3" id="name-program2" placeholder="" ng-model="addp2"/>           
+           <label for="name-program">节目类型</label>
+           <select name="xxx" id="xxx" class="form-control form-control-style4" ng-model="adds2">
+               <option value="">点播</option>
+           </select>
+           <div class="query-result query-result2 clearfix">
+           <div class="pro-wrap2">
+               <div class="programlist-info" ng-repeat="p in selectPrograms | filter:programFliter2" ng-click="onCarouselAdd(p)">
+                   <p class="firstline"><span class="middle">节目名称：</span> <span class="pname">{{p.name}}</span> <span class="middle">{{p.type}}</span> </p>
+                   <p ng-if="p.type=='点播'">时长：{{formatDuration(p.duration)}}</p>
+                   <p ng-if="p.type=='直播'">起始时间：{{formatDate(p.start)}}</p>
+                   <p ng-if="p.type=='直播'">结束时间: {{formatDate(p.end)}}</p>
+                   <p>{{p.desc}}</p>
+                   节目图标
+                   <img ng-src="{{p.picture}}" alt=""></div>
+               </div>
+           </div>
+           <div class="btn btn-primary" ng-click="onAddBatchCloseClick()">关闭</div>
+           <div class="btn btn-primary" ng-click="onAddBatchSubmitClick()">提交</div>
+           <!-- 选中的节目 -->           
+           <div class="query-result selected-pro clearfix" id="selected-pro">
+               <div class="title">已选节目(轮播顺序按照从左到右排列，鼠标可移动节目排序)</div>
+               <div class="pro-wrap2">
+                 <div class="programlist-info" ng-repeat="p in selectedPrograms">
+                     <div class="info-wrap">
+                         <div class="btn btn-danger info-remove" ng-click="onselectedCarouselRemove(p)">X</div>
+                         <p>节目名称： {{p.name}} {{p.type}}</p>
+                         <p ng-if="p.type=='点播'">时长：{{formatDuration(p.duration)}}</p>
+                         <p ng-if="p.type=='直播'">起始时间：{{formatDate(p.start)}}</p>
+                         <p ng-if="p.type=='直播'">结束时间: {{formatDate(p.end)}}</p>
+                         <p>{{p.desc}}</p>
+                         节目图标
+                         <img ng-src="{{p.picture}}" alt=""></div>
+                     </div>
+                 </div>
+           </div>
+       </div>   
+        <!-- 编辑批量 -->
+        <div class="popup editbatch-con add-program-panel " ng-class="{true: '', false: 'hide'}[editbatchPanelVisibleStatus]" ng-cloak>
+           <select name="edits" id="edits" ng-options="c.cid as c.txt for c in carouselList" ng-model="edits2" ng-change="onEditsChange(e)">
+            <option value="">-- 按时间选择轮播组 --</option>
+           </select>
+           <div style="margin-top: 5px;">
+             <label for="start-program">修改轮播开始时间</label><span class="error" ng-if="!popup.sp2.$valid">格式为2016.01.01 00:00</span>
+             <input type="text" class="form-control form-control-style2" ng-pattern="/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\s[0-9]{2}:[0-9]{2}$/" name="sp2" id="start-program" placeholder="如2016.10.1 17:00" ng-model="edits"/>           
+             <label for="end-program">修改轮播结束时间</label><span class="error" ng-if="!popup.ep2.$valid">格式为2016.01.01 00:00</span>
+             <input type="text" class="form-control form-control-style2" ng-pattern="/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\s[0-9]{2}:[0-9]{2}$/" name="ep2" id="end-program" placeholder="如2016.10.1 17:00" ng-model="edite"/>                     
+         </div>
+           <div class="query-result selected-pro clearfix" id="selected-pro2">
+               <div class="title">已选节目(轮播顺序按照从左到右排列，鼠标可移动节目排序)</div>
+               <div class="pro-wrap2">
+               <div class="programlist-info" ng-repeat="pid in editSelected">
+                   <div class="info-wrap">
+                       <div class="btn btn-danger info-remove" ng-click="onselectedCarouselEditRemove(pid)">X</div>
+                       <p class="firstline"><span class="middle">节目名称：</span> <span class="pname">{{getProgramDetail(pid).name}}</span> <span class="middle">{{getProgramDetail(pid).type}}</span></p>
+                       <p>时长：{{formatDuration(getProgramDetail(pid).duration)}}</p>
+                       <p>{{getProgramDetail(pid).desc}}</p>
+                       节目图标
+                       <img ng-src="{{getProgramDetail(pid).picture}}" alt=""></div>
+               </div>
+           </div>
+           </div>            
+           <div class="query-result clearfix">
+            <div>选择点播节目</div>
+            <div class="wrap-line">
+             <label for="name-program">节目名称</label>
+             <input type="text" class="form-control form-control-style3" id="name-program2" placeholder="" ng-model="addp3"/>           
+             <label for="name-program">节目类型</label>
+             <select name="xxx" id="xxx" class="form-control form-control-style4" ng-model="adds3">
+                 <option value="">点播</option>
+             </select>                
+            </div>
+            <div class="pro-wrap3">
+               <div class="programlist-info" ng-repeat="pid in editselect | filter:programFliter3" ng-click="onCarouselEditAdd(pid)">
+                   <p class="firstline"><span class="middle">节目名称：</span> <span class="pname">{{getProgramDetail(pid).name}}</span> <span class="middle">{{getProgramDetail(pid).type}}</span></p>
+                   <p>时长：{{formatDuration(getProgramDetail(pid).duration)}}</p>
+                   <p>{{getProgramDetail(pid).desc}}</p>
+                   节目图标
+                   <img ng-src="{{getProgramDetail(pid).picture}}" alt=""></div>
+            </div>                   
+           </div>           
+           <div class="btn btn-primary" ng-click="onEditBatchCloseClick()">关闭</div>
+           <div class="btn btn-primary" ng-click="onEditBatchSubmitClick()">提交</div>            
+           <div class="btn btn-danger" ng-click="onEditBatchDeleteClick()">删除该轮播组</div>            
+        </div>
+        <div class="popup checkfailpanel add-program-panel" ng-class="{true: '', false: 'hide'}[checkfailShow]" ng-cloak>
+        <h2>审核未通过原因</h2>
+        <label for="checkfail">拒绝原因</label>
+            <select name="checkfail" id="checkfail" class="form-control" ng-model="checkfailmsg0">           
+                <option value="色情内容">1.色情内容</option>
+                <option value="涉嫌政治">2.涉嫌政治</option>
+                <option value="版权问题">3.版权问题</option>
+                <option value="广告或者垃圾信息">4.广告或者垃圾信息</option>
+            </select>
+            <label for="checkfailtxt">其他原因</label>
+            <input type="text" class="form-control reject-ipt" ng-model="checkfailmsg" name="checkfailtxt" placeholder="其他原因，手动填写">
+            <div class="btn btn-danger" ng-click="onCheckFail()">提交</div>
+            <div class="btn btn-danger" ng-click="checkfailPanelVisible(false);">取消</div>
+        </div>
+        </form>
+    </div>
+    <script>
+        <%= message %>
+    </script>        
+   <script src="../../lib/jquery.min.js"></script>
+   <script src="../../lib/angular.js"></script>
+   <script src="../../javascripts/channel/app.js"></script>
+   <script src="../../javascripts/channel/channelmodel.js"></script>
+   <script src="../../javascripts/channel/ctrl.js"></script>
+</body>
+</html>
