@@ -1,5 +1,7 @@
+var crypto = require('crypto');
 
-var SECRETKEY = '';
+
+var SECRETKEY = 'EELRNF06PG4894OINJ549G8';
 /**
  * opt
  * @param {string} opt.body - 请求body.
@@ -20,24 +22,32 @@ function setHeader(opt) {
 }
 
 function createSignature(body,method,uri,secretkey,nonce,stamp) {
-    var method = method.toLocaleUpperCase();
+    var method = method.toUpperCase();
     var orignalArr = ['body=' + body, 'method=' + method, 'uri=' + uri, 'X-woniu-cloud-secretkey=' + secretkey, 'X-woniu-cloud-nonce=' + nonce, 'X-woniu-cloud-timestamp=' + stamp];
     var orignal = orignalArr.join('&');
-
-    return '';
+    return getBase64(getSha1(orignal));
 }
 
 /*获取不重复的随机数*/
 function getNonce() {
-    return new Date().getTime() + Math.random();
+    return new Date().getTime() + Math.random() + '';
 }
 
 /*获取时间戳*/
 function getStamp() {
-    return Math.round(new Date().getTime()/1000);
+    return Math.round(new Date().getTime()/1000) + '';
 }
+
+function getSha1(str) {
+    return crypto.createHmac('sha1', SECRETKEY).update(str).digest('hex');
+}
+
+function getBase64(str) {
+    return new Buffer(str).toString('base64').toLowerCase();
+}
+
 
 
 module.exports = {
     setHeader : setHeader
-}
+};
