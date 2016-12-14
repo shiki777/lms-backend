@@ -1,7 +1,7 @@
 var crypto = require('crypto');
 
 
-var SECRETKEY = 'EELRNF06PG4894OINJ549G8';
+var SECRETKEY = require('./secretkey').SECRETKEY;
 /**
  * opt
  * @param {string} opt.body - 请求body.
