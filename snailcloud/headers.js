@@ -22,6 +22,9 @@ function setHeader(opt) {
 }
 
 function createSignature(body,method,uri,secretkey,nonce,stamp) {
+    if(typeof body == 'object'){
+        body = JSON.stringify(body);
+    }
     var method = method.toUpperCase();
     var orignalArr = ['body=' + body, 'method=' + method, 'uri=' + uri, 'X-woniu-cloud-secretkey=' + secretkey, 'X-woniu-cloud-nonce=' + nonce, 'X-woniu-cloud-timestamp=' + stamp];
     var orignal = orignalArr.join('&');
