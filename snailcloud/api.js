@@ -47,7 +47,7 @@ function getRoomStreams() {
 function getRoomPushUrl(url) {
     var reg = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
     /*获取path*/
-    var uri = reg.exec(url)[5];
+    var uri = '/' + reg.exec(url)[5];
     var wsTime = getHexStamp();
     var wsSecret = getWsSecret(SECRETKEY, uri, wsTime);
     return url + '?wsSecret=' + wsSecret + '&wsTime=' + wsTime;
