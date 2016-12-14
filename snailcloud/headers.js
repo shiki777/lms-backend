@@ -17,7 +17,7 @@ function setHeader(opt) {
         'X-woniu-cloud-secretkey' : SECRETKEY,
         'X-woniu-cloud-nonce' : nonce,
         'X-woniu-cloud-timestamp' : stamp,
-        'X-woniu-cloud -signature' : createSignature(opt.body,opt.method,opt.uri,SECRETKEY,nonce,stamp)
+        'X-woniu-cloud-signature' : createSignature(opt.body,opt.method,opt.uri,SECRETKEY,nonce,stamp)
     }
 }
 
@@ -28,17 +28,24 @@ function createSignature(body,method,uri,secretkey,nonce,stamp) {
     var method = method.toUpperCase();
     var orignalArr = ['body=' + body, 'method=' + method, 'uri=' + uri, 'X-woniu-cloud-secretkey=' + secretkey, 'X-woniu-cloud-nonce=' + nonce, 'X-woniu-cloud-timestamp=' + stamp];
     var orignal = orignalArr.join('&');
+    console.log(orignal)
+    console.log(getBase64(getSha1(orignal)))
     return getBase64(getSha1(orignal));
 }
 
 /*获取不重复的随机数*/
 function getNonce() {
-    return new Date().getTime() + Math.random() + '';
+    var n = 20;
+    var rnd = "";
+    for (var i = 0; i < n; i++) {
+        rnd += Math.floor(Math.random() * 10);
+    }
+    return parseInt(rnd,10);
 }
 
 /*获取时间戳*/
 function getStamp() {
-    return Math.round(new Date().getTime()/1000) + '';
+    return Math.round(new Date().getTime()/1000);
 }
 
 function getSha1(str) {
@@ -46,7 +53,7 @@ function getSha1(str) {
 }
 
 function getBase64(str) {
-    return new Buffer(str).toString('base64').toLowerCase();
+    return new Buffer(str).toString('base64');
 }
 
 

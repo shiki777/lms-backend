@@ -1,3 +1,3 @@
-var headers = require('./headers');
+var api = require('./api');
 
-console.log(headers.setHeader({body : '',method: 'GET',uri : '/v1/snailcloud/ppurl/application'}))
+api.getRoomStreams()

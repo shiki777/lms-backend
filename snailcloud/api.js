@@ -14,7 +14,7 @@ function getRoomStreams() {
     var body = '';
     var defer = q.defer();
     var options = {
-        url : snailHeaders.snail_cloud.host + ':' + snailHeaders.snail_cloud.port + path;
+        url : 'http://' + config.snail_cloud.host + ':' + config.snail_cloud.port + path,
         method : 'GET',
         headers: snailHeaders.setHeader({body : body,method: 'get',uri : path}),
         json : true,
@@ -22,8 +22,10 @@ function getRoomStreams() {
     }    
     request(options, function(err,res,body) {
         if(err){
+            console.log('error is ' +  err)
             defer.reject(err);
         } else {
+            console.log(res.body)
             defer.resolve(res.body);
         }
     });    
@@ -53,7 +55,7 @@ function dropRoomStream(pushUrl) {
     var body = '';
     var defer = q.defer();
     var options = {
-        url : snailHeaders.snail_cloud.host + ':' + snailHeaders.snail_cloud.port + path + '?pushUrl=' + encodeURIComponent(pushUrl),
+        url : config.snail_cloud.host + ':' + config.snail_cloud.port + path + '?pushUrl=' + encodeURIComponent(pushUrl),
         method : 'DELETE',
         headers: snailHeaders.setHeader({body : body,method: 'delete',uri : path}),
         json : true,
