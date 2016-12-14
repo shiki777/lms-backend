@@ -1,7 +1,7 @@
 const config = {
     snail_cloud : {
-        host : 'http://127.0.0.1',
-        port : 80
+        host : '192.168.5.233',
+        port : 8999
     }
 }
 
