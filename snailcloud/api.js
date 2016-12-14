@@ -45,9 +45,9 @@ function getRoomStreams() {
  * @returns {string} 带令牌的推流地址 
  */
 function getRoomPushUrl(url) {
-    var reg = '/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/';
+    var reg = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
     /*获取path*/
-    var uri = url.match(reg)[5];
+    var uri = reg.exec(url)[5];
     var wsTime = getHexStamp();
     var wsSecret = getWsSecret(SECRETKEY, uri, wsTime);
     return url + '?wsSecret=' + wsSecret + '&wsTime=' + wsTime;
@@ -71,8 +71,10 @@ function dropRoomStream(pushUrl) {
     }    
     request(options, function(err,res,body) {
         if(err){
+            console.log('err is ' + err);
             defer.reject(err);
         } else {
+            console.log(body)
             defer.resolve(res.body);
         }
     });    
@@ -83,12 +85,12 @@ function dropRoomStream(pushUrl) {
 function getHexStamp() {
     return Math.round(new Date().getTime()/1000).toString(16);
 }
-
+/*生成wssecret*/
 function getWsSecret(key, uri, wsTime) {
     var str = key + uri + wsTime;
     return crypto.createHash('md5').update(str).digest('hex');
 }
-
+/*格式化房间推流/播放地址*/
 function formatRoomStreams(data) {
     var res = {
         pushUrl : '',
