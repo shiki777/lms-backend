@@ -17,16 +17,24 @@ function getRoomStreams() {
         url : 'http://' + config.snail_cloud.host + ':' + config.snail_cloud.port + path,
         method : 'GET',
         headers: snailHeaders.setHeader({body : body,method: 'get',uri : path}),
-        json : true,
+        json : false,
         body : body
-    }    
+    };
     request(options, function(err,res,body) {
         if(err){
             console.log('error is ' +  err)
             defer.reject(err);
         } else {
-            console.log(res.body)
-            defer.resolve(res.body);
+            if(typeof body == 'string'){
+                var data = JSON.parse(body);
+            } else {
+                data = body;
+            }
+            if(parseInt(data.errorCode,10) == 200){
+                defer.resolve(formatRoomStreams(data));
+            } else {
+                defer.reject(data.errorMessage);
+            }
         }
     });    
     return defer.promise;
@@ -79,6 +87,18 @@ function getHexStamp() {
 function getWsSecret(key, uri, wsTime) {
     var str = key + uri + wsTime;
     return crypto.createHash('md5').update(str).digest('hex');
+}
+
+function formatRoomStreams(data) {
+    var res = {
+        pushUrl : '',
+        liveUrl : []
+    };
+    res.pushUrl = data.pushUrl;
+    for(key in data.playUrl){
+        res.liveUrl.push(data.playUrl[key].url)
+    }
+    return res;
 }
 
 
