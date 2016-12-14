@@ -24,8 +24,7 @@ function getRoomStreams() {
         if(err){
             defer.reject(err);
         } else {
-            channels = formatChannel(res.body || {});
-            defer.resolve(channels);
+            defer.resolve(res.body);
         }
     });    
     return defer.promise;
@@ -33,7 +32,7 @@ function getRoomStreams() {
 
 /** 
  * 生成推流规则
- * @returns {promise} 
+ * @returns {string} 带令牌的推流地址 
  */
 function getRoomPushUrl(url) {
     var reg = '/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/';
@@ -42,6 +41,32 @@ function getRoomPushUrl(url) {
     var wsTime = getHexStamp();
     var wsSecret = getWsSecret(SECRETKEY, uri, wsTime);
     return url + '?wsSecret=' + wsSecret + '&wsTime=' + wsTime;
+}
+
+/** 
+ * 丛云平台关闭指定房间的流
+ * @param {string} pushUrl
+ * @returns {promise} 
+ */
+function dropRoomStream(pushUrl) {
+    var path = '/v1/snailcloud/stream/drop';
+    var body = '';
+    var defer = q.defer();
+    var options = {
+        url : snailHeaders.snail_cloud.host + ':' + snailHeaders.snail_cloud.port + path + '?pushUrl=' + encodeURIComponent(pushUrl),
+        method : 'DELETE',
+        headers: snailHeaders.setHeader({body : body,method: 'delete',uri : path}),
+        json : true,
+        body : body
+    }    
+    request(options, function(err,res,body) {
+        if(err){
+            defer.reject(err);
+        } else {
+            defer.resolve(res.body);
+        }
+    });    
+    return defer.promise;    
 }
 
 /*获取16进制时间戳*/
@@ -55,7 +80,8 @@ function getWsSecret(key, uri, wsTime) {
 }
 
 
-
 module.exports = {
-    getRoomPushUrl : getRoomPushUrl
+    getRoomPushUrl : getRoomPushUrl,
+    getRoomStreams : getRoomStreams,
+    dropRoomStream : dropRoomStream
 }
