@@ -63,19 +63,28 @@ function dropRoomStream(pushUrl) {
     var body = '';
     var defer = q.defer();
     var options = {
-        url : config.snail_cloud.host + ':' + config.snail_cloud.port + path + '?pushUrl=' + encodeURIComponent(pushUrl),
+        url : 'http://' + config.snail_cloud.host + ':' + config.snail_cloud.port + path + '?pushUrl=' + encodeURIComponent(pushUrl),
         method : 'DELETE',
         headers: snailHeaders.setHeader({body : body,method: 'delete',uri : path}),
-        json : true,
+        json : false,
         body : body
     }    
+    console.log(options.url)
     request(options, function(err,res,body) {
         if(err){
             console.log('err is ' + err);
             defer.reject(err);
         } else {
-            console.log(body)
-            defer.resolve(res.body);
+            if(typeof body == 'string'){
+                var data = JSON.parse(body);
+            } else {
+                data = body;
+            }
+            if(parseInt(data.errorCode,10) == 200){
+                defer.resolve();
+            } else {
+                defer.reject(data.errorMessage);
+            }
         }
     });    
     return defer.promise;    
