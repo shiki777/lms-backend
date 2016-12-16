@@ -116,7 +116,7 @@ function applyTokenAndUrl(user_ip,playUrl){
           console.log('error is ' +  err)
           defer.reject(err);
       } else {
-          console.log(body);
+          //console.log(body);
           defer.resolve(playUrl + '?wsSecret=' + body);
       }
   });
