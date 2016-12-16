@@ -5,9 +5,9 @@ var snailHeaders = require('./headers');
 var SECRETKEY = require('./secretkey').SECRETKEY;
 var crypto = require('crypto');
 
-/** 
+/**
  * 从云平台获取房间推流/播放地址
- * @returns {promise} 
+ * @returns {promise}
  */
 function getRoomStreams() {
     var path = '/v1/snailcloud/ppurl/application';
@@ -36,13 +36,13 @@ function getRoomStreams() {
                 defer.reject(data.errorMessage);
             }
         }
-    });    
+    });
     return defer.promise;
 }
 
-/** 
+/**
  * 生成推流规则
- * @returns {string} 带令牌的推流地址 
+ * @returns {string} 带令牌的推流地址
  */
 function getRoomPushUrl(url) {
     var reg = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
@@ -53,10 +53,10 @@ function getRoomPushUrl(url) {
     return url + '?wsSecret=' + wsSecret + '&wsTime=' + wsTime;
 }
 
-/** 
+/**
  * 丛云平台关闭指定房间的流
  * @param {string} pushUrl
- * @returns {promise} 
+ * @returns {promise}
  */
 function dropRoomStream(pushUrl) {
     var path = '/v1/snailcloud/stream/drop';
@@ -68,7 +68,7 @@ function dropRoomStream(pushUrl) {
         headers: snailHeaders.setHeader({body : body,method: 'delete',uri : path}),
         json : true,
         body : body
-    }    
+    }
     request(options, function(err,res,body) {
         if(err){
             console.log('err is ' + err);
@@ -77,8 +77,41 @@ function dropRoomStream(pushUrl) {
             console.log(body)
             defer.resolve(res.body);
         }
-    });    
-    return defer.promise;    
+    });
+    return defer.promise;
+}
+
+/**
+ * 申请播放token并返回播放地址
+ * @param {string} user_ip
+ * @param {string} playUrl
+ * @returns {promise}
+ */
+function applyTokenAndUrl(user_ip,playUrl){
+  var reg = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
+  var domain = reg.exec(playUrl)[3];
+  var uri = '/' + reg.exec(playUrl)[5];
+  var path = '/application';
+  var body = '';
+  var defer = q.defer();
+  var options = {
+      url : 'http://' + domain + ':' + 8104 + path + '?user_addr=' + user_ip + '&uri=' + uri,
+      method : 'GET',
+      headers: snailHeaders.setHeader({body : body,method: 'get',uri : uri}),
+      json : false,
+      body : body
+  };
+  console.log(options.url);
+  request(options, function(err,res,body) {
+      if(err){
+          console.log('error is ' +  err)
+          defer.reject(err);
+      } else {
+          console.log(body);
+          defer.resolve(playUrl + '?wsSecret=' + body);
+      }
+  });
+  return defer.promise;
 }
 
 /*获取16进制时间戳*/
@@ -103,9 +136,9 @@ function formatRoomStreams(data) {
     return res;
 }
 
-
 module.exports = {
     getRoomPushUrl : getRoomPushUrl,
     getRoomStreams : getRoomStreams,
-    dropRoomStream : dropRoomStream
+    dropRoomStream : dropRoomStream,
+    applyTokenAndUrl : applyTokenAndUrl
 }
