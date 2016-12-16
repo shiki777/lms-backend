@@ -1,14 +1,27 @@
 var api = require('./api');
 
- /*api.getRoomStreams()
-     .then(function(data) {
-         console.log(data)
-     })
-     .catch(function(e) {
-         console.log(e);
-     })*/
-var pushUrl = 'rtmp://push.woniucloud.com:1935/snial/rtugwpvy';//'rtmp://push.woniucloud.com/snail/qfac6kad';
-var playUrl = 'rtmp://play.woniucloud.com:1935/snial/rtugwpvy';
-var pushUrlws = api.getRoomPushUrl(pushUrl);
-//console.log(pushUrlws);
-api.applyTokenAndUrl('58.247.47.106',playUrl);
+// api.getRoomStreams()
+//     .then(function(data) {
+//         console.log(data)
+//     })
+//     .catch(function(e) {
+//         console.log(e);
+//     })
+var pushUrl = 'rtmp://push.woniucloud.com/snail/qfac6kad';
+var u2 = 'rtmp://play.woniucloud.com/snail/7ofdxmb5';
+// var pushUrlws = api.getRoomPushUrl(pushUrl);
+var pushUrlws = api.getRoomPushUrl(u2);
+api.dropRoomStream(u2)
+    .then(function(data) {
+        console.log(data)
+    })
+    .catch(function(e) {
+        console.log(e)
+    })
+api.applyTokenAndUrl('58.247.47.106',u2)
+    .then(function(data){
+      console.log(data);
+    })
+    .catch(function(e){
+      console.log(e);
+    })
