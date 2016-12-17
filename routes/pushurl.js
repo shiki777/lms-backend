@@ -5,11 +5,10 @@ var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);
 
-//router.post('/login',function(req,res){
-router.get('/login',function(req,res){
+router.post('/login',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  var name = req.query.username;
-  var pwd = req.query.pwd;
+  var name = req.body ? req.body.username : null;
+  var pwd = req.body ? req.body.pwd : null;
   if(!name || !pwd){return res.status(400).send({ec:400,msg:"login failed for name or pwd == null."});}
   pool.getConnection(function(err,connection){
     if(err){
@@ -54,11 +53,10 @@ router.get('/login',function(req,res){
   });
 });
 
-//router.post('/logout',function(req,res){
-router.get('/logout',function(req,res){
+router.post('/logout',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  var id = req.query.id;
-  var token = req.query.token;
+  var id = req.body ? req.body.id : null;
+  var token = req.body ? req.body.token : null;
   if(!id || !token){return res.status(400).send({ec:400,msg:"logout failed for id or token == null."});}
   pool.getConnection(function(err,connection){
     if(err){
@@ -88,11 +86,10 @@ router.get('/logout',function(req,res){
   });
 });
 
-//router.post('/geturl',function(req,res){
-router.get('/geturl',function(req,res){
+router.post('/geturl',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  var id = req.query.id;
-  var token = req.query.token;
+  var id = req.body ? req.body.id : null;
+  var token = req.body ? req.body.token : null;
   if(!id || !token){return res.status(400).send({ec:400,msg:"geturl failed for id or token == null."});}
   pool.getConnection(function(err,connection){
     if(err){
