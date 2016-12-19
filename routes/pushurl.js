@@ -110,13 +110,8 @@ router.post('/geturl',function(req,res){
         }
         else {
           //获取该用户为主播所在房间的推流地址
-          api.getRoomStreams()
-            .then(function(data){
-              res.status(200).send({ec:0,msg:"geturl success.",pushUrl:data.pushUrl});
-            })
-            .catch(function(e){
-              res.status(400).send({ec:400,err:e,msg:"geturl failed for getRoomStreams failed."});
-            })
+          //后续是从数据库中获取，目前方便从接口获取或者直接给一个固定的地址
+          res.status(200).send({ec:0,msg:"geturl success.",pushUrl:'rtmp://push.woniucloud.com/snail/abcdefgh'});
         }
         //释放连接,pool目前可以用end替代release释放，后续版本则会遗弃这种做法，所以建议用release
 				connection.release();
