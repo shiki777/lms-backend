@@ -17,8 +17,8 @@ function login(name,pwd){
   		else{
   			console.log('connected as id ' + connection.threadId);
   			//查找用户信息
-        var sql = 'SELECT backinfo.id FROM backinfo,user WHERE name = "' + name +
-                    '" AND pwd = "' + pwd + '" AND user.id = backinfo.id;';
+        var sql = 'SELECT id FROM user WHERE name = "' + name +
+                    '" AND pwd = "' + pwd + '";';
   			connection.query(sql, function(err, rows, fields) {
   			  if (err) {
   					console.log(err);
@@ -34,7 +34,8 @@ function login(name,pwd){
           else {
             var token = Math.round(Math.random() * 1000000000000);
             token = token.toString() + '-' + rows[0].id.toString();
-            var setSql = 'UPDATE backinfo SET token = "' + token + '",status = 1 WHERE id = "' + rows[0].id + '";';
+            var setSql = 'INSERT INTO backinfo(id,token,status) VALUES("' + rows[0].id + '","' + token + '","1") ' +
+                          'ON DUPLICATE KEY UPDATE token=VALUES(token);';
             connection.query(setSql,function(err,result){
               if(err){
                 console.log(err);
@@ -66,14 +67,14 @@ function logout(token){
       else {
         console.log('connected as id ' + connection.threadId);
   			//更改登录用户信息
-        var sql = 'UPDATE backinfo SET token = null,status = 0 WHERE id IN(' +
+        var sql = 'DELETE FROM backinfo WHERE id IN(' +
         'SELECT id FROM (SELECT id FROM backinfo WHERE token = "' + token + '") AS temTable);';
         connection.query(sql,function(err,result){
           if(err){
             console.log(err);
             defer.reject(err);
           }
-          else if((result.affectedRows == 1) && (result.changedRows == 1)){
+          else if(result.affectedRows == 1){
             defer.resolve(null);//登出成功
           }
           else {//登出失败
