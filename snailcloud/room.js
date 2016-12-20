@@ -35,7 +35,7 @@ function login(name,pwd){
             var token = Math.round(Math.random() * 1000000000000);
             token = token.toString() + '-' + rows[0].id.toString();
             var setSql = 'INSERT INTO backinfo(id,token,status) VALUES("' + rows[0].id + '","' + token + '","1") ' +
-                          'ON DUPLICATE KEY UPDATE token=VALUES(token);';
+                          'ON DUPLICATE KEY UPDATE token=VALUES(token),status=VALUES(status);';
             connection.query(setSql,function(err,result){
               if(err){
                 console.log(err);
@@ -67,7 +67,7 @@ function logout(token){
       else {
         console.log('connected as id ' + connection.threadId);
   			//更改登录用户信息
-        var sql = 'DELETE FROM backinfo WHERE id IN(' +
+        var sql = 'UPDATE backinfo SET token = null,status = 0 WHERE id IN(' +
         'SELECT id FROM (SELECT id FROM backinfo WHERE token = "' + token + '") AS temTable);';
         connection.query(sql,function(err,result){
           if(err){
