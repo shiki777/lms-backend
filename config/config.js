@@ -5,10 +5,10 @@ const config = {
     },
     /*mysql访问*/
     db_mysql : {
-        			host     : 'localhost',
+        			host     : '192.168.5.226',
         			port     : '3306',
-        			user     : 'root',
-        			password : '',
+        			user     : 'lms',
+        			password : 'lms123',
         			database : 'lms'
     		    }
 }
