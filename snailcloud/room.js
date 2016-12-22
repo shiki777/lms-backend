@@ -1,9 +1,8 @@
-var express = require('express');
-var router = express.Router();
 var q = require('q');
 var mysql = require('mysql');
 var config = require('../config/config');
-var pool = mysql.createPool(config.db_mysql);
+var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
+var api = require('./api');
 
 function login(name,pwd){
   var defer = q.defer();
@@ -14,11 +13,12 @@ function login(name,pwd){
   			console.log(err);
   			defer.reject(err);
       }
-  		else{
+  		else{//pool.escape用于防SQL注入
   			console.log('connected as id ' + connection.threadId);
   			//查找用户信息
-        var sql = 'SELECT id FROM user WHERE name = "' + name +
-                    '" AND pwd = "' + pwd + '";';
+        var sql = 'SELECT id FROM user WHERE name = ' + pool.escape(name) +
+                    ' AND pwd = ' + pool.escape(pwd) + ';';
+        //console.log(sql);
   			connection.query(sql, function(err, rows, fields) {
   			  if (err) {
   					console.log(err);
@@ -34,8 +34,9 @@ function login(name,pwd){
           else {
             var token = Math.round(Math.random() * 1000000000000);
             token = token.toString() + '-' + rows[0].id.toString();
-            var setSql = 'INSERT INTO backinfo(id,token,status) VALUES("' + rows[0].id + '","' + token + '","1") ' +
+            var setSql = 'INSERT INTO backinfo(id,token,status) VALUES("' + rows[0].id + '",' + pool.escape(token) + ',"1") ' +
                           'ON DUPLICATE KEY UPDATE token=VALUES(token),status=VALUES(status);';
+            //console.log(setSql);
             connection.query(setSql,function(err,result){
               if(err){
                 console.log(err);
@@ -68,7 +69,8 @@ function logout(token){
         console.log('connected as id ' + connection.threadId);
   			//更改登录用户信息
         var sql = 'UPDATE backinfo SET token = null,status = 0 WHERE id IN(' +
-        'SELECT id FROM (SELECT id FROM backinfo WHERE token = "' + token + '") AS temTable);';
+        'SELECT id FROM (SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ') AS temTable);';
+        //console.log(sql);
         connection.query(sql,function(err,result){
           if(err){
             console.log(err);
@@ -101,7 +103,8 @@ function geturl(token){
       else {
         console.log('connected as id ' + connection.threadId);
   			//匹配该用户是否已经登录是否有权限
-        var sql = 'SELECT id FROM backinfo WHERE token = "' + token + '" AND status = 1;';
+        var sql = 'SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ' AND status = 1;';
+        //console.log(sql);
         connection.query(sql, function(err, rows, fields) {
           if(err){
             console.log(err);
@@ -113,7 +116,9 @@ function geturl(token){
           else {
             //获取该用户为主播所在房间的推流地址
             //后续是从数据库中获取，目前方便从接口获取或者直接给一个固定的地址
-            defer.resolve('rtmp://push.woniucloud.com/snail/abcdefgh');
+            var pushurl = api.getRoomPushUrl('rtmp://push.snail.woniucloud.com:1937/push1/mi1t9sta');
+            console.log(pushurl);
+            defer.resolve(pushurl);
           }
           //释放连接,pool目前可以用end替代release释放，后续版本则会遗弃这种做法，所以建议用release
   				connection.release();
