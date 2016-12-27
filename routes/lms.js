@@ -142,6 +142,132 @@ router.post('/channel/add',function(req,res){
   });
 });
 
+router.delete('/channel/del',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(400).send({code:400,msg:'channel-del failed for no id.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == 1){//未登录或权限不够则不能删除频道
+    return res.status(400).send({code:400,msg:'channel-del failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'DELETE FROM channel WHERE id = ' + pool.escape(req.query.id) + ';';
+      connection.query(sql, function(err, result) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else {//result.affectedRows == 1
+          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'have no this channel'});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.post('/channel/update',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(400).send({code:400,msg:'channel-update failed for no id.'});}
+  if(!req.body){return res.status(400).send({code:400,msg:'channel-update failed for no body.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == 1){//未登录或权限不够则不能修改频道
+    return res.status(400).send({code:400,msg:'channel-update failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
+      + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy) + ',thumb = ' + pool.escape(req.body.thumb)
+      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + ';';
+      connection.query(sql, function(err, result) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else if(result.affectedRows != 1){
+          res.status(400).send({code:400,msg:'update channel failed that result.affectedRows != 1'});
+        }
+        else {
+          res.status(200).send({code:0,msg:"update channel success."});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.get('/channel/get',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(400).send({code:400,msg:'channel-get failed for no id.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == 1){//未登录或权限不够则不能获取频道
+    return res.status(400).send({code:400,msg:'channel-get failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'SELECT * FROM channel WHERE id = ' + pool.escape(req.query.id) + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else if(rows.length != 1){
+          res.status(400).send({code:400,msg:'channel-get failed for not have this channel.'});
+        }
+        else {
+          res.status(200).send({code:0,msg:'channel-get success.',data:rows[0]});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.get('/channel/list',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  var user = req.session.user;
+  if(user == null || user.permission == 1){//未登录或权限不够则不能获取频道列表
+    return res.status(400).send({code:400,msg:'channel-list failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道
+      var condition = (user.permission == 4) ? '' : (' WHERE companyId = ' + user.companyId);
+      var sql = 'SELECT id,name,thumb FROM channel' + condition + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else {
+          res.status(200).send({code:0,msg:'channel-list success.',data:rows});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
 //1,云平台申请推流及播放地址并写入数据库 2，按一定命名规则向用户系统注册用户 3，通知礼物系统该房间信息
 //超级管理员也可以开通房间，此时会将房间所属的公司信息带过来，而公司管理员开通则直接使用该管理员公司信息
 router.post('/room/add',function(req,res){
