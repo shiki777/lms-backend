@@ -4,8 +4,17 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 var app = express();
+app.use(session({
+  secret: 'secret',
+  cookie:{
+    maxAge: 1000*60*60*24*7
+  },
+  resave:false,
+  saveUninitialized: true
+}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -20,10 +29,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 var gmsrouter = require('./routes/gms');
-var pushurl = require('./routes/pushurl');
+var lms = require('./routes/lms');
 
 app.use('/gms', gmsrouter);
-app.use('/lms',pushurl);
+app.use('/lms',lms);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
