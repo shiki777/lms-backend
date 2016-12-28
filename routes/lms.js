@@ -102,6 +102,9 @@ router.post('/admin/register',function(req,res){//私用接口，用以注册超
   });
 });
 
+/*需要考虑一个问题，不论是频道的操作还是房间的操作，对用户都有鉴权需求，特别是在删除、修改、获取上面，
+普通用户没有创建的权限较为容易处理，而在删、修、查上面，超级管理员能够操作所有对象，公司管理员则只能
+操作该公司所有的对象，而公司普通用户则只能操作自己所对应的对象，这个要注意删、修、查的处理逻辑*/
 router.post('/channel/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
@@ -377,6 +380,136 @@ router.post('/room/add',function(req,res){
         console.log(e);
         res.status(400).send({code:400,msg:'room-add failed for getRoomStreams wrong.'});
     })
+});
+
+router.delete('/room/del',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(400).send({code:400,msg:'room-del failed for no id.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除房间
+    return res.status(400).send({code:400,msg:'room-del failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + ';';
+      connection.query(sql, function(err, result) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else {//result.affectedRows == 1
+          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'room-del success.' : 'not exist this room'});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.post('/room/update',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(400).send({code:400,msg:'room-update failed for no id.'});}
+  if(!req.body){return res.status(400).send({code:400,msg:'room-update failed for no body.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改房间
+    return res.status(400).send({code:400,msg:'room-update failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
+      + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
+      + ',thumb = ' + pool.escape(req.body.thumb) + ',desc = ' + pool.escape(req.body.desc)
+      + ',charge = ' + pool.escape(req.body.charge) + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy)
+      + ',dependencyChange = ' + pool.escape(req.body.dependencyChange)
+      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + ';';
+      connection.query(sql, function(err, result) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else if(result.affectedRows != 1){
+          res.status(400).send({code:400,msg:'update room failed that result.affectedRows != 1'});
+        }
+        else {
+          res.status(200).send({code:0,msg:"update room success."});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.get('/room/get',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(400).send({code:400,msg:'room-get failed for no id.'});}
+  var user = req.session.user;
+  if(user == null){//未登录则不能获取房间
+    return res.status(400).send({code:400,msg:'room-get failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'SELECT name,channelId,living,onlineRatio,thumb,desc,charge,dependencyChange,order,chargeStrategy FROM room WHERE id = '
+      + pool.escape(req.query.id) + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else if(rows.length != 1){
+          res.status(400).send({code:400,msg:'room-get failed for not exist this room.'});
+        }
+        else {
+          res.status(200).send({code:0,msg:'room-get success.',data:rows[0]});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.get('/room/list',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取房间列表
+    return res.status(400).send({code:400,msg:'room-list failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      //超级用户可以获取所有房间，公司管理员只能获取该公司的房间，此处也可以以频道id为查询条件进行频道对应的房间查询
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + user.companyId);
+      var sql = 'SELECT id,name,thumb FROM room' + condition + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else {
+          res.status(200).send({code:0,msg:'room-list success.',data:rows});
+        }
+        connection.release();
+      });
+    }
+  });
 });
 
 function register_room_user(number,cb){//根据number值来向用户系统注册相同数目的房间用户
