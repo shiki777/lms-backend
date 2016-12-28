@@ -102,9 +102,9 @@ router.post('/admin/register',function(req,res){//私用接口，用以注册超
   });
 });
 
-/*需要考虑一个问题，不论是频道的操作还是房间的操作，对用户都有鉴权需求，特别是在删除、修改、获取上面，
-普通用户没有创建的权限较为容易处理，而在删、修、查上面，超级管理员能够操作所有对象，公司管理员则只能
-操作该公司所有的对象，而公司普通用户则只能操作自己所对应的对象，这个要注意删、修、查的处理逻辑*/
+/*需要考虑一个问题，不论是频道的操作还是房间的操作，对用户都有鉴权需求，特别是在删除、修改、查询上面，
+普通用户没有创建的权限较为容易处理，而在删、改、查上面，超级管理员能够操作所有对象，公司管理员则只能
+操作该公司所有的对象，而公司普通用户则只能操作自己所对应的对象，这个要注意删、改、查的处理逻辑*/
 router.post('/channel/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
@@ -164,14 +164,17 @@ router.delete('/channel/del',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'DELETE FROM channel WHERE id = ' + pool.escape(req.query.id) + ';';
+      //超级管理员可以删除任何频道，公司管理员只能删除该公司的频道
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
+      (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
+      var sql = 'DELETE FROM channel WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
         }
         else {//result.affectedRows == 1
-          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel'});
+          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
         }
         connection.release();
       });
@@ -194,9 +197,12 @@ router.post('/channel/update',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
+      //超级管理员可以修改任何频道，公司管理员只能修改该公司的频道
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
+      (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
       var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
       + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy) + ',thumb = ' + pool.escape(req.body.thumb)
-      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + ';';
+      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
@@ -228,14 +234,17 @@ router.get('/channel/get',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'SELECT * FROM channel WHERE id = ' + pool.escape(req.query.id) + ';';
+      //超级管理员可以获取任何频道，公司管理员只能获取该公司的频道
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
+      (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
+      var sql = 'SELECT * FROM channel WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
         }
         else if(rows.length != 1){
-          res.status(400).send({code:400,msg:'channel-get failed for not exist this channel.'});
+          res.status(400).send({code:400,msg:'channel-get failed for not exist this channel or have no right.'});
         }
         else {
           res.status(200).send({code:0,msg:'channel-get success.',data:rows[0]});
