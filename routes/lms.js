@@ -20,7 +20,7 @@ router.post('/login',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'SELECT uid,name,permission,companyId FROM user WHERE name = ' + pool.escape(name) +
+      var sql = 'SELECT * FROM user WHERE name = ' + pool.escape(name) +
                   ' AND pwd = ' + pool.escape(pwd) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
@@ -362,7 +362,7 @@ router.post('/room/add',function(req,res){
                       for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
                         ru_values += '(' + room_insert_id + ',' + (user_insert_startId + i) + ((i == (userlist.length - 1)) ? ');' : '),');
                       }
-                      var ru_sql = 'INSERT INTO room_user(roomid,userid)' + ru_values;
+                      var ru_sql = 'INSERT INTO room_user(roomId,userId)' + ru_values;
                       connection.query(ru_sql, function(err, result) {//insert room_user
                         if(err){
                           console.log(err);
@@ -405,14 +405,17 @@ router.delete('/room/del',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + ';';
+      //超级管理员可以删除任何房间，公司管理员只能删除该公司的房间
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
+      (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
+      var sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
         }
         else {//result.affectedRows == 1
-          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'room-del success.' : 'not exist this room'});
+          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
         }
         connection.release();
       });
@@ -425,7 +428,7 @@ router.post('/room/update',function(req,res){
   if(!req.query.id){return res.status(400).send({code:400,msg:'room-update failed for no id.'});}
   if(!req.body){return res.status(400).send({code:400,msg:'room-update failed for no body.'});}
   var user = req.session.user;
-  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改房间
+  if(user == null){//未登录则不能修改房间
     return res.status(400).send({code:400,msg:'room-update failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
@@ -435,12 +438,16 @@ router.post('/room/update',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
+      //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
+      (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)') :
+      (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       var sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',desc = ' + pool.escape(req.body.desc)
       + ',charge = ' + pool.escape(req.body.charge) + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy)
       + ',dependencyChange = ' + pool.escape(req.body.dependencyChange)
-      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + ';';
+      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
@@ -472,15 +479,19 @@ router.get('/room/get',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
+      //超级管理员可以获取任何房间信息，公司管理员只能获取该公司所有的房间信息，而公司普通用户只能获取该用户所对应的房间信息
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
+      (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)') :
+      (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       var sql = 'SELECT name,channelId,living,onlineRatio,thumb,desc,charge,dependencyChange,order,chargeStrategy FROM room WHERE id = '
-      + pool.escape(req.query.id) + ';';
+      + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
         }
         else if(rows.length != 1){
-          res.status(400).send({code:400,msg:'room-get failed for not exist this room.'});
+          res.status(400).send({code:400,msg:'room-get failed for not exist this room or have no right.'});
         }
         else {
           res.status(200).send({code:0,msg:'room-get success.',data:rows[0]});
@@ -494,7 +505,7 @@ router.get('/room/get',function(req,res){
 router.get('/room/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var user = req.session.user;
-  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取房间列表
+  if(user == null){//未登录则不能获取房间列表
     return res.status(400).send({code:400,msg:'room-list failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
@@ -504,8 +515,10 @@ router.get('/room/list',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      //超级用户可以获取所有房间，公司管理员只能获取该公司的房间，此处也可以以频道id为查询条件进行频道对应的房间查询
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + user.companyId);
+      //此处可以根据房间所属的频道id为查询条件进行频道对应的房间查询，也可以公司为维度，目前暂以公司维度
+      //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
+      (' WHERE companyId = ' + user.companyId) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       var sql = 'SELECT id,name,thumb FROM room' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
