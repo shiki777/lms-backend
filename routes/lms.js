@@ -4,6 +4,9 @@ var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
+var PER_COMPANY_NOMAL_USER = 0x00000001,
+    PER_COMPANY_ADMIN_USER = 0x00000002,
+    PER_SUPER_ADMIN_USER = 0x00000004;
 
 router.post('/login',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
@@ -105,15 +108,15 @@ router.post('/channel/add',function(req,res){
     return res.status(400).send({code:400,msg:'channel-add failed for no body.'});
   }
   var user = req.session.user;
-  if(user == null || user.permission == 1){//未登录或权限不够则不能创建频道
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能创建频道
     return res.status(400).send({code:400,msg:'channel-add failed for no login or have no right.'});
   }
   var companyId = null;
-  if(user.permission == 2){//公司管理员
+  if(user.permission == PER_COMPANY_ADMIN_USER){//公司管理员
     companyId = user.companyId;
   }
-  else if(user.permission == 4){//超级管理员
-    companyId = req.body.companyId;//或者是用户名称，然后由用户名称查询用户ID
+  else if(user.permission == PER_SUPER_ADMIN_USER){//超级管理员
+    companyId = req.body.companyId;//或者是公司名称，然后由公司名称查询公司ID
   }
   pool.getConnection(function(err,connection){
     if(err){
@@ -142,11 +145,13 @@ router.post('/channel/add',function(req,res){
   });
 });
 
+/*因为存在联表关系，当某记录为另外表中某记录的外键则删除会有不同的处理策略，如拒绝删除、所有依赖部分一同删除等
+所以在处理每个记录(包括其他表中的记录)的删除操作时都要考虑联表问题，包括更新策略，这些要在建表时确定策略*/
 router.delete('/channel/del',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(400).send({code:400,msg:'channel-del failed for no id.'});}
   var user = req.session.user;
-  if(user == null || user.permission == 1){//未登录或权限不够则不能删除频道
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除频道
     return res.status(400).send({code:400,msg:'channel-del failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
@@ -163,7 +168,7 @@ router.delete('/channel/del',function(req,res){
           res.status(400).send({code:400,msg:err.message});
         }
         else {//result.affectedRows == 1
-          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'have no this channel'});
+          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel'});
         }
         connection.release();
       });
@@ -176,7 +181,7 @@ router.post('/channel/update',function(req,res){
   if(!req.query.id){return res.status(400).send({code:400,msg:'channel-update failed for no id.'});}
   if(!req.body){return res.status(400).send({code:400,msg:'channel-update failed for no body.'});}
   var user = req.session.user;
-  if(user == null || user.permission == 1){//未登录或权限不够则不能修改频道
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改频道
     return res.status(400).send({code:400,msg:'channel-update failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
@@ -210,7 +215,7 @@ router.get('/channel/get',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(400).send({code:400,msg:'channel-get failed for no id.'});}
   var user = req.session.user;
-  if(user == null || user.permission == 1){//未登录或权限不够则不能获取频道
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道
     return res.status(400).send({code:400,msg:'channel-get failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
@@ -227,7 +232,7 @@ router.get('/channel/get',function(req,res){
           res.status(400).send({code:400,msg:err.message});
         }
         else if(rows.length != 1){
-          res.status(400).send({code:400,msg:'channel-get failed for not have this channel.'});
+          res.status(400).send({code:400,msg:'channel-get failed for not exist this channel.'});
         }
         else {
           res.status(200).send({code:0,msg:'channel-get success.',data:rows[0]});
@@ -241,7 +246,7 @@ router.get('/channel/get',function(req,res){
 router.get('/channel/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var user = req.session.user;
-  if(user == null || user.permission == 1){//未登录或权限不够则不能获取频道列表
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
     return res.status(400).send({code:400,msg:'channel-list failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
@@ -251,8 +256,8 @@ router.get('/channel/list',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道
-      var condition = (user.permission == 4) ? '' : (' WHERE companyId = ' + user.companyId);
+      //超级用户可以获取所有频道，公司管理员只能获取该公司的频道
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + user.companyId);
       var sql = 'SELECT id,name,thumb FROM channel' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
@@ -276,47 +281,96 @@ router.post('/room/add',function(req,res){
     return res.status(400).send({code:400,msg:'room-add failed for no body.'});
   }
   var user = req.session.user;
-  if(user == null || user.permission == 1){//未登录或权限不够则不能开通房间
-    return res.status(400).send({code:400,msg:'room-add failed for no login or have no right.'});
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER
+  || req.body.userNum <= 0){//未登录或权限不够或没有房间用户则不能开通房间
+    return res.status(400).send({code:400,msg:'room-add failed for no login or have no right or no user.'});
   }
   var companyId = null;
-  if(user.permission == 2){//公司管理员
+  if(user.permission == PER_COMPANY_ADMIN_USER){//公司管理员
     companyId = user.companyId;
   }
-  else if(user.permission == 4){//超级管理员
-    companyId = req.body.companyId;//或者是用户名称，然后由用户名称查询用户ID
+  else if(user.permission == PER_SUPER_ADMIN_USER){//超级管理员
+    companyId = req.body.companyId;//或者是公司名称，然后由公司名称查询公司ID
   }
   api.getRoomStreams()
     .then(function(roomUrl) {
-        var name = req.body.name + '_host';
-        var pwd = 'pwd123';
-        //注册
-        /*对接实现*/
-        //用户及房间入库
-        pool.getConnection(function(err,connection){
-          if(err){
-            console.log(err);
-            res.status(400).send({code:400,msg:err.message});
-          }
-          else {
-            console.log('connected as id ' + connection.threadId);
-            var user_sql = 'INSERT INTO user(uid,name,pwd,permission,companyId) VALUES(' + pool.escape('_' + name) + ','
-            + pool.escape(name) + ',' + pool.escape(pwd) + ',1,' + pool.escape(companyId) + ');';
-            connection.query(user_sql, function(err, result) {
-              if(err){
-                console.log(err);
-                res.status(400).send({code:400,msg:err.message});
-              }
-              else if(result.affectedRows != 1){
-                res.status(400).send({code:400,msg:'insert user result.affectedRows != 1'});
-              }
-              else {
-                var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,host,living,onlineRatio,thumb,desc,charge,chargeStrategy,dependencyChange,order) VALUES('
-                + pool.escape(name) + ',' + pool.escape(pwd) + ',1,' + pool.escape(companyId) + ');';
-              }
-              connection.release();
-            });
-          }
+        /*向用户中心注册userNum个房间用户*/
+        register_room_user(req.body.userNum,function(userlist){
+          if(userlist == null){return res.status(400).send({code:400,msg:'room-add failed for register_room_user wrong.'});}
+          //用户及房间入库
+          pool.getConnection(function(err,connection){
+            if(err){
+              console.log(err);
+              res.status(400).send({code:400,msg:err.message});
+            }
+            else {
+              console.log('connected as id ' + connection.threadId);
+              var room_insert_id = null;
+              var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
+              'desc,charge,chargeStrategy,dependencyChange,order,tag) VALUES(' + pool.escape(req.body.name) + ',' +
+              pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
+              pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
+              pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
+              pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy) + ',' + pool.escape(req.body.dependencyChange) + ',' +
+              pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ');';
+              connection.query(room_sql, function(err, result) {//insert room
+                if(err){
+                  console.log(err);
+                  res.status(400).send({code:400,msg:err.message});
+                  connection.release();
+                }
+                else if(result.affectedRows != 1){
+                  res.status(400).send({code:400,msg:'insert room result.affectedRows != 1'});
+                  connection.release();
+                }
+                else {
+                  room_insert_id = result.insertId;
+                  var user_insert_startId = null;
+                  var user_values = ' VALUES';
+                  //可以一次插入多条记录，形式如：insert into table(……) values(……),(……),(……)……
+                  //在插入操作时可以据affectedRows知道影响的行的数目，而且通过insertId知道第一个记录生成的id
+                  for(var i = 0;i < userlist.length;i ++){//组建用户SQL语句
+                    user_values += '(' + pool.escape(userlist[i].uid) + ',' + pool.escape(userlist[i].name) + ',' +
+                    pool.escape(userlist[i].pwd) + ',1,' + pool.escape(companyId) + ((i == (userlist.length - 1)) ? ');' : '),');
+                  }
+                  var user_sql = 'INSERT INTO user(uid,name,pwd,permission,companyId)' + user_values;
+                  connection.query(user_sql, function(err, result) {//insert user
+                    if(err){
+                      console.log(err);
+                      res.status(400).send({code:400,msg:err.message});
+                      connection.release();
+                    }
+                    else if(result.affectedRows != userlist.length){
+                      res.status(400).send({code:400,msg:('insert user result.affectedRows != ' + userlist.length)});
+                      connection.release();
+                    }
+                    else {
+                      user_insert_startId = result.insertId;
+                      var ru_values = ' VALUES';
+                      for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
+                        ru_values += '(' + room_insert_id + ',' + (user_insert_startId + i) + ((i == (userlist.length - 1)) ? ');' : '),');
+                      }
+                      var ru_sql = 'INSERT INTO room_user(roomid,userid)' + ru_values;
+                      connection.query(ru_sql, function(err, result) {//insert room_user
+                        if(err){
+                          console.log(err);
+                          res.status(400).send({code:400,msg:err.message});
+                        }
+                        else if(result.affectedRows != userlist.length){
+                          res.status(400).send({code:400,msg:('insert room_user result.affectedRows != ' + userlist.length)});
+                        }
+                        else {//创建房间成功
+                          res.status(200).send({code:0,msg:'add room success.',data:{user:userlist}});
+                          //后续对接通知礼物系统
+                        }
+                        connection.release();
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          });
         });
     })
     .catch(function(e) {
@@ -324,5 +378,12 @@ router.post('/room/add',function(req,res){
         res.status(400).send({code:400,msg:'room-add failed for getRoomStreams wrong.'});
     })
 });
+
+function register_room_user(number,cb){//根据number值来向用户系统注册相同数目的房间用户
+  if(number <= 0){
+    return cb(null);
+  }
+  cb(null);
+}
 
 module.exports = router;
