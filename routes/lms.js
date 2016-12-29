@@ -285,6 +285,38 @@ router.get('/channel/list',function(req,res){
   });
 });
 
+router.get('/channel/roomlist',function(req,res){//根据频道channelId来获取房间列表
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(400).send({code:400,msg:'channel-roomlist get failed for no id.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登或权限不够录则不能根据频道来获取房间列表
+    return res.status(400).send({code:400,msg:'channel-roomlist get failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      //超级用户可以获取任何频道对应的房间列表，公司管理员只能获取该公司的频道对应的房间列表
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
+      (' AND channelId IN(SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ')');
+      var sql = 'SELECT id,name FROM room WHERE channelId = ' + pool.escape(req.query.id) + condition + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else {
+          res.status(200).send({code:0,msg:'channel-roomlist get success.',data:rows});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
 //1,云平台申请推流及播放地址并写入数据库 2，按一定命名规则向用户系统注册用户 3，通知礼物系统该房间信息
 //超级管理员也可以开通房间，此时会将房间所属的公司信息带过来，而公司管理员开通则直接使用该管理员公司信息
 router.post('/room/add',function(req,res){
@@ -515,7 +547,6 @@ router.get('/room/list',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      //此处可以根据房间所属的频道id为查询条件进行频道对应的房间查询，也可以公司为维度，目前暂以公司维度
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' WHERE companyId = ' + user.companyId) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
