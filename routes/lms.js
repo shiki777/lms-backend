@@ -128,7 +128,7 @@ router.post('/channel/add',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'INSERT INTO channel(name,companyId,charge,chargeStrategy,thumb,order) VALUES('
+      var sql = 'INSERT INTO channel(name,companyId,charge,chargeStrategy,thumb,channel.order) VALUES('
       + pool.escape(req.body.name) + ',' + pool.escape(companyId) + ',' + pool.escape(req.body.charge) + ','
       + pool.escape(req.body.chargeStrategy) + ',' + pool.escape(req.body.thumb) + ',' + pool.escape(req.body.order) + ');';
       connection.query(sql, function(err, result) {
@@ -202,7 +202,7 @@ router.post('/channel/update',function(req,res){
       (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
       var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
       + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy) + ',thumb = ' + pool.escape(req.body.thumb)
-      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      + ',channel.order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
@@ -351,7 +351,7 @@ router.post('/room/add',function(req,res){
               console.log('connected as id ' + connection.threadId);
               var room_insert_id = null;
               var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
-              'desc,charge,chargeStrategy,dependencyChange,order,tag) VALUES(' + pool.escape(req.body.name) + ',' +
+              'room.desc,charge,chargeStrategy,dependencyChange,room.order,tag) VALUES(' + pool.escape(req.body.name) + ',' +
               pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
               pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
               pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
@@ -476,10 +476,10 @@ router.post('/room/update',function(req,res){
       (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       var sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
-      + ',thumb = ' + pool.escape(req.body.thumb) + ',desc = ' + pool.escape(req.body.desc)
+      + ',thumb = ' + pool.escape(req.body.thumb) + ',room.desc = ' + pool.escape(req.body.desc)
       + ',charge = ' + pool.escape(req.body.charge) + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy)
       + ',dependencyChange = ' + pool.escape(req.body.dependencyChange)
-      + ',order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      + ',room.order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
@@ -515,7 +515,7 @@ router.get('/room/get',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)') :
       (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT name,channelId,living,onlineRatio,thumb,desc,charge,dependencyChange,order,chargeStrategy FROM room WHERE id = '
+      var sql = 'SELECT name,channelId,living,onlineRatio,thumb,room.desc,charge,dependencyChange,room.order,chargeStrategy FROM room WHERE id = '
       + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
