@@ -128,21 +128,48 @@ router.post('/channel/add',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'INSERT INTO channel(name,companyId,charge,chargeStrategy,thumb,channel.order) VALUES('
+      var sql = 'INSERT INTO channel(name,companyId,charge,price,thumb,channel.order) VALUES('
       + pool.escape(req.body.name) + ',' + pool.escape(companyId) + ',' + pool.escape(req.body.charge) + ','
-      + pool.escape(req.body.chargeStrategy) + ',' + pool.escape(req.body.thumb) + ',' + pool.escape(req.body.order) + ');';
-      connection.query(sql, function(err, result) {
+      + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.thumb) + ',' + pool.escape(req.body.order) + ');';
+      connection.query(sql, function(err, result) {//insert channel.
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
+          connection.release();
         }
         else if(result.affectedRows != 1){
           res.status(400).send({code:400,msg:'add channel result.affectedRows != 1'});
+          connection.release();
         }
         else {
-          res.status(200).send({code:0,msg:"add channel success."});
+          var discount = req.body.chargeStrategy.discount;
+          if(discount.length <= 0){
+            res.status(200).send({code:0,msg:"add channel success with no discount info."});
+            connection.release();
+          }
+          else {
+            var channel_insert_id = result.insertId;
+            var cd_values = ' VALUES';
+            for(var i = 0;i < discount.length;i ++){//组建房间-用户SQL语句
+              cd_values += '(' + channel_insert_id + ',' + discount[i].month + ',' + discount[i].discount
+              + ((i == (discount.length - 1)) ? ');' : '),');
+            }
+            var cd_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
+            connection.query(cd_sql, function(err, result) {//insert channel.
+              if(err){
+                console.log(err);
+                res.status(400).send({code:400,msg:err.message});
+              }
+              else if(result.affectedRows != discount.length){
+                res.status(400).send({code:400,msg:('insert channel_discount result.affectedRows != ' + discount.length)});
+              }
+              else {
+                res.status(200).send({code:0,msg:"add channel success."});
+              }
+              connection.release();
+            });
+          }
         }
-        connection.release();
       });
     }
   });
@@ -201,7 +228,7 @@ router.post('/channel/update',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
       (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
       var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
-      + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy) + ',thumb = ' + pool.escape(req.body.thumb)
+      + ',price = ' + pool.escape(req.body.chargeStrategy.price) + ',thumb = ' + pool.escape(req.body.thumb)
       + ',channel.order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
@@ -211,7 +238,7 @@ router.post('/channel/update',function(req,res){
         else if(result.affectedRows != 1){
           res.status(400).send({code:400,msg:'update channel failed that result.affectedRows != 1'});
         }
-        else {
+        else {//后续更改，要先删除channel_discount的记录再插入新记录
           res.status(200).send({code:0,msg:"update channel success."});
         }
         connection.release();
@@ -317,7 +344,7 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
   });
 });
 
-//1,云平台申请推流及播放地址并写入数据库 2，按一定命名规则向用户系统注册用户 3，通知礼物系统该房间信息
+//1,云平台申请推流及播放地址 2，写数据库操作 3，成功后通知礼物系统该房间信息
 //超级管理员也可以开通房间，此时会将房间所属的公司信息带过来，而公司管理员开通则直接使用该管理员公司信息
 router.post('/room/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
@@ -325,9 +352,8 @@ router.post('/room/add',function(req,res){
     return res.status(400).send({code:400,msg:'room-add failed for no body.'});
   }
   var user = req.session.user;
-  if(user == null || user.permission == PER_COMPANY_NOMAL_USER
-  || req.body.userNum <= 0){//未登录或权限不够或没有房间用户则不能开通房间
-    return res.status(400).send({code:400,msg:'room-add failed for no login or have no right or no user.'});
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够或没有房间用户则不能开通房间
+    return res.status(400).send({code:400,msg:'room-add failed for no login or have no right.'});
   }
   var companyId = null;
   if(user.permission == PER_COMPANY_ADMIN_USER){//公司管理员
@@ -338,83 +364,63 @@ router.post('/room/add',function(req,res){
   }
   api.getRoomStreams()
     .then(function(roomUrl) {
-        /*向用户中心注册userNum个房间用户*/
-        register_room_user(req.body.userNum,function(userlist){
-          if(userlist == null){return res.status(400).send({code:400,msg:'room-add failed for register_room_user wrong.'});}
-          //用户及房间入库
-          pool.getConnection(function(err,connection){
-            if(err){
-              console.log(err);
-              res.status(400).send({code:400,msg:err.message});
-            }
-            else {
-              console.log('connected as id ' + connection.threadId);
-              var room_insert_id = null;
-              var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
-              'room.desc,charge,chargeStrategy,dependencyChange,room.order,tag) VALUES(' + pool.escape(req.body.name) + ',' +
-              pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
-              pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
-              pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
-              pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy) + ',' + pool.escape(req.body.dependencyChange) + ',' +
-              pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ');';
-              connection.query(room_sql, function(err, result) {//insert room
-                if(err){
-                  console.log(err);
-                  res.status(400).send({code:400,msg:err.message});
-                  connection.release();
+        pool.getConnection(function(err,connection){
+          if(err){
+            console.log(err);
+            res.status(400).send({code:400,msg:err.message});
+          }
+          else {
+            console.log('connected as id ' + connection.threadId);
+            var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
+            'room.desc,charge,price,dependencyChange,room.order,tag,viewAngle,controlStyle,projectStyle,eyeStyle) VALUES(' +
+            pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
+            pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
+            pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
+            pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyChange) + ',' +
+            pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
+            pool.escape(req.body.controlStyle) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ');';
+            connection.query(room_sql, function(err, result) {//insert room
+              if(err){
+                console.log(err);
+                res.status(400).send({code:400,msg:err.message});
+                connection.release();
+              }
+              else if(result.affectedRows != 1){
+                res.status(400).send({code:400,msg:'insert room result.affectedRows != 1'});
+                connection.release();
+              }
+              else {
+                var userlist = req.body.userid;
+                if(userlist.length <= 0){
+                  res.status(200).send({code:0,msg:'add room success without user bind.'});
+                  //后续对接通知礼物系统
+                  return connection.release();
                 }
-                else if(result.affectedRows != 1){
-                  res.status(400).send({code:400,msg:'insert room result.affectedRows != 1'});
-                  connection.release();
+                var room_insert_id = result.insertId;
+                var ru_values = ' VALUES';
+                //可以一次插入多条记录，形式如：insert into table(……) values(……),(……),(……)……
+                //在插入操作时可以据affectedRows知道影响的行的数目，而且通过insertId知道第一个记录生成的id
+                for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
+                  ru_values += '(' + room_insert_id + ',' + userlist[i] + ((i == (userlist.length - 1)) ? ');' : '),');
                 }
-                else {
-                  room_insert_id = result.insertId;
-                  var user_insert_startId = null;
-                  var user_values = ' VALUES';
-                  //可以一次插入多条记录，形式如：insert into table(……) values(……),(……),(……)……
-                  //在插入操作时可以据affectedRows知道影响的行的数目，而且通过insertId知道第一个记录生成的id
-                  for(var i = 0;i < userlist.length;i ++){//组建用户SQL语句
-                    user_values += '(' + pool.escape(userlist[i].uid) + ',' + pool.escape(userlist[i].name) + ',' +
-                    pool.escape(userlist[i].pwd) + ',1,' + pool.escape(companyId) + ((i == (userlist.length - 1)) ? ');' : '),');
+                var ru_sql = 'INSERT INTO room_user(roomId,userId)' + ru_values;
+                connection.query(ru_sql, function(err, result) {//insert room_user
+                  if(err){
+                    console.log(err);
+                    res.status(400).send({code:400,msg:err.message});
                   }
-                  var user_sql = 'INSERT INTO user(uid,name,pwd,permission,companyId)' + user_values;
-                  connection.query(user_sql, function(err, result) {//insert user
-                    if(err){
-                      console.log(err);
-                      res.status(400).send({code:400,msg:err.message});
-                      connection.release();
-                    }
-                    else if(result.affectedRows != userlist.length){
-                      res.status(400).send({code:400,msg:('insert user result.affectedRows != ' + userlist.length)});
-                      connection.release();
-                    }
-                    else {
-                      user_insert_startId = result.insertId;
-                      var ru_values = ' VALUES';
-                      for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
-                        ru_values += '(' + room_insert_id + ',' + (user_insert_startId + i) + ((i == (userlist.length - 1)) ? ');' : '),');
-                      }
-                      var ru_sql = 'INSERT INTO room_user(roomId,userId)' + ru_values;
-                      connection.query(ru_sql, function(err, result) {//insert room_user
-                        if(err){
-                          console.log(err);
-                          res.status(400).send({code:400,msg:err.message});
-                        }
-                        else if(result.affectedRows != userlist.length){
-                          res.status(400).send({code:400,msg:('insert room_user result.affectedRows != ' + userlist.length)});
-                        }
-                        else {//创建房间成功
-                          res.status(200).send({code:0,msg:'add room success.',data:{user:userlist}});
-                          //后续对接通知礼物系统
-                        }
-                        connection.release();
-                      });
-                    }
-                  });
-                }
-              });
-            }
-          });
+                  else if(result.affectedRows != userlist.length){
+                    res.status(400).send({code:400,msg:('insert room_user result.affectedRows != ' + userlist.length)});
+                  }
+                  else {//创建房间成功
+                    res.status(200).send({code:0,msg:'add room success.'});
+                    //后续对接通知礼物系统
+                  }
+                  connection.release();
+                });
+              }
+            });
+          }
         });
     })
     .catch(function(e) {
@@ -477,7 +483,7 @@ router.post('/room/update',function(req,res){
       var sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',room.desc = ' + pool.escape(req.body.desc)
-      + ',charge = ' + pool.escape(req.body.charge) + ',chargeStrategy = ' + pool.escape(req.body.chargeStrategy)
+      + ',charge = ' + pool.escape(req.body.charge) + ',price = ' + pool.escape(req.body.chargeStrategy.price)
       + ',dependencyChange = ' + pool.escape(req.body.dependencyChange)
       + ',room.order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
@@ -515,7 +521,7 @@ router.get('/room/get',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)') :
       (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT name,channelId,living,onlineRatio,thumb,room.desc,charge,dependencyChange,room.order,chargeStrategy FROM room WHERE id = '
+      var sql = 'SELECT name,channelId,living,onlineRatio,thumb,room.desc,charge,dependencyChange,room.order,price FROM room WHERE id = '
       + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
@@ -564,12 +570,5 @@ router.get('/room/list',function(req,res){
     }
   });
 });
-
-function register_room_user(number,cb){//根据number值来向用户系统注册相同数目的房间用户
-  if(number <= 0){
-    return cb(null);
-  }
-  cb(null);
-}
 
 module.exports = router;
