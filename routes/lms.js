@@ -594,6 +594,8 @@ router.get('/room/get',function(req,res){
 
 router.get('/room/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:400,msg:'room-get failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:400,msg:'room-get failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间列表
     return res.status(400).send({code:400,msg:'room-list failed for no login.'});
@@ -608,14 +610,15 @@ router.get('/room/list',function(req,res){
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT id,name,thumb FROM room' + condition + ';';
+      var sql = 'SELECT * FROM (SELECT name,id,thumb,living,curUserName AS user FROM room' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(req.query.pageSize) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'room-list success.',data:rows});
+          res.status(200).send({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
         }
         connection.release();
       });
