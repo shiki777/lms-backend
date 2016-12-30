@@ -153,7 +153,7 @@ router.post('/channel/add',function(req,res){
             var channel_insert_id = result.insertId;
             var cd_values = ' VALUES';
             for(var i = 0;i < discount.length;i ++){//组建频道-折扣SQL语句
-              cd_values += '(' + channel_insert_id + ',' + discount[i].month + ',' + discount[i].discount
+              cd_values += '(' + channel_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
               + ((i == (discount.length - 1)) ? ');' : '),');
             }
             var cd_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
@@ -298,7 +298,7 @@ router.get('/channel/list',function(req,res){
     else {
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有频道，公司管理员只能获取该公司的频道
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + user.companyId);
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       var sql = 'SELECT id,name,thumb FROM channel' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
@@ -398,10 +398,10 @@ router.post('/room/add',function(req,res){
                 var ru_values = ' VALUES';
                 var rd_values = ' VALUES';
                 for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
-                  ru_values += '(' + room_insert_id + ',' + userlist[i] + ((i == (userlist.length - 1)) ? ');' : '),');
+                  ru_values += '(' + room_insert_id + ',' + pool.escape(userlist[i]) + ((i == (userlist.length - 1)) ? ');' : '),');
                 }
                 for(var i = 0;i < discount.length;i ++){//组建房间-折扣SQL语句
-                  rd_values += '(' + room_insert_id + ',' + discount[i].month + ',' + discount[i].discount
+                  rd_values += '(' + room_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
                   + ((i == (discount.length - 1)) ? ');' : '),');
                 }
                 var ru_sql = 'INSERT INTO room_user(roomId,userId)' + ru_values;
@@ -505,10 +505,10 @@ router.post('/room/update',function(req,res){
           var discount = req.body.chargeStrategy.discount;
           var rd_values = ' VALUES';
           for(var i = 0;i < discount.length;i ++){//组建房间-折扣SQL语句
-            rd_values += '(' + req.query.id + ',' + discount[i].month + ',' + discount[i].discount
-            + ((i == (discount.length - 1)) ? ');' : '),');
+            rd_values += '(' + pool.escape(req.query.id) + ',' + pool.escape(discount[i].month) + ','
+            + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
           }
-          var d_sql = 'DELETE FROM room_discount WHERE roomId = ' + req.query.id + ';';
+          var d_sql = 'DELETE FROM room_discount WHERE roomId = ' + pool.escape(req.query.id) + ';';
           var i_sql = 'INSERT INTO room_discount(roomId,amount,discount)' + rd_values;
           connection.query(d_sql + i_sql, function(err, result) {//insert room_user、room_discount.
             if(err){
@@ -534,7 +534,7 @@ router.get('/room/get',function(req,res){
   if(!req.query.id){return res.status(400).send({code:400,msg:'room-get failed for no id.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间
-    return res.status(400).send({code:400,msg:'room-get failed for no login or have no right.'});
+    return res.status(400).send({code:400,msg:'room-get failed for no login.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
@@ -547,20 +547,46 @@ router.get('/room/get',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)') :
       (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT name,channelId,living,onlineRatio,thumb,room.desc,charge,dependencyChange,room.order,price FROM room WHERE id = '
+      var sql = 'SELECT name,channelId,tag,living,onlineRatio,thumb,room.desc,u3dbg,charge,dependencyChange,' +
+      'room.order,price,viewAngle,controlModel,projectStyle,eyeStyle FROM room WHERE id = '
       + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
+          connection.release();
         }
         else if(rows.length != 1){
           res.status(400).send({code:400,msg:'room-get failed for not exist this room or have no right.'});
+          connection.release();
         }
         else {
-          res.status(200).send({code:0,msg:'room-get success.',data:rows[0]});
+          var ru_sql = 'SELECT name,id FROM user WHERE id IN(SELECT userId FROM room_user WHERE roomId = ' + pool.escape(req.query.id) + ');';
+          var rd_sql = 'SELECT amount,discount FROM room_discount WHERE roomId = ' + pool.escape(req.query.id) + ';';
+          connection.query(ru_sql + rd_sql, function(err, result) {
+            if(err){
+              console.log(err);
+              res.status(400).send({code:400,msg:err.message});
+            }
+            else {
+              var user_arr = new Array();
+              var discount_arr = new Array();
+              for(var i = 0;i < result[0].length;i ++){
+                user_arr.push({name:result[0][i].name,id:result[0][i].id});
+              }
+              for(var i = 0;i < result[1].length;i ++){
+                discount_arr.push({month:result[1][i].amount,discount:result[1][i].discount});
+              }
+              rows[0].users = user_arr;
+              rows[0].chargeStrategy = new Object();
+              rows[0].chargeStrategy.price = rows[0].price;
+              rows[0].chargeStrategy.discount = discount_arr;
+              delete rows[0].price;
+              res.status(200).send({code:0,msg:'ok',data:rows[0]});
+            }
+            connection.release();
+          });
         }
-        connection.release();
       });
     }
   });
@@ -581,7 +607,7 @@ router.get('/room/list',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
-      (' WHERE companyId = ' + user.companyId) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
+      (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       var sql = 'SELECT id,name,thumb FROM room' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
