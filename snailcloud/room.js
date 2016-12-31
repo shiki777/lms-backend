@@ -68,8 +68,7 @@ function logout(token){
       else {
         console.log('connected as id ' + connection.threadId);
   			//更改登录用户信息
-        var sql = 'UPDATE backinfo SET token = null,status = 0 WHERE id IN(' +
-        'SELECT id FROM (SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ') AS temTable);';
+        var sql = 'UPDATE backinfo SET token = null,status = 0 WHERE token = ' + pool.escape(token) + ';';
         //console.log(sql);
         connection.query(sql,function(err,result){
           if(err){

@@ -193,8 +193,7 @@ router.delete('/channel/del',function(req,res){
     else {
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以删除任何频道，公司管理员只能删除该公司的频道
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
-      (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
       var sql = 'DELETE FROM channel WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
@@ -226,8 +225,7 @@ router.post('/channel/update',function(req,res){
     else {
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以修改任何频道，公司管理员只能修改该公司的频道
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
-      (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
       var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
       + ',price = ' + pool.escape(req.body.chargeStrategy.price) + ',icon = ' + pool.escape(req.body.icon)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
@@ -486,8 +484,7 @@ router.delete('/room/del',function(req,res){
     else {
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以删除任何房间，公司管理员只能删除该公司的房间
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
-      (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
       var sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
@@ -520,8 +517,7 @@ router.post('/room/update',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
-      (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)') :
-      (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
+      (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       var sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',u3dbg = ' + pool.escape(req.body.u3dbg) + ',room.desc = ' + pool.escape(req.body.desc)
@@ -584,11 +580,9 @@ router.get('/room/get',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以获取任何房间信息，公司管理员只能获取该公司所有的房间信息，而公司普通用户只能获取该用户所对应的房间信息
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
-      (' AND id IN(SELECT id FROM (SELECT id FROM room WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)') :
-      (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
+      (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       var sql = 'SELECT name,channelId,tag,living,onlineRatio,thumb,room.desc,u3dbg,charge,dependencyChange,' +
-      'room.order,price,viewAngle,controlModel,projectStyle,eyeStyle FROM room WHERE id = '
-      + pool.escape(req.query.id) + condition + ';';
+      'room.order,price,viewAngle,controlModel,projectStyle,eyeStyle FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
