@@ -130,9 +130,10 @@ router.post('/channel/add',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'INSERT INTO channel(name,companyId,charge,price,thumb,channel.order) VALUES('
+      var sql = 'INSERT INTO channel(name,companyId,charge,price,icon,thumb,channel.order,channel.desc) VALUES('
       + pool.escape(req.body.name) + ',' + pool.escape(companyId) + ',' + pool.escape(req.body.charge) + ','
-      + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.thumb) + ',' + pool.escape(req.body.order) + ');';
+      + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.icon) + ',' + pool.escape(req.body.thumb)
+      + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ');';
       connection.query(sql, function(err, result) {//insert channel.
         if(err){
           console.log(err);
@@ -147,30 +148,28 @@ router.post('/channel/add',function(req,res){
           var discount = req.body.chargeStrategy.discount;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
-            connection.release();
+            return connection.release();
           }
-          else {
-            var channel_insert_id = result.insertId;
-            var cd_values = ' VALUES';
-            for(var i = 0;i < discount.length;i ++){//组建频道-折扣SQL语句
-              cd_values += '(' + channel_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
-              + ((i == (discount.length - 1)) ? ');' : '),');
+          var channel_insert_id = result.insertId;
+          var cd_values = ' VALUES';
+          for(var i = 0;i < discount.length;i ++){//组建频道-折扣SQL语句
+            cd_values += '(' + channel_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
+            + ((i == (discount.length - 1)) ? ');' : '),');
+          }
+          var cd_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
+          connection.query(cd_sql, function(err, result) {//insert channel_discount.
+            if(err){
+              console.log(err);
+              res.status(400).send({code:400,msg:err.message});
             }
-            var cd_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
-            connection.query(cd_sql, function(err, result) {//insert channel.
-              if(err){
-                console.log(err);
-                res.status(400).send({code:400,msg:err.message});
-              }
-              else if(result.affectedRows != discount.length){
-                res.status(400).send({code:400,msg:('insert channel_discount result.affectedRows != ' + discount.length)});
-              }
-              else {
-                res.status(200).send({code:0,msg:"add channel success."});
-              }
-              connection.release();
-            });
-          }
+            else if(result.affectedRows != discount.length){
+              res.status(400).send({code:400,msg:('insert channel_discount result.affectedRows != ' + discount.length)});
+            }
+            else {
+              res.status(200).send({code:0,msg:"add channel success."});
+            }
+            connection.release();
+          });
         }
       });
     }
@@ -230,20 +229,42 @@ router.post('/channel/update',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
       (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
       var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
-      + ',price = ' + pool.escape(req.body.chargeStrategy.price) + ',thumb = ' + pool.escape(req.body.thumb)
-      + ',channel.order = ' + pool.escape(req.body.order) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      + ',price = ' + pool.escape(req.body.chargeStrategy.price) + ',icon = ' + pool.escape(req.body.icon)
+      + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
+      + ',channel.desc = ' + pool.escape(req.body.desc) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
+          connection.release();
         }
         else if(result.affectedRows != 1){
           res.status(400).send({code:400,msg:'update channel failed that result.affectedRows != 1'});
+          connection.release();
         }
-        else {//后续更改，要先删除channel_discount的记录再插入新记录
-          res.status(200).send({code:0,msg:"update channel success."});
+        else {//先删除channel_discount表中的关于channelId的旧记录，再在其中添加新的记录
+          var discount = req.body.chargeStrategy.discount;
+          var cd_values = ' VALUES';
+          for(var i = 0;i < discount.length;i ++){//组建频道-折扣SQL语句
+            cd_values += '(' + pool.escape(req.query.id) + ',' + pool.escape(discount[i].month) + ','
+            + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
+          }
+          var d_sql = 'DELETE FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
+          var i_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
+          connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
+            if(err){
+              console.log(err);
+              res.status(400).send({code:400,msg:err.message});
+            }
+            else if(result[1].affectedRows != discount.length){
+              res.status(400).send({code:400,msg:('insert channel_discount.affectedRows != ' + discount.length)});
+            }
+            else {
+              res.status(200).send({code:0,msg:"update channel success."});
+            }
+            connection.release();
+          });
         }
-        connection.release();
       });
     }
   });
@@ -264,19 +285,35 @@ router.get('/channel/get',function(req,res){
     else {
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以获取任何频道，公司管理员只能获取该公司的频道
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
-      (' AND id IN(SELECT id FROM (SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ') AS temTable)');
-      var sql = 'SELECT * FROM channel WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      connection.query(sql, function(err, rows, fields) {
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
+      var c_sql = 'SELECT * FROM channel WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      var cd_sql = 'SELECT amount,discount FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
+      connection.query(c_sql + cd_sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
         }
-        else if(rows.length != 1){
+        else if(result[0].length != 1){
           res.status(400).send({code:400,msg:'channel-get failed for not exist this channel or have no right.'});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-get success.',data:rows[0]});
+          var discount_arr = new Array();
+          for(var i = 0;i < result[1].length;i ++){
+            discount_arr.push({month:result[1][i].amount,discount:result[1][i].discount});
+          }
+          var data = {
+            name : result[0][0].name,
+            charge : result[0][0].charge,
+            icon : result[0][0].icon,
+            thumb : result[0][0].thumb,
+            order : result[0][0].order,
+            chargeStrategy : {
+              price : result[0][0].price,
+              discount : discount_arr
+            },
+            defaultRoom : null
+          };
+          res.status(200).send({code:0,msg:'channel-get success.',data:data});
         }
         connection.release();
       });
@@ -286,6 +323,8 @@ router.get('/channel/get',function(req,res){
 
 router.get('/channel/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:400,msg:'channel-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:400,msg:'channel-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
     return res.status(400).send({code:400,msg:'channel-list failed for no login or have no right.'});
@@ -297,16 +336,17 @@ router.get('/channel/list',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      //超级用户可以获取所有频道，公司管理员只能获取该公司的频道
+      //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
-      var sql = 'SELECT id,name,thumb FROM channel' + condition + ';';
+      var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(req.query.pageSize) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-list success.',data:rows});
+          res.status(200).send({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
         }
         connection.release();
       });
@@ -329,9 +369,8 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
     else {
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取任何频道对应的房间列表，公司管理员只能获取该公司的频道对应的房间列表
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' :
-      (' AND channelId IN(SELECT id FROM channel WHERE companyId = ' + pool.escape(user.companyId) + ')');
-      var sql = 'SELECT id,name FROM room WHERE channelId = ' + pool.escape(req.query.id) + condition + ';';
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
+      var sql = 'SELECT name,id FROM room WHERE channelId = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -510,7 +549,7 @@ router.post('/room/update',function(req,res){
           }
           var d_sql = 'DELETE FROM room_discount WHERE roomId = ' + pool.escape(req.query.id) + ';';
           var i_sql = 'INSERT INTO room_discount(roomId,amount,discount)' + rd_values;
-          connection.query(d_sql + i_sql, function(err, result) {//insert room_user、room_discount.
+          connection.query(d_sql + i_sql, function(err, result) {//delete room_discount then insert room_discount.
             if(err){
               console.log(err);
               res.status(400).send({code:400,msg:err.message});
@@ -594,8 +633,8 @@ router.get('/room/get',function(req,res){
 
 router.get('/room/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:400,msg:'room-get failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:400,msg:'room-get failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:400,msg:'room-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:400,msg:'room-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间列表
     return res.status(400).send({code:400,msg:'room-list failed for no login.'});
