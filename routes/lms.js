@@ -443,7 +443,6 @@ router.post('/room/add',function(req,res){
                 }
                 var ru_sql = 'INSERT INTO room_user(roomId,userId)' + ru_values;
                 var rd_sql = 'INSERT INTO room_discount(roomId,amount,discount)' + rd_values;
-
                 connection.query(ru_sql + rd_sql, function(err, result) {//insert room_user、room_discount.
                   if(err){
                     console.log(err);
@@ -581,45 +580,51 @@ router.get('/room/get',function(req,res){
       //超级管理员可以获取任何房间信息，公司管理员只能获取该公司所有的房间信息，而公司普通用户只能获取该用户所对应的房间信息
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT name,channelId,tag,living,onlineRatio,thumb,room.desc,u3dbg,charge,dependencyChange,' +
-      'room.order,price,viewAngle,controlModel,projectStyle,eyeStyle FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      connection.query(sql, function(err, rows, fields) {
+      var r_sql = 'SELECT * FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      var ru_sql = 'SELECT name,id FROM user WHERE id IN(SELECT userId FROM room_user WHERE roomId = ' + pool.escape(req.query.id) + ');';
+      var rd_sql = 'SELECT amount,discount FROM room_discount WHERE roomId = ' + pool.escape(req.query.id) + ';';
+      connection.query(r_sql + ru_sql +  rd_sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(400).send({code:400,msg:err.message});
-          connection.release();
         }
-        else if(rows.length != 1){
+        else if(result[0].length != 1){
           res.status(400).send({code:400,msg:'room-get failed for not exist this room or have no right.'});
-          connection.release();
         }
         else {
-          var ru_sql = 'SELECT name,id FROM user WHERE id IN(SELECT userId FROM room_user WHERE roomId = ' + pool.escape(req.query.id) + ');';
-          var rd_sql = 'SELECT amount,discount FROM room_discount WHERE roomId = ' + pool.escape(req.query.id) + ';';
-          connection.query(ru_sql + rd_sql, function(err, result) {
-            if(err){
-              console.log(err);
-              res.status(400).send({code:400,msg:err.message});
+          var user_arr = new Array();
+          var discount_arr = new Array();
+          for(var i = 0;i < result[1].length;i ++){
+            user_arr.push({name:result[1][i].name,id:result[1][i].id});
+          }
+          for(var i = 0;i < result[2].length;i ++){
+            discount_arr.push({month:result[2][i].amount,discount:result[2][i].discount});
+          }
+          var data = {
+            name : result[0][0].name,
+            channelId : result[0][0].channelId,
+            tag : result[0][0].tag,
+            living : result[0][0].living,
+            onlineRatio : result[0][0].onlineRatio,
+            users : user_arr,
+            thumb : result[0][0].thumb,
+            desc : result[0][0].desc,
+            u3dbg : result[0][0].u3dbg,
+            charge : result[0][0].charge,
+            dependencyChange : result[0][0].dependencyChange,
+            order : result[0][0].order,
+            viewAngle : result[0][0].viewAngle,
+            controlModel : result[0][0].controlModel,
+            projectStyle : result[0][0].projectStyle,
+            eyeStyle : result[0][0].eyeStyle,
+            chargeStrategy : {
+              price : result[0][0].price,
+              discount : discount_arr
             }
-            else {
-              var user_arr = new Array();
-              var discount_arr = new Array();
-              for(var i = 0;i < result[0].length;i ++){
-                user_arr.push({name:result[0][i].name,id:result[0][i].id});
-              }
-              for(var i = 0;i < result[1].length;i ++){
-                discount_arr.push({month:result[1][i].amount,discount:result[1][i].discount});
-              }
-              rows[0].users = user_arr;
-              rows[0].chargeStrategy = new Object();
-              rows[0].chargeStrategy.price = rows[0].price;
-              rows[0].chargeStrategy.discount = discount_arr;
-              delete rows[0].price;
-              res.status(200).send({code:0,msg:'ok',data:rows[0]});
-            }
-            connection.release();
-          });
+          };
+          res.status(200).send({code:0,msg:'room-get success.',data:data});
         }
+        connection.release();
       });
     }
   });
