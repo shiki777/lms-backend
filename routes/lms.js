@@ -16,7 +16,7 @@ router.post('/login',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(400).send({code:400,msg:err.message});
+      res.status(200).send({code:400,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -25,10 +25,10 @@ router.post('/login',function(req,res){
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(400).send({code:400,msg:err.message});
+          res.status(200).send({code:400,msg:err.message});
         }
         else if(rows.length != 1){
-          res.status(400).send({code:400,msg:'login failed for not exist this user or wrong pwd.'});
+          res.status(200).send({code:400,msg:'login failed for not exist this user or wrong pwd.'});
         }
         else {//登录成功
           req.session.user = rows[0];
@@ -47,7 +47,7 @@ router.post('/logout',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(400).send({code:400,msg:err.message});
+      res.status(200).send({code:400,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -55,10 +55,10 @@ router.post('/logout',function(req,res){
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(400).send({code:400,msg:err.message});
+          res.status(200).send({code:400,msg:err.message});
         }
         else if (rows.length != 1) {
-          res.status(400).send({code:400,msg:'logout failed for no exist this user.'});
+          res.status(200).send({code:400,msg:'logout failed for no exist this user.'});
         }
         else {
           req.session.user = null;
@@ -79,7 +79,7 @@ router.post('/admin/register',function(req,res){//用以注册超级用户或者
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(400).send({code:400,msg:err.message});
+      res.status(200).send({code:400,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -88,13 +88,13 @@ router.post('/admin/register',function(req,res){//用以注册超级用户或者
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(400).send({code:400,msg:err.message});
+          res.status(200).send({code:400,msg:err.message});
         }
         else if (result.affectedRows == 1) {
           res.status(200).send({code:0,msg:"register success."});
         }
         else {
-          res.status(400).send({code:400,msg:'register failed for insert wrong.'});
+          res.status(200).send({code:400,msg:'register failed for insert wrong.'});
         }
         connection.release();
       });
@@ -159,10 +159,10 @@ router.post('/channel/add',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'INSERT INTO channel(name,companyId,charge,price,icon,thumb,channel.order,channel.desc) VALUES('
+      var sql = 'INSERT INTO channel(name,companyId,charge,price,icon,thumb,channel.order,channel.desc,defaultRoom) VALUES('
       + pool.escape(req.body.name) + ',' + pool.escape(companyId) + ',' + pool.escape(req.body.charge) + ','
       + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.icon) + ',' + pool.escape(req.body.thumb)
-      + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ');';
+      + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ',' + pool.escape(req.body.defaultRoom) + ');';
       connection.query(sql, function(err, result) {//insert channel.
         if(err){
           console.log(err);
@@ -258,7 +258,8 @@ router.post('/channel/update',function(req,res){
       var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
       + ',price = ' + pool.escape(req.body.chargeStrategy.price) + ',icon = ' + pool.escape(req.body.icon)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
-      + ',channel.desc = ' + pool.escape(req.body.desc) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      + ',channel.desc = ' + pool.escape(req.body.desc) + ',defaultRoom = ' + pool.escape(req.body.defaultRoom)
+      + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
@@ -338,7 +339,7 @@ router.get('/channel/get',function(req,res){
               price : result[0][0].price,
               discount : discount_arr
             },
-            defaultRoom : null
+            defaultRoom : result[0][0].defaultRoom
           };
           res.status(200).send({code:0,msg:'channel-get success.',data:data});
         }
@@ -691,6 +692,50 @@ router.get('/room/list',function(req,res){
       });
     }
   });
+});
+
+
+router.options('/login', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+router.options('/logout', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+router.options('/admin/register', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+router.options('/channel/add', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+router.options('/channel/update', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+router.options('/room/add', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+router.options('/room/update', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
 });
 
 module.exports = router;
