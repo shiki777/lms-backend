@@ -70,7 +70,7 @@ router.post('/logout',function(req,res){
   });
 });
 
-router.post('/admin/register',function(req,res){//私用接口，用以注册超级用户或者公司管理员用户
+router.post('/admin/register',function(req,res){//用以注册超级用户或者公司管理员用户或者普通用户
   res.header("Access-Control-Allow-Origin", "*");
   var name = req.body ? req.body.username : null;
   var pwd = req.body ? req.body.pwd : null;
@@ -95,6 +95,35 @@ router.post('/admin/register',function(req,res){//私用接口，用以注册超
         }
         else {
           res.status(400).send({code:400,msg:'register failed for insert wrong.'});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.get('/user/list',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
+    return res.status(400).send({code:400,msg:'user-list failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(400).send({code:400,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
+      var sql = 'SELECT name FROM user' + condition + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(400).send({code:400,msg:err.message});
+        }
+        else {
+          res.status(200).send({code:0,msg:'get user list success.',list:rows});
         }
         connection.release();
       });
