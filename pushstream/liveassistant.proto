@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+option objc_class_prefix = "HLW";
+
+package liveassistant;
+
+service Communication {
+  rpc Login (LoginRequest) returns (LoginReply) {}
+
+  rpc Logout (LogoutRequest) returns (LogoutReply) {}
+
+  rpc ApplyPushURL(ApplyPushURLRequest) returns (ApplyPushURLReply) {}
+
+  rpc StartStream(StartStreamRequest) returns (StartStreamReply) {}
+
+  rpc StopStream(StopStreamRequest) returns (StopStreamReply) {}
+
+  rpc UserInfo(UserInfoRequest) returns (UserInfoReply) {}
+
+  rpc RoomInfo(RoomInfoRequest) returns (RoomInfoReply) {}
+
+  rpc ChatInfo(ChatInfoRequest) returns (ChatInfoReply) {}
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginReply {
+  int32 code = 1;
+  string message = 2;
+  string creds = 3;
+  string token = 4;
+}
+
+message ApplyPushURLReply {
+  int32 code = 1;
+  string message = 2;
+  string URL = 3;
+}
+
+message LogoutRequest {
+  string creds = 1;
+}
+
+message LogoutReply {
+  int32 code = 1;
+  string message = 2;
+}
+
+message ApplyPushURLRequest {
+  string creds = 1;
+}
+
+message StartStreamRequest {
+  string creds = 1;
+}
+
+message StartStreamReply {
+  int32 code = 1;
+  string message = 2;
+}
+
+message StopStreamRequest {
+  string creds = 1;
+}
+
+message StopStreamReply {
+  int32 code = 1;
+  string message = 2;
+}
+
+message UserInfoRequest {
+  string creds = 1;
+}
+
+message UserInfoReply {
+  int32 code = 1;
+  string message = 2;
+  string nickname = 3;
+  string head_icon = 4;
+}
+
+message RoomInfoRequest {
+  string creds = 1;
+}
+message RoomInfoReply {
+  int32 code = 1;
+  string message = 2;
+  int32 room_id = 3;
+  string room_name = 4;
+  string channel_name =5;
+  int32 ninki = 6;
+  int32 audience_count = 7;
+  int32 play_status = 8;
+}
+
+message ChatInfoRequest {
+  string creds = 1;
+}
+
+message ChatInfoReply {
+  int32 code = 1;
+  string message = 2;
+  int32 chat_id = 3;
+  string host = 4;
+  int32 port = 5;
+}
