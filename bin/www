@@ -12,7 +12,7 @@ var http = require('http');
  * Initialise log4js first, so we don't miss any log messages
  */
 var log4js = require('log4js');
-log4js.configure('./config/log4js.json');
+//log4js.configure('../config/log4js.json');
 
 /**
  * Get port from environment and store in Express.
@@ -94,3 +94,8 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+
+var pushstream_server = require('../pushstream/server');
+var pushserver = new pushstream_server();
+pushserver.start();

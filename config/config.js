@@ -9,16 +9,20 @@ var config = {
     port: '3306',
     user: 'lms',
     password: 'lms123',
-    database: 'lms',
-    multipleStatements: true
+    database: 'lms'
   },
-  push_stream_url:{
-    host:'127.0.0.1',
-    port:6969,
+  push_stream: {
+    host: '0.0.0.0',
+    port: 6969,
   },
   user_system:{
     host:'passport.readyvr.woniucloud.com',
     port:'80'
+  },
+  redis: {
+    host: '192.168.5.137',
+    port: 6379,
+    db_number: 8,
   }
 };
 
