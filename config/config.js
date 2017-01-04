@@ -11,10 +11,16 @@ var config = {
     password: 'lms123',
     database: 'lms'
   },
-  push_stream:{
-    host:'0.0.0.0',
-    port:6969,
+  push_stream: {
+    host: '0.0.0.0',
+    port: 6969,
   },
+  redis: {
+    host: '192.168.5.137',
+    port: 6379,
+    db_number: 8,
+  }
+
 };
 
 module.exports = config;
