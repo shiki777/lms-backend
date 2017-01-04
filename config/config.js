@@ -16,6 +16,10 @@ var config = {
     host:'127.0.0.1',
     port:6969,
   },
+  user_system:{
+    host:'passport.readyvr.woniucloud.com',
+    port:'80'
+  }
 };
 
 module.exports = config;
