@@ -31,7 +31,7 @@ router.post('/login',function(req,res){
               res.status(500).send({code:1,msg:err.message});
             }
             else if(rows.length != 1){
-              res.status(200).send({code:1,msg:'login failed for not exist this user or wrong pwd.'});
+              res.status(200).send({code:1,msg:'login failed for not exist this user.'});
             }
             else {//登录成功
               req.session.user = rows[0];
