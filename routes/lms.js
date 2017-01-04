@@ -4,6 +4,8 @@ var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
+var Users = require('../user/user');
+
 var PER_COMPANY_NOMAL_USER = 0x00000001,
     PER_COMPANY_ADMIN_USER = 0x00000002,
     PER_SUPER_ADMIN_USER = 0x00000004;
@@ -13,31 +15,36 @@ router.post('/login',function(req,res){
   var name = req.body ? req.body.username : null;
   var pwd = req.body ? req.body.pwd : null;
   if(!name || !pwd){return res.status(400).send({code:1,msg:"login failed for name or pwd == null."});}
-  pool.getConnection(function(err,connection){
-    if(err){
-      console.log(err);
-      res.status(500).send({code:1,msg:err.message});
-    }
-    else {
-      console.log('connected as id ' + connection.threadId);
-      var sql = 'SELECT * FROM user WHERE name = ' + pool.escape(name) +
-                  ' AND pwd = ' + pool.escape(pwd) + ';';
-      connection.query(sql, function(err, rows, fields) {
+  Users.authentication(name,pwd)
+    .then(function(resbody){
+      pool.getConnection(function(err,connection){
         if(err){
           console.log(err);
           res.status(500).send({code:1,msg:err.message});
         }
-        else if(rows.length != 1){
-          res.status(200).send({code:1,msg:'login failed for not exist this user or wrong pwd.'});
+        else {
+          console.log('connected as id ' + connection.threadId);
+          var sql = 'SELECT * FROM user WHERE name = ' + pool.escape(name) + ';';
+          connection.query(sql, function(err, rows, fields) {
+            if(err){
+              console.log(err);
+              res.status(500).send({code:1,msg:err.message});
+            }
+            else if(rows.length != 1){
+              res.status(200).send({code:1,msg:'login failed for not exist this user or wrong pwd.'});
+            }
+            else {//登录成功
+              req.session.user = rows[0];
+              res.status(200).send({code:0,msg:"login success."});
+            }
+            connection.release();
+          });
         }
-        else {//登录成功
-          req.session.user = rows[0];
-          res.status(200).send({code:0,msg:"login success."});
-        }
-        connection.release();
       });
-    }
-  });
+    })
+    .catch(function(errmsg){
+      res.status(200).send({code:1,msg:errmsg});
+    })
 });
 
 router.post('/logout',function(req,res){
@@ -70,36 +77,66 @@ router.post('/logout',function(req,res){
   });
 });
 
-router.post('/admin/register',function(req,res){//用以注册超级用户或者公司管理员用户或者普通用户
+router.post('/admin/register',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var name = req.body ? req.body.username : null;
   var pwd = req.body ? req.body.pwd : null;
   if(!name || !pwd){return res.status(400).send({code:1,msg:"register failed for name or pwd == null."});}
-  //向用户系统注册用户，后续对接用户系统，然后在数据库中存储该用户信息
-  pool.getConnection(function(err,connection){
-    if(err){
-      console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+  var permission = null;
+  var companyId = null;
+  if(req.body.isSuper == undefined && req.body.companyId == undefined ){//注册普通用户
+    var user = req.session.user;
+    if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能注册用户
+      return res.status(400).send({code:1,msg:'admin-register failed for no login or have no right.'});
+    }
+    permission = PER_COMPANY_NOMAL_USER;
+    companyId = user.companyId;
+  }
+  else {
+    if(req.body.companyId){//注册公司管理员
+      permission = PER_COMPANY_ADMIN_USER;
+      companyId = req.body.companyId;
+    }
+    else if(req.body.isSuper == 'true'){//超级管理员
+      permission = PER_SUPER_ADMIN_USER;
     }
     else {
-      console.log('connected as id ' + connection.threadId);
-      var sql = 'INSERT INTO user(uid,name,pwd,permission,companyId) VALUES(' + pool.escape('_' + name) + ','
-      + pool.escape(name) + ',' + pool.escape(pwd) + ',4,null);';
-      connection.query(sql, function(err, result) {
+      return res.status(400).send({code:1,msg:'admin-register failed for isSuper wrong.'});
+    }
+  }
+  //向用户系统注册用户，后续对接用户系统，然后在数据库中存储该用户信息
+  Users.register(name,pwd)
+    .then(function(resbody){
+      pool.getConnection(function(err,connection){
         if(err){
           console.log(err);
           res.status(500).send({code:1,msg:err.message});
         }
-        else if (result.affectedRows == 1) {
-          res.status(200).send({code:0,msg:"register success."});
-        }
         else {
-          res.status(200).send({code:1,msg:'register failed for insert wrong.'});
+          console.log('connected as id ' + connection.threadId);
+          var sql = 'INSERT INTO user(name,pwd,permission,companyId) VALUES('
+          + pool.escape(resbody.data.username) + ',' + pool.escape(pwd) + ','
+          + pool.escape(permission) + ',' + pool.escape(companyId) + ');';
+          console.log(sql);
+          connection.query(sql, function(err, result) {
+            if(err){
+              console.log(err);
+              res.status(500).send({code:1,msg:err.message});
+            }
+            else if (result.affectedRows == 1) {
+              res.status(200).send({code:0,msg:"register success."});
+            }
+            else {
+              res.status(200).send({code:1,msg:'register failed for insert wrong.'});
+            }
+            connection.release();
+          });
         }
-        connection.release();
       });
-    }
-  });
+    })
+    .catch(function(errmsg){
+      res.status(200).send({code:1,msg:errmsg});
+    })
 });
 
 router.get('/user/list',function(req,res){
