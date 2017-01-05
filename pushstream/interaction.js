@@ -31,7 +31,7 @@ function login(name,pwd){
         				connection.release();
               }
               else {
-                var token = resbody.data.token
+                var token = resbody.data.token;
                 var setSql = 'INSERT INTO backinfo(id,token,status) VALUES("' + rows[0].id + '",' + pool.escape(token) + ',"1") ' +
                               'ON DUPLICATE KEY UPDATE token=VALUES(token),status=VALUES(status);';
                 connection.query(setSql,function(err,result){
