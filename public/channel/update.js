@@ -1,7 +1,7 @@
 (function() {
 
 var id = 1;
-var channelid = window.location.search.match(/id=(.*)/);
+var channelid = window.location.search.match(/id=(.*)/) ? window.location.search.match(/id=(.*)/)[1] : 0;
 loadRoomInfo(channelid);
 
 function getId() {
@@ -9,7 +9,7 @@ function getId() {
 }
 
 function loadRoomInfo(id) {
-    var url = window.hosturl + '/channel/get';
+    var url = window.hosturl + '/lms/channel/get';
     Vue.http.jsonp(url,{params : {id : id}})
     .then(function(data) {
         if(data.body.code == 0){
@@ -71,7 +71,7 @@ var vm = new Vue({
             this.removeStrategy(e.id);
         },
         submit : function(e) {
-            var url = window.hosturl + '/channel/update';
+            var url = window.hosturl + '/lms/channel/update';
             var self = this;
             Vue.http.post(url,this.formatData(),{params : {id : id}})
             .then(function(data) {
