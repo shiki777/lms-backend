@@ -6,7 +6,8 @@
                     <div class="two fields">
                         <div class="field">
                             <label>频道名称</label>
-                            <input placeholder="频道名称" name="name" type="text" v-model="name"></div>
+                            <input placeholder="频道名称" name="name" type="text" v-model="name"/>
+                        </div>
                         <div class="field">
                             <label>频道权重</label>
                             <input type="number" v-model="order"/>    
@@ -28,7 +29,7 @@
                     <div class="field" :style="{display : changeShow}">
                         <label>基础定价</label>
                         <div class="inline price-line">
-                            <input type="number" class="charge-input-money" v-model="price">                        
+                            <input type="number" class="charge-input-money" v-model="price"/>                        
                             <span class="charge-span">元/月</span>
                         </div>
                         <label>折扣策略</label>
@@ -57,13 +58,8 @@
         </div>
         <div class="actions">
             <div class="ui black deny button">知道了</div>
-<!--             <div class="ui positive right labeled icon button">
-                Yep, that's me <i class="checkmark icon"></i>
-            </div> -->
         </div>
     </div>    
 <script src="../../component/imguploader.js"></script> 
 <script src="../../room/charge_component.js"></script> 
 <script src="../../channel/create.js"></script>     
-</body>
-</html>
