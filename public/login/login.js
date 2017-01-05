@@ -21,14 +21,14 @@
                   prompt : '密码不能为空'
                 },
                 {
-                  type   : 'length[6]',
-                  prompt : '密码至少需要6位'
+                  type   : 'length[1]',
+                  prompt : '密码至少需要1位'
                 }
               ]
             }
           },
           onSuccess : function() {
-            var url = 'http://192.168.5.48:3000/lms/login';
+            var url = window.hosturl + '/lms/login';
             var username = $('#username').val();
             var pwd = $('#pwd').val();
             var body = {
