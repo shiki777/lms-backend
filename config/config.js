@@ -16,8 +16,8 @@ var config = {
     port: 6969,
   },
   user_system:{
-    host:'passport.readyvr.woniucloud.com',
-    port:'80'
+    host:'192.168.5.137',
+    port:'3050'
   },
   redis: {
     host: '192.168.5.137',

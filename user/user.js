@@ -65,6 +65,35 @@ function authentication(name,pwd){
   return defer.promise;
 }
 
+function userinfo(token){
+  var defer = q.defer();
+  if(!token){defer.reject('token == null.');}
+  else {
+    var path = '/app/account/info';
+    var options = {
+        url : 'http://' + config.user_system.host + ':' + config.user_system.port + path,
+        method : 'GET',
+        json : true,
+        headers : {'token':token},
+        body : null
+    };
+    console.log(options);
+    request(options, function(err,res,resbody) {
+        if(err){
+            console.log('error is ' +  err)
+            defer.reject(err);
+        } else {
+            if(resbody.code == 0){
+                defer.resolve(resbody);
+            } else {
+                defer.reject(resbody.message);
+            }
+        }
+    });
+  }
+  return defer.promise;
+}
+
 function md5To16(data_32){
   if(data_32.length != 32){
     return '';
@@ -75,5 +104,6 @@ function md5To16(data_32){
 
 module.exports = {
   register  : register,
-  authentication : authentication
+  authentication : authentication,
+  userinfo : userinfo
 };
