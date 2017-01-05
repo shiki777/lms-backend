@@ -45,7 +45,7 @@ var vm = new Vue({
             this.removeStrategy(e.id);
         },
         submit : function(e) {
-            var url = window.hosturl + '/room/add';
+            var url = window.hosturl + '/lms/room/add';
             var self = this;
             Vue.http.post(url,{body : this.formatData()})
             .then(function(data) {

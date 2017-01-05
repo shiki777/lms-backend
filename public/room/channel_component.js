@@ -9,11 +9,11 @@ Vue.component('channelselect', {
     },
     beforeCreate : function() {
         var self = this;
-        var url = window.hosturl + '/channel/list';
-        Vue.http.jsonp(url,{params : {page : 0,pageSize : 100}})
+        var url = window.hosturl + '/lms/channel/list';
+        Vue.http.jsonp(url,{params : {page : 1,pageSize : 100}})
             .then(function(data) {
                 if(data.body.code == 0){
-                    self.channels = self.formatChannels(data.body.data);
+                    self.channels = self.formatChannels(data.body.data.list);
                 } else {
                     alert('频道列表读取失败！');
                     console.log(data.body.msg);

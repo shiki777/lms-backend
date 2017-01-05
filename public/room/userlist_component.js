@@ -8,11 +8,11 @@ Vue.component('userselect', {
     },
     beforeCreate : function() {
         var self = this;
-        var url = 'http://127.0.0.1:5000/user';
+        var url = window.hosturl + '/lms/user/list';
         Vue.http.jsonp(url,{params : {}})
             .then(function(data) {
                 if(data.body.code == 0){
-                    self.users = self.formatUsers(data.body.data);
+                    self.users = self.formatUsers(data.body.list);
                 } else {
                     alert('用户列表读取失败！');
                     console.log(data.body.msg);

@@ -143,12 +143,12 @@ router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
-    return res.status(400).send({code:1,msg:'user-list failed for no login or have no right.'});
+    return res.status(400).jsonp({code:1,msg:'user-list failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(500).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -157,10 +157,10 @@ router.get('/user/list',function(req,res){
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(500).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'get user list success.',list:rows});
+          res.status(200).jsonp({code:0,msg:'get user list success.',list:rows});
         }
         connection.release();
       });
