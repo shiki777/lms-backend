@@ -9,7 +9,8 @@ var config = {
     port: '3306',
     user: 'lms',
     password: 'lms123',
-    database: 'lms'
+    database: 'lms',
+    multipleStatements : true
   },
   push_stream: {
     host: '0.0.0.0',
@@ -23,6 +24,10 @@ var config = {
     host: '192.168.5.137',
     port: 6379,
     db_number: 8,
+  },
+  chatroom:{
+    host:'192.168.5.137',
+    port: 8066
   }
 };
 

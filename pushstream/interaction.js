@@ -177,7 +177,35 @@ function getChatInfo(token){
   var defer = q.defer();
   if(!token){defer.reject(new Error("getChatInfo failed for token == null."));}
   else {
-    defer.resolve({chat_id:10,host:"127.0.0.1",port:80});
+    pool.getConnection(function(err,connection){
+      if(err){
+        console.log(err);
+  			defer.reject(err);
+      }
+      else {
+        console.log('connected as id ' + connection.threadId);
+        var sql = 'SELECT roomId FROM room_user WHERE userId IN(' +
+                    'SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ' AND status = 1);';
+        connection.query(sql, function(err, rows, fields) {
+          if(err){
+            console.log(err);
+            defer.reject(err);
+          }
+          else if(rows.length != 1){
+            defer.reject(new Error("getChatInfo failed for not exist user or not login or wrong token."));
+          }
+          else {
+            var data = {
+              chat_id : rows[0].roomId,
+              host : config.chatroom.host,
+              port : config.chatroom.port
+            };
+            defer.resolve(data);
+          }
+          connection.release();
+        });
+      }
+    });
   }
   return defer.promise;
 }
@@ -194,7 +222,7 @@ function startPushStream(token){
       else {
         console.log('connected as id ' + connection.threadId);
         var sql = 'SELECT user.id AS id,name,roomId FROM backinfo,user,room_user WHERE token = '
-        + pool.escape(token) + ' AND user.id = backinfo.id AND userId = user.id;';
+        + pool.escape(token) + ' AND status = 1 AND user.id = backinfo.id AND userId = user.id;';
         connection.query(sql, function(err, rows, fields) {
           if(err){
             console.log(err);
@@ -241,7 +269,7 @@ function stopPushStream(token){
         console.log('connected as id ' + connection.threadId);
         var sql = 'UPDATE room SET host = null,hostName = null WHERE id IN(' +
                     'SELECT roomId FROM room_user WHERE userId IN(' +
-                        'SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ' ));';
+                        'SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ' AND status = 1));';
         connection.query(sql, function(err,result) {
           if(err){
             console.log(err);
