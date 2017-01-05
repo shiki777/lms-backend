@@ -504,7 +504,7 @@ router.post('/room/add',function(req,res){
               else {
                 var room_insert_id = result.insertId;
                 var userlist = req.body.userid;
-                var discount = req.body.chargeStrategy.discount;
+                var discount = req.body.chargeStrategy.discount;             
                 var ru_values = ' VALUES';
                 var rd_values = ' VALUES';
                 for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
