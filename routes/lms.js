@@ -316,16 +316,23 @@ router.post('/channel/update',function(req,res){
             + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
           }
           var d_sql = 'DELETE FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
+<<<<<<< HEAD
           var i_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
           // 不付费时不插入
           if(discount.length == 0){
             i_sql = '';
           }          
+=======
+          var i_sql = (discount.length <= 0) ? '' : ('INSERT INTO channel_discount(channelId,amount,discount)' + cd_values);
+>>>>>>> snailcloud-api
           connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
             if(err){
               console.log(err);
               res.status(200).send({code:1,msg:err.message});
             } else if (discount.length == 0) {
+              res.status(200).send({code:0,msg:"update channel success."});
+            }
+            else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
             }
             else if(result[1].affectedRows != discount.length){
@@ -412,7 +419,11 @@ router.get('/channel/list',function(req,res){
       //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
+<<<<<<< HEAD
       + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';
+=======
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
+>>>>>>> snailcloud-api
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -506,7 +517,16 @@ router.post('/room/add',function(req,res){
               else {
                 var room_insert_id = result.insertId;
                 var userlist = req.body.userid;
+<<<<<<< HEAD
                 var discount = req.body.chargeStrategy.discount;             
+=======
+                var discount = req.body.chargeStrategy.discount;
+                if(userlist.length <= 0 && discount.length <= 0){
+                  res.status(200).send({code:0,msg:'add room success.'});
+                  //后续对接通知礼物系统
+                  return connection.release();
+                }
+>>>>>>> snailcloud-api
                 var ru_values = ' VALUES';
                 var rd_values = ' VALUES';
                 for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
@@ -516,20 +536,22 @@ router.post('/room/add',function(req,res){
                   rd_values += '(' + room_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
                   + ((i == (discount.length - 1)) ? ');' : '),');
                 }
-                var ru_sql = 'INSERT INTO room_user(roomId,userId)' + ru_values;
-                var rd_sql = 'INSERT INTO room_discount(roomId,amount,discount)' + rd_values;
+                var ru_sql = (userlist.length <= 0) ? '' : ('INSERT INTO room_user(roomId,userId)' + ru_values);
+                var rd_sql = (discount.length <= 0) ? '' : ('INSERT INTO room_discount(roomId,amount,discount)' + rd_values);
                 connection.query(ru_sql + rd_sql, function(err, result) {//insert room_user、room_discount.
                   if(err){
                     console.log(err);
                     res.status(500).send({code:1,msg:err.message});
                   }
-                  else if((result[0].affectedRows != userlist.length) || (result[1].affectedRows != discount.length)){
-                    res.status(200).send({code:1,msg:('insert room_user.affectedRows != ' + userlist.length + 'or room_discount.affectedRows != ' + discount.length)});
-                  }
-                  else {//创建房间成功
-                    res.status(200).send({code:0,msg:'add room success.'});
-                    //后续对接通知礼物系统
-                  }
+                  else if((userlist.length <= 0 && discount.length > 0 && result[0].affectedRows != discount.length)
+                    || (userlist.length > 0 && discount.length <= 0 && result[0].affectedRows != userlist.length)
+                    || (userlist.length > 0 && discount.length > 0 && ((result[0].affectedRows != userlist.length) || (result[1].affectedRows != discount.length)))){
+                      res.status(200).send({code:1,msg:('insert room_user.affectedRows != ' + userlist.length + 'or room_discount.affectedRows != ' + discount.length)});
+                    }
+                    else {//创建房间成功
+                      res.status(200).send({code:0,msg:'add room success.'});
+                      //后续对接通知礼物系统
+                    }
                   connection.release();
                 });
               }
@@ -618,11 +640,14 @@ router.post('/room/update',function(req,res){
             + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
           }
           var d_sql = 'DELETE FROM room_discount WHERE roomId = ' + pool.escape(req.query.id) + ';';
-          var i_sql = 'INSERT INTO room_discount(roomId,amount,discount)' + rd_values;
+          var i_sql = (discount.length <= 0) ? '' : ('INSERT INTO room_discount(roomId,amount,discount)' + rd_values);
           connection.query(d_sql + i_sql, function(err, result) {//delete room_discount then insert room_discount.
             if(err){
               console.log(err);
               res.status(500).send({code:1,msg:err.message});
+            }
+            else if(discount.length <= 0){
+              res.status(200).send({code:0,msg:'update room success'});
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert room_discount.affectedRows != ' + discount.length)});
@@ -723,8 +748,8 @@ router.get('/room/list',function(req,res){
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT * FROM (SELECT name,id,thumb,living,curUserName AS user FROM room' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(req.query.pageSize) + ';';
+      var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);

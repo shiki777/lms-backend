@@ -31,7 +31,7 @@ function login(name,pwd){
         				connection.release();
               }
               else {
-                var token = resbody.data.token
+                var token = resbody.data.token;
                 var setSql = 'INSERT INTO backinfo(id,token,status) VALUES("' + rows[0].id + '",' + pool.escape(token) + ',"1") ' +
                               'ON DUPLICATE KEY UPDATE token=VALUES(token),status=VALUES(status);';
                 connection.query(setSql,function(err,result){
@@ -87,9 +87,9 @@ function logout(token){
   return defer.promise;
 }
 
-function geturl(token){
+function getPushUrl(token){
   var defer = q.defer();
-  if(!token){defer.reject(new Error("geturl failed for token == null."));}
+  if(!token){defer.reject(new Error("getPushUrl failed for token == null."));}
   else {
     pool.getConnection(function(err,connection){
       if(err){
@@ -107,7 +107,7 @@ function geturl(token){
             defer.reject(err);
           }
           else if(rows.length != 1){
-            defer.reject(new Error("geturl failed for not exist user or not login or wrong token."));
+            defer.reject(new Error("getPushUrl failed for not exist user or not login or wrong token."));
           }
           else {
             var pushurl = api.getRoomPushUrl(rows[0].pushUrl);
@@ -122,8 +122,180 @@ function geturl(token){
   return defer.promise;
 }
 
+function getUserInfo(token){
+  var defer = q.defer();
+  if(!token){defer.reject(new Error("getUserInfo failed for token == null."));}
+  else {
+    Users.userinfo(token)
+      .then(function(resbody){
+        defer.resolve({nickname:resbody.data.nickname,headicon:resbody.data.head_icon});
+      })
+      .catch(function(errmsg){
+        defer.reject(errmsg);
+      })
+  }
+  return defer.promise;
+}
+
+function getRoomInfo(token){
+  var defer = q.defer();
+  if(!token){defer.reject(new Error("getRoomInfo failed for token == null."));}
+  else {
+    pool.getConnection(function(err,connection){
+      if(err){
+        console.log(err);
+  			defer.reject(err);
+      }
+      else {
+        console.log('connected as id ' + connection.threadId);
+        var sql = 'SELECT room.id AS room_id,room.name AS room_name,channel.name AS channel_name,living AS play_status' +
+        ' FROM backinfo,room_user,room,channel WHERE token = ' + pool.escape(token) +
+        ' AND status = 1 AND backinfo.id = userId AND roomId = room.id AND room.channelId = channel.id;';
+        connection.query(sql, function(err, rows, fields) {
+          if(err){
+            console.log(err);
+            defer.reject(err);
+          }
+          else if(rows.length != 1){
+            defer.reject(new Error("getRoomInfo failed for not exist user or not login or wrong token."));
+          }
+          else {
+            //目前没有提供人气及观众数的接口，暂时写死，后续与云平台对接
+            rows[0].ninki = 100;
+            rows[0].audience_count = 1000;
+            defer.resolve(rows[0]);
+          }
+          connection.release();
+        });
+      }
+    });
+  }
+  return defer.promise;
+}
+
+function getChatInfo(token){
+  var defer = q.defer();
+  if(!token){defer.reject(new Error("getChatInfo failed for token == null."));}
+  else {
+    pool.getConnection(function(err,connection){
+      if(err){
+        console.log(err);
+  			defer.reject(err);
+      }
+      else {
+        console.log('connected as id ' + connection.threadId);
+        var sql = 'SELECT roomId FROM room_user WHERE userId IN(' +
+                    'SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ' AND status = 1);';
+        connection.query(sql, function(err, rows, fields) {
+          if(err){
+            console.log(err);
+            defer.reject(err);
+          }
+          else if(rows.length != 1){
+            defer.reject(new Error("getChatInfo failed for not exist user or not login or wrong token."));
+          }
+          else {
+            var data = {
+              chat_id : rows[0].roomId,
+              host : config.chatroom.host,
+              port : config.chatroom.port
+            };
+            defer.resolve(data);
+          }
+          connection.release();
+        });
+      }
+    });
+  }
+  return defer.promise;
+}
+
+function startPushStream(token){
+  var defer = q.defer();
+  if(!token){defer.reject(new Error("startPushStream failed for token == null."));}
+  else {
+    pool.getConnection(function(err,connection){
+      if(err){
+        console.log(err);
+  			defer.reject(err);
+      }
+      else {
+        console.log('connected as id ' + connection.threadId);
+        var sql = 'SELECT user.id AS id,name,roomId FROM backinfo,user,room_user WHERE token = '
+        + pool.escape(token) + ' AND status = 1 AND user.id = backinfo.id AND userId = user.id;';
+        connection.query(sql, function(err, rows, fields) {
+          if(err){
+            console.log(err);
+            defer.reject(err);
+            connection.release();
+          }
+          else if(rows.length != 1){
+            defer.reject(new Error("startPushStream failed for not exist user or not login or wrong token."));
+            connection.release();
+          }
+          else {
+            var setSql = 'UPDATE room SET host = ' + rows[0].id + ',hostName =' + rows[0].name + ' WHERE id = ' + rows[0].roomId + ';';
+            connection.query(setSql, function(err, result) {
+              if(err){
+                console.log(err);
+                defer.reject(err);
+              }
+              else if(result.affectedRows != 1){
+                defer.reject(new Error("startPushStream failed for update room set wrong."));
+              }
+              else {
+                defer.resolve("startPushStream success.");
+              }
+              connection.release();
+            });
+          }
+        });
+      }
+    });
+  }
+  return defer.promise;
+}
+
+function stopPushStream(token){
+  var defer = q.defer();
+  if(!token){defer.reject(new Error("stopPushStream failed for token == null."));}
+  else {
+    pool.getConnection(function(err,connection){
+      if(err){
+        console.log(err);
+  			defer.reject(err);
+      }
+      else {
+        console.log('connected as id ' + connection.threadId);
+        var sql = 'UPDATE room SET host = null,hostName = null WHERE id IN(' +
+                    'SELECT roomId FROM room_user WHERE userId IN(' +
+                        'SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ' AND status = 1));';
+        connection.query(sql, function(err,result) {
+          if(err){
+            console.log(err);
+            defer.reject(err);
+          }
+          else if(result.affectedRows != 1){
+            defer.reject(new Error("stopPushStream failed for not exist user or not login or wrong token or update room wrong."));
+          }
+          else {
+            defer.resolve("stopPushStream success.");
+          }
+          connection.release();
+        });
+      }
+    });
+  }
+  return defer.promise;
+}
+
 module.exports = {
   login  : login,
   logout : logout,
-  geturl : geturl
+  getPushUrl : getPushUrl,
+  getUserInfo : getUserInfo,
+  getRoomInfo : getRoomInfo,
+  getChatInfo : getChatInfo,
+  startPushStream : startPushStream,
+  stopPushStream : stopPushStream
 };

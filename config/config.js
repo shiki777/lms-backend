@@ -24,6 +24,10 @@ var config = {
     host: '192.168.5.137',
     port: 6379,
     db_number: 8,
+  },
+  chatroom:{
+    host:'192.168.5.137',
+    port: 8066
   }
 };
 
