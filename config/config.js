@@ -15,12 +15,15 @@ var config = {
     host: '0.0.0.0',
     port: 6969,
   },
+  user_system:{
+    host:'passport.readyvr.woniucloud.com',
+    port:'80'
+  },
   redis: {
     host: '192.168.5.137',
     port: 6379,
     db_number: 8,
   }
-
 };
 
 module.exports = config;

@@ -1,24 +1,25 @@
 var api = require('./api');
 
-// api.getRoomStreams()
-//     .then(function(data) {
-//         console.log(data)
-//     })
-//     .catch(function(e) {
-//         console.log(e);
-//     })
-var pushUrl = 'rtmp://push.woniucloud.com/snail/qfac6kad';
-var u2 = 'rtmp://play.woniucloud.com/snail/7ofdxmb5';
+ /*api.getRoomStreams()
+     .then(function(data) {
+         console.log(data)
+     })
+     .catch(function(e) {
+         console.log(e);
+     })*/
+var pushUrl = 'rtmp://s3-push.woniucloud.com:1937/push3/ry0s4f5w';
+var playUrl = 'http://s3-push.woniucloud.com:89/push3/ry0s4f5w.flv';
 // var pushUrlws = api.getRoomPushUrl(pushUrl);
-var pushUrlws = api.getRoomPushUrl(u2);
-api.dropRoomStream(u2)
+var pushUrlws = api.getRoomPushUrl(pushUrl);
+console.log(pushUrlws);
+/*api.dropRoomStream(u2)
     .then(function(data) {
         console.log(data)
     })
     .catch(function(e) {
         console.log(e)
-    })
-api.applyTokenAndUrl('58.247.47.106',u2)
+    })*/
+api.applyTokenAndUrl('192.168.5.48',playUrl)
     .then(function(data){
       console.log(data);
     })
