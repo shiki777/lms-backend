@@ -35,13 +35,20 @@ app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/upload',express.static(path.join(__dirname, 'upload')));
+app.use('/views',express.static(path.join(__dirname, 'views')));
 
 
 var gmsrouter = require('./routes/gms');
 var lms = require('./routes/lms');
+var admin = require('./routes/admin');
+var upload = require('./routes/upload');
 
 app.use('/gms', gmsrouter);
 app.use('/lms',lms);
+app.use('/admin',lms);
+app.use('/lms',lms);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
