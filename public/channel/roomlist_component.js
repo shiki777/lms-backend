@@ -7,7 +7,7 @@ Vue.component('roomselect', {
             rooms : []
         }
     },
-    beforeCreate : function() {
+    created : function() {
         var self = this;
         var url = window.hosturl + '/lms/channel/roomlist';
         Vue.http.jsonp(url,{params : {id: this.cid}})

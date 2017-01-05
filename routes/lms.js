@@ -316,10 +316,16 @@ router.post('/channel/update',function(req,res){
           }
           var d_sql = 'DELETE FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
           var i_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
+          // 不付费时不插入
+          if(discount.length == 0){
+            i_sql = '';
+          }          
           connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
             if(err){
               console.log(err);
               res.status(200).send({code:1,msg:err.message});
+            } else if (discount.length == 0) {
+              res.status(200).send({code:0,msg:"update channel success."});
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});

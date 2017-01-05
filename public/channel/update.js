@@ -73,7 +73,7 @@ var vm = new Vue({
         submit : function(e) {
             var url = window.hosturl + '/lms/channel/update';
             var self = this;
-            Vue.http.post(url,this.formatData(),{params : {id : id}})
+            Vue.http.post(url,this.formatData(),{params : {id : channelid}})
             .then(function(data) {
                 if(data.body.code == 0){
                     $('.ui.modal')
@@ -93,12 +93,13 @@ var vm = new Vue({
                 name : this.name,
                 thumb : this.getThumb(),
                 desc : this.desc,
-                charge : parseInt(this.dependencyCharge,10) ? true : false,
+                charge : parseInt(this.dependencyCharge,10) ? 1 : 0,
                 order : this.order,
                 icon : this.getIcon(),
                 chargeStrategy : this.getChargeStrategy(),
                 defaultRoom : this.getDefaultRoom()
             };
+            console.log(res)
             return res;
         },
         getChargeStrategy : function() {
@@ -115,7 +116,7 @@ var vm = new Vue({
             this.$refs.charges.map(function(charge) {
                 if(charge.del == true) return;
                 discount.push({
-                    mouth : charge.d,
+                    month : charge.d,
                     discount : parseFloat(charge.m,10)
                 });
             })     
@@ -129,7 +130,7 @@ var vm = new Vue({
             return this.$refs.iconcom.imgurl;
         },
         getDefaultRoom : function() {
-            return this.$refs.defaultroom.room;
+            return this.$refs.defaultroom.room || null;
         },
         removeStrategy : function(id) {
             /*组件调用destroy后 refs没有同步减少，所以这么做，vue刚使用不熟悉*/

@@ -38,7 +38,7 @@
             Vue.http.post(url,body)
             .then(function(data) {
                 if(data.body.code == 0){
-                    location.href= 'http://127.0.0.1:3000/lms/page/channelcreate';
+                    location.href= 'http://127.0.0.1:3000/lms/page/channelupdate?id=15';
                 } else {
                     alert('提交失败：' + data.body.msg);
                 }
