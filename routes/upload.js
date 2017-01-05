@@ -25,3 +25,5 @@ function rmFile(oldpath, newpath) {
         if (e < 0) {} else {}
     })
 }
+
+module.exports = router;

@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-var auth = require('./authentication');
 router.get('/login', function(req,res) {
   var isSuper = req.query.reg ? true : false;
   res.render('./login/login',{

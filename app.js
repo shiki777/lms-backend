@@ -41,12 +41,12 @@ app.use('/views',express.static(path.join(__dirname, 'views')));
 
 var gmsrouter = require('./routes/gms');
 var lms = require('./routes/lms');
-var admin = require('./routes/admin');
+var page = require('./routes/page');
 var upload = require('./routes/upload');
 
 app.use('/gms', gmsrouter);
 app.use('/lms',lms);
-app.use('/lms/admin',lms);
+app.use('/lms/page',lms);
 app.use('/lms/upload',upload);
 
 
@@ -66,7 +66,8 @@ if (app.get('env') === 'development') {
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
-      error: err
+      error: err,
+      title : '错误页'
     });
   });
 }
@@ -77,7 +78,8 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
-    error: {}
+    error: {},
+    title : '错误页'
   });
 });
 
