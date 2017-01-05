@@ -4,7 +4,7 @@ var vm = new Vue({
     el : '#page',
     data : {
         channels : [],
-        url : window.hosturl + '/channel/list'
+        url : window.hosturl + '/lms/channel/list'
     },
     methods : {
         pageLoaded : function(data) {
@@ -17,7 +17,7 @@ var vm = new Vue({
                   name : item.name,
                   thumb : item.thumb,
                   id : item.id,
-                  link : 'http://www.baidu.com?id=' + item.id
+                  link : window.hosturl + '/lms/page/channelupdate?id=' + item.id
                 });
             })
             return res;

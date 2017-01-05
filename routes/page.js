@@ -42,4 +42,16 @@ router.get('/channelupdate', function(req,res) {
   });
 });
 
+router.get('/channellist', function(req,res) {
+  var user = req.session.user || {};
+  var isSuper = user.permission == 8 ? true : false;
+  var html = isSuper ? '<a href="/cms/admin/rolemanager" target="_self" id="role-list">权限管理</a>' : '';
+  html = '';
+  res.render('./channel/channellist',{
+    message : html,
+    user : user.name,
+    title : '频道列表'
+  });
+});
+
 module.exports = router;

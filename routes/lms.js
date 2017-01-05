@@ -396,30 +396,30 @@ router.get('/channel/get',function(req,res){
 
 router.get('/channel/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(200).send({code:1,msg:'channel-list failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).send({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'channel-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
-    return res.status(401).send({code:1,msg:'channel-list failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-list failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(200).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(req.query.pageSize) + ';';
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(200).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
+          res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
         }
         connection.release();
       });

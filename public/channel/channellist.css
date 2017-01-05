@@ -7,13 +7,14 @@
 .room-item {
     float: left;
     width: 150px;
-    height: 280px;
+    height: 195px;
     margin: 0 20px;
 }
 
 .thumb {
     width: 100%;
-    height: auto;
+    height: 150px;
+    width: 150px;
 
 }
 
