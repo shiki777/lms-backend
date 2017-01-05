@@ -1,41 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>登录</title>
-        <link rel="stylesheet" type="text/css" href="../../stylesheets/common/common.css">
-       <link rel="stylesheet" href="../../login/index.css">
-    </head>
-    <body>
-    <div class="ui middle aligned center aligned grid">
-  <div class="column">
-    <h2 class="ui teal image header">
-      <div class="content">
-        Ready VR 直播管理系统
-      </div>
-    </h2>
-    <form class="ui large form">
-      <div class="ui stacked segment">
-        <div class="field">
-          <div class="ui left icon input">
-            <i class="user icon"></i>
-            <input type="text" name="name" placeholder="用户名" id="username">
-          </div>
-        </div>
-        <div class="field">
-          <div class="ui left icon input">
-            <i class="lock icon"></i>
-            <input type="password" name="password" placeholder="密码" id="pwd">
-          </div>
-        </div>
-        <div class="ui fluid large teal submit button" id="loginBtn">登录</div>
-      </div>
-      <div class="ui error message"></div>
-    </form>
-  </div>
-</div>
-        <script><%- message %></script>       
-        <script src="../../login/login.js"></script>
-
-    </body>
-</html>
+ <link rel="stylesheet" href="../../login/index.css"> 
+ <div class="ui middle aligned center aligned grid login-wrap">
+     <div class="column">
+         <h2 class="ui teal image header">
+             <div class="content">Ready VR 直播管理系统</div>
+         </h2>
+         <form class="ui large form">
+             <div class="ui stacked segment">
+                 <div class="field">
+                     <div class="ui left icon input"> <i class="user icon"></i>
+                         <input type="text" name="name" placeholder="用户名" id="username"></div>
+                 </div>
+                 <div class="field">
+                     <div class="ui left icon input"> <i class="lock icon"></i>
+                         <input type="password" name="password" placeholder="密码" id="pwd"></div>
+                 </div>
+                 <div class="ui fluid large teal submit button" id="loginBtn">登录</div>
+             </div>
+             <div class="ui error message"></div>
+         </form>
+     </div>
+ </div>
+ <script><%- message %></script>
+ <script src="../../login/login.js"></script>

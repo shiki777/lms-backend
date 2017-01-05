@@ -10,3 +10,18 @@ body > .grid {
 .column {
   max-width: 450px;
 }
+
+.login-wrap {
+    width: 100%;
+    height: 100%;
+    background-color: #DADADA;
+    margin-top: 0 !important;
+}
+
+.aside {
+    display: none;
+}
+
+.main {
+    left: 0;
+}

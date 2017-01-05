@@ -46,7 +46,7 @@ var upload = require('./routes/upload');
 
 app.use('/gms', gmsrouter);
 app.use('/lms',lms);
-app.use('/lms/page',lms);
+app.use('/lms/page',page);
 app.use('/lms/upload',upload);
 
 
