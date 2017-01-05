@@ -1,0 +1,81 @@
+.page {
+    margin-top: 15px;
+}
+
+h1 {
+    margin-bottom: 5px !important;
+}
+
+.wrap {
+    width: 700px;
+}
+
+.room-container {
+    width: 700px;
+    margin-top: 3px !important;
+}
+
+.ui.button.upload-btn {
+    width: 150px;
+    margin-top: 10px;
+}
+
+.ui.form input.charge-input-money {
+    width: 80px;
+    padding-left: 10px;
+    text-align: center;
+    padding-right: 0;
+}
+
+.ui.form input.charge-input-duration {
+    width: 60px;
+    padding-left: 10px;
+    text-align: center;
+    padding-right: 0;
+}
+
+.ui.form select.charge-input {
+    width: 54px;
+    display: inline-block;
+    padding-right: 0;
+    padding-left: 10px;
+}
+
+.charge-span {
+    display: inline-block;
+    margin-left: 3px;
+    margin-right: 1px;
+}
+
+.ui.primary.button.charge-btn {
+    width: 120px;
+    margin-top: 10px;    
+}
+
+.charge-wrap .inline {
+    margin-top: 10px;
+}
+
+.delete-btn {
+    position: relative;
+    padding-left: 30px !important;
+}
+
+.delete-icon {
+    position: absolute;
+    left: 13px;
+    right: 3px;
+    color: #fff;
+}
+
+.price-line {
+    margin-bottom: 10px;
+}
+
+.price-line .charge-input-money {
+    vertical-align: middle !important;
+}
+
+.live-status {
+    font-size: 20px;
+}
