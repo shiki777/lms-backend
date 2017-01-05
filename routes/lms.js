@@ -176,7 +176,7 @@ router.get('/user/list',function(req,res){
 router.post('/channel/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
-    return res.status(400).send({code:1,msg:'channel-add failed for no body.'});
+    return res.status(200).send({code:1,msg:'channel-add failed for no body.'});
   }
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能创建频道
@@ -192,7 +192,7 @@ router.post('/channel/add',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -203,7 +203,7 @@ router.post('/channel/add',function(req,res){
       connection.query(sql, function(err, result) {//insert channel.
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -226,7 +226,7 @@ router.post('/channel/add',function(req,res){
           connection.query(cd_sql, function(err, result) {//insert channel_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(result.affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount result.affectedRows != ' + discount.length)});
@@ -246,7 +246,7 @@ router.post('/channel/add',function(req,res){
 所以在处理每个记录(包括其他表中的记录)的删除操作时都要考虑联表问题，包括更新策略，这些要在建表时确定策略*/
 router.delete('/channel/del',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-del failed for no id.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'channel-del failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除频道
     return res.status(401).send({code:1,msg:'channel-del failed for no login or have no right.'});
@@ -254,7 +254,7 @@ router.delete('/channel/del',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -264,7 +264,7 @@ router.delete('/channel/del',function(req,res){
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
         }
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
@@ -277,8 +277,8 @@ router.delete('/channel/del',function(req,res){
 
 router.post('/channel/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-update failed for no id.'});}
-  if(!req.body){return res.status(400).send({code:1,msg:'channel-update failed for no body.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'channel-update failed for no id.'});}
+  if(!req.body){return res.status(200).send({code:1,msg:'channel-update failed for no body.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改频道
     return res.status(401).send({code:1,msg:'channel-update failed for no login or have no right.'});
@@ -286,7 +286,7 @@ router.post('/channel/update',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -300,7 +300,7 @@ router.post('/channel/update',function(req,res){
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -319,7 +319,7 @@ router.post('/channel/update',function(req,res){
           connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
@@ -337,15 +337,15 @@ router.post('/channel/update',function(req,res){
 
 router.get('/channel/get',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-get failed for no id.'});}
+  if(!req.query.id){return res.status(400).jsonp({code:1,msg:'channel-get failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道
-    return res.status(401).send({code:1,msg:'channel-get failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-get failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -356,10 +356,10 @@ router.get('/channel/get',function(req,res){
       connection.query(c_sql + cd_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else if(result[0].length != 1){
-          res.status(200).send({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
+          res.status(200).jsonp({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
         }
         else {
           var discount_arr = new Array();
@@ -378,7 +378,7 @@ router.get('/channel/get',function(req,res){
             },
             defaultRoom : result[0][0].defaultRoom
           };
-          res.status(200).send({code:0,msg:'channel-get success.',data:data});
+          res.status(200).jsonp({code:0,msg:'channel-get success.',data:data});
         }
         connection.release();
       });
@@ -388,8 +388,8 @@ router.get('/channel/get',function(req,res){
 
 router.get('/channel/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:1,msg:'channel-list failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(200).send({code:1,msg:'channel-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).send({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
     return res.status(401).send({code:1,msg:'channel-list failed for no login or have no right.'});
@@ -397,7 +397,7 @@ router.get('/channel/list',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -408,7 +408,7 @@ router.get('/channel/list',function(req,res){
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
         }
         else {
           res.status(200).send({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
@@ -421,15 +421,15 @@ router.get('/channel/list',function(req,res){
 
 router.get('/channel/roomlist',function(req,res){//根据频道channelId来获取房间列表
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-roomlist get failed for no id.'});}
+  if(!req.query.id){return res.status(200).jsonp({code:1,msg:'channel-roomlist get failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登或权限不够录则不能根据频道来获取房间列表
-    return res.status(401).send({code:1,msg:'channel-roomlist get failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-roomlist get failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -439,10 +439,10 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-roomlist get success.',data:rows});
+          res.status(200).jsonp({code:0,msg:'channel-roomlist get success.',data:rows});
         }
         connection.release();
       });

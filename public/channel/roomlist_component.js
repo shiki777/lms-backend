@@ -9,7 +9,7 @@ Vue.component('roomselect', {
     },
     beforeCreate : function() {
         var self = this;
-        var url = 'http://127.0.0.1:5000/channel/roomlist';
+        var url = window.hosturl + '/lms/channel/roomlist';
         Vue.http.jsonp(url,{params : {id: this.cid}})
             .then(function(data) {
                 if(data.body.code == 0){
