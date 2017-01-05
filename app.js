@@ -46,8 +46,8 @@ var upload = require('./routes/upload');
 
 app.use('/gms', gmsrouter);
 app.use('/lms',lms);
-app.use('/admin',lms);
-app.use('/lms',lms);
+app.use('/lms/admin',lms);
+app.use('/lms/upload',upload);
 
 
 // catch 404 and forward to error handler
