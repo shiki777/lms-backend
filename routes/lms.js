@@ -297,6 +297,7 @@ router.post('/channel/update',function(req,res){
       + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
       + ',channel.desc = ' + pool.escape(req.body.desc) + ',defaultRoom = ' + pool.escape(req.body.defaultRoom)
       + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      console.log(sql)
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
@@ -377,6 +378,7 @@ router.get('/channel/get',function(req,res){
             charge : result[0][0].charge,
             icon : result[0][0].icon,
             thumb : result[0][0].thumb,
+            desc : result[0][0].desc,
             order : result[0][0].order,
             chargeStrategy : {
               price : result[0][0].price,

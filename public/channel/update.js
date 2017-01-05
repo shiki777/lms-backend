@@ -29,11 +29,12 @@ function formatRoomData(data) {
         data.chargeStrategy.discount.map(function(item) {
             discount.push({
                 discount : item.discount,
-                duration : item.mouth,
+                duration : item.month,
                 id : getId()
             })
         })
     }
+    console.log(discount)
     return {
         name : data.name,
         order : data.order,
@@ -99,7 +100,6 @@ var vm = new Vue({
                 chargeStrategy : this.getChargeStrategy(),
                 defaultRoom : this.getDefaultRoom()
             };
-            console.log(res)
             return res;
         },
         getChargeStrategy : function() {
