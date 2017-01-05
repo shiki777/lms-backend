@@ -1,0 +1,257 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.page {
+    position: relative;
+    margin-top: 0 !important;
+}
+
+.ui.grid {
+    margin-top: 15px;
+}
+
+.clear {
+    clear: both;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}    
+a {
+    text-decoration: none;
+}    
+
+li {
+    list-style: none;
+}
+
+b, em, i {
+    font-style: normal;
+    font-weight: 400;
+}
+
+.main {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 200px;
+    background-color: #fff;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.page-wrap {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}    
+.aside {
+    position: relative;
+    width: 199px;
+    background-color: #f0f6f6;
+    border-right: 1px solid #cedfea;
+    display: inline-block;
+    height: 100%;
+    vertical-align: top;
+    -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;          /* Likely future */  
+}
+.menu {
+    position: relative;
+    height: 100%;
+}
+
+.aside .menu h2 {
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 36px;
+    line-height: 1.2;
+    display: block;
+    padding: 0 20px;
+    color: #171d25;
+    height: 62px;
+}
+
+.aside .menu h2>span {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.aside .menu h2:before {
+    content: '';
+    width: 0;
+    height: 100%;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.menu .line-mod {
+    width: 156px;
+    height: 0;
+    margin: 0 auto 15px;
+    border: none;
+    border-top: 1px solid #cadbe6;
+    border-bottom: 1px solid #f8fbfb;
+}
+
+.menu-list {
+    font-size: 14px;
+    line-height: 35px;
+    overflow: auto;
+    position: absolute;
+    width: 100%;
+    top: 75px;
+    bottom: 0;
+    padding-top: 15px;
+}
+
+.menu-list dd {
+    position: relative;
+    width: 100%;
+}
+
+.menu a {
+    color: #586376;
+}
+
+.menu-lv2 {
+    line-height: 36px;
+    display: block;
+}
+
+.menu a span {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.menu a.act {
+    font-weight: 700;
+}
+
+.menu a.act, .menu a:active {
+    color: #2277da;
+    -webkit-font-smoothing: antialiased;
+}
+
+.menu-lv2 span {
+    font-weight: 700;
+    margin-left: 25px;
+}
+
+.menu-list dd ul.menu-sub {
+    display: none;
+    -webkit-font-smoothing: auto;
+}
+
+.act {
+    background-color: #d5e2ef;
+}
+
+.menu-list .ico-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin: 0 14px 0 29px;
+    vertical-align: middle;
+    border-radius: 5px;
+    background: #b2becd;
+}
+
+.menu a.act .ico-dot {
+    background: url(img/top-menu.png);
+    width: 7px;
+    height: 7px;
+    margin: 0 14px 0 28px;
+    background-color: inherit;
+    background-position: 0 -77px;
+}
+
+.haveson {
+    cursor: pointer;
+}
+
+.btn-fold-menu {
+    line-height: 100;
+    position: absolute;
+    top: 21px;
+    right: -1px;
+    overflow: hidden;
+    width: 16px;
+    height: 36px;
+    border: 1px solid #c7e0ef;
+    border-right: none;
+    border-radius: 3px 0 0 3px;
+    background: url(img/top-menu.png) -72px -40px no-repeat #f7fdfd;
+    z-index: 100;
+}
+
+.white-down-icon {
+    width: 11px;
+    height: 6px;
+    background-image: url(img/sprites.png);
+    background-position: -54px -213px;
+    cursor: pointer;
+}
+
+.menu-lv2 .white-down-icon {
+    position: absolute;
+    right: 33px;
+    top: 17px;
+    overflow: hidden;
+}
+
+.menu-lv3 {
+    position: relative;
+}
+
+.menu-lv3 .white-down-icon,
+.menu-lv4 .white-down-icon {
+    position: absolute;
+    right: 33px;
+    top: 17px;
+    overflow: hidden;
+}
+
+.menu-lv3 {
+    display: block;
+    padding-left: 10px;
+    position: relative;
+}
+
+.menu-lv4 {
+    display: block;
+    padding-left: 30px;
+    position: relative;
+}
+
+.menu-lv5 {
+    display: block;
+    padding-left: 50px;
+}
+/* 层级显示控制CSS */
+.menu-list .act ul.menu-sub {
+    display: block;
+}
+
+.menu-lv3-wrap .menu-sub {
+    display: none !important;
+}
+.menu-lv3-wrap.act .menu-sub {
+    display: block !important;
+}
+.menu-lv4-wrap .menu-sub ,.menu-lv3-wrap.act .menu-lv4-wrap .menu-sub{
+    display: none !important;
+}
+.menu-lv4-wrap.act .menu-sub,
+.menu-lv3-wrap.act .menu-lv4-wrap.act .menu-sub{
+    display: block !important;
+}
