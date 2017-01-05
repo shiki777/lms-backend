@@ -1,5 +1,4 @@
-var client = require('./redisClient').redisClient;
-
+//var client = require('../epgd/redisClient').redisClient;
 function epgd(client) {
   this.client = client;
 }
@@ -40,7 +39,7 @@ epgd.prototype.insertDefaultChannel = function(info) {
   var key = 'default_channel';
   console.log(key);
   console.log(info);
-  client.set(key, JSON.stringify(info));
+  this.client.set(key, JSON.stringify(info));
 };
 
 // 插入频道列表
@@ -55,12 +54,12 @@ epgd.prototype.insertDefaultChannel = function(info) {
 // }]
 epgd.prototype.insertChannelList = function(list) {
   var key = 'channellist';
-  client.set(key, JSON.stringify(list));
+  this.client.set(key, JSON.stringify(list));
 };
 //插入频道信息,数据格式参见频道信息定义
 epgd.prototype.insertChannelInfo = function(info) {
   var key = 'channel_' + info.id + '_info';
-  client.set(key, JSON.stringify(info));
+  this.client.set(key, JSON.stringify(info));
 };
 
 //插入频道房间列表
@@ -75,7 +74,7 @@ epgd.prototype.insertChannelInfo = function(info) {
 // }]
 epgd.prototype.insertChannelRoomList = function(id, list) {
   var key = 'channel_' + id + '_room_list';
-  client.set(key, JSON.stringify(roomlist));
+  this.client.set(key, JSON.stringify(roomlist));
 };
 
 //插入上下频道,数据格式参见频道信息定义
@@ -86,7 +85,7 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
     up: up,
     down: down
   };
-  client.set(key, JSON.stringify(channelSwitchInfo));
+  this.client.set(key, JSON.stringify(channelSwitchInfo));
 };
 
 /////////////////////////////
@@ -112,7 +111,10 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
 // };
 epgd.prototype.insertRoomInfo = function(info) {
   var key = 'room_' + info.id + '_info';
-  client.set(key, JSON.stringify(info));
+  this.client.set(key, JSON.stringify(info));
 };
-
+epgd.prototype.insertRoomPlayurl = function(id,url) {
+  var key = 'room_' + id + '_playurl';
+  this.client.set(key, JSON.stringify(url));
+};
 module.exports = epgd;
