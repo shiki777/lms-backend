@@ -47,7 +47,7 @@ var vm = new Vue({
         submit : function(e) {
             var url = window.hosturl + '/lms/room/add';
             var self = this;
-            Vue.http.post(url,{body : this.formatData()})
+            Vue.http.post(url,this.formatData())
             .then(function(data) {
                 if(data.body.code == 0){
                     $('.ui.modal')
@@ -70,8 +70,8 @@ var vm = new Vue({
                 onlineRatio : this.onlineRatio,
                 thumb : this.getThumb(),
                 desc : this.desc,
-                charge : true,
-                dependencyCharge : parseInt(this.dependencyCharge,10) ? true : false,
+                charge : parseInt(this.dependencyCharge,10) ? 1 : 0,
+                dependencyCharge : parseInt(this.dependencyCharge,10) ? 1 : 0,
                 order : this.order,
                 chargeStrategy : this.getChargeStrategy(),
                 u3dbg : this.getU3dBg(),
@@ -99,7 +99,7 @@ var vm = new Vue({
             this.$refs.charges.map(function(charge) {
                 if(charge.del == true) return;
                 discount.push({
-                    mouth : charge.d,
+                    month : charge.d,
                     discount : parseFloat(charge.m,10)
                 });
             })     

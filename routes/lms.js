@@ -153,7 +153,7 @@ router.get('/user/list',function(req,res){
     else {
       console.log('connected as id ' + connection.threadId);
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
-      var sql = 'SELECT name FROM user' + condition + ';';
+      var sql = 'SELECT id,name FROM user' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -466,7 +466,7 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
 router.post('/room/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
-    return res.status(400).send({code:1,msg:'room-add failed for no body.'});
+    return res.status(200).send({code:1,msg:'room-add failed for no body.'});
   }
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够或没有房间用户则不能开通房间
@@ -484,7 +484,7 @@ router.post('/room/add',function(req,res){
         pool.getConnection(function(err,connection){
           if(err){
             console.log(err);
-            res.status(500).send({code:1,msg:err.message});
+            res.status(200).send({code:1,msg:err.message});
           }
           else {
             console.log('connected as id ' + connection.threadId);
@@ -493,13 +493,13 @@ router.post('/room/add',function(req,res){
             pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
             pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
             pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
-            pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyChange) + ',' +
+            pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyCharge) + ',' +
             pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
             pool.escape(req.body.controlModel) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ');';
             connection.query(room_sql, function(err, result) {//insert room
               if(err){
                 console.log(err);
-                res.status(500).send({code:1,msg:err.message});
+                res.status(200).send({code:1,msg:err.message});
                 connection.release();
               }
               else if(result.affectedRows != 1){
@@ -529,7 +529,7 @@ router.post('/room/add',function(req,res){
                 connection.query(ru_sql + rd_sql, function(err, result) {//insert room_user、room_discount.
                   if(err){
                     console.log(err);
-                    res.status(500).send({code:1,msg:err.message});
+                    res.status(200).send({code:1,msg:err.message});
                   }
                   else if((userlist.length <= 0 && discount.length > 0 && result[0].affectedRows != discount.length)
                     || (userlist.length > 0 && discount.length <= 0 && result[0].affectedRows != userlist.length)
