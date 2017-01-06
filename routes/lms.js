@@ -316,15 +316,11 @@ router.post('/channel/update',function(req,res){
             + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
           }
           var d_sql = 'DELETE FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
-<<<<<<< HEAD
           var i_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
           // 不付费时不插入
           if(discount.length == 0){
             i_sql = '';
           }          
-=======
-          var i_sql = (discount.length <= 0) ? '' : ('INSERT INTO channel_discount(channelId,amount,discount)' + cd_values);
->>>>>>> snailcloud-api
           connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
             if(err){
               console.log(err);
@@ -419,11 +415,7 @@ router.get('/channel/list',function(req,res){
       //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
-<<<<<<< HEAD
       + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';
-=======
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
->>>>>>> snailcloud-api
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -517,16 +509,12 @@ router.post('/room/add',function(req,res){
               else {
                 var room_insert_id = result.insertId;
                 var userlist = req.body.userid;
-<<<<<<< HEAD
-                var discount = req.body.chargeStrategy.discount;             
-=======
                 var discount = req.body.chargeStrategy.discount;
                 if(userlist.length <= 0 && discount.length <= 0){
                   res.status(200).send({code:0,msg:'add room success.'});
                   //后续对接通知礼物系统
                   return connection.release();
                 }
->>>>>>> snailcloud-api
                 var ru_values = ' VALUES';
                 var rd_values = ' VALUES';
                 for(var i = 0;i < userlist.length;i ++){//组建房间-用户SQL语句
