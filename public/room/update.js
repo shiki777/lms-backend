@@ -1,7 +1,7 @@
 (function() {
 
 var id = 1;
-var roomid = parseInt(window.location.search.match(/id=(.*)/));
+var roomid = window.location.search.match(/id=(.*)/) ? window.location.search.match(/id=(.*)/)[1] : 0;
 loadRoomInfo(roomid);
 
 function getId() {
@@ -9,8 +9,8 @@ function getId() {
 }
 
 function loadRoomInfo(id) {
-    var url = 'http://127.0.0.1:5000/room';
-    Vue.http.jsonp(url,{params : {id : id}})
+    var url = window.hosturl + '/lms/room/get';
+    Vue.http.jsonp(url,{params : {id : roomid}})
     .then(function(data) {
         if(data.body.code == 0){
             var vmdata = formatRoomData(data.body.data);
@@ -29,7 +29,7 @@ function formatRoomData(data) {
         data.chargeStrategy.discount.map(function(item) {
             discount.push({
                 discount : item.discount,
-                duration : item.mouth,
+                duration : item.month,
                 id : getId()
             })
         })
@@ -86,12 +86,13 @@ var vm = new Vue({
             this.removeStrategy(e.id);
         },
         submit : function(e) {
-            var url = 'http://127.0.0.1:5000/room/add';
+            var url = window.hosturl + '/lms/room/update';
+            var delurl = window.hosturl + '/lms/room/del'
             var self = this;
             var body = this.formatData();
             /*是否有删除房间标记*/
             if(body.deleteRoom){
-                Vue.http.delete(url, {params : {id : roomid}})
+                Vue.http.delete(delurl, {params : {id : roomid}})
                     .then(function(data) {
                         if(data.body.code == 0){
                             $('.ui.modal').modal('show');
@@ -103,9 +104,10 @@ var vm = new Vue({
                         alert('提交失败');
                         console.log(e)
                     })
+                    return;
             }
             /*未删除房间逻辑*/
-            Vue.http.post(url,{body : body})
+            Vue.http.post(url,body,{params : {id : roomid}})
             .then(function(data) {
                 if(data.body.code == 0){
                     $('.ui.modal')
@@ -157,7 +159,7 @@ var vm = new Vue({
             this.$refs.charges.map(function(charge) {
                 if(charge.del == true) return;
                 discount.push({
-                    mouth : charge.d,
+                    month : charge.d,
                     discount : parseFloat(charge.m,10)
                 });
             })     

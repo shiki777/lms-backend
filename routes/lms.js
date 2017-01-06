@@ -586,8 +586,8 @@ router.delete('/room/del',function(req,res){
 
 router.post('/room/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'room-update failed for no id.'});}
-  if(!req.body){return res.status(400).send({code:1,msg:'room-update failed for no body.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'room-update failed for no id.'});}
+  if(!req.body){return res.status(200).send({code:1,msg:'room-update failed for no body.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能修改房间
     return res.status(401).send({code:1,msg:'room-update failed for no login or have no right.'});
@@ -595,7 +595,7 @@ router.post('/room/update',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -606,14 +606,14 @@ router.post('/room/update',function(req,res){
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',u3dbg = ' + pool.escape(req.body.u3dbg) + ',room.desc = ' + pool.escape(req.body.desc)
       + ',charge = ' + pool.escape(req.body.charge) + ',price = ' + pool.escape(req.body.chargeStrategy.price)
-      + ',dependencyChange = ' + pool.escape(req.body.dependencyChange) + ',room.order = ' + pool.escape(req.body.order)
+      + ',dependencyChange = ' + pool.escape(req.body.dependencyCharge) + ',room.order = ' + pool.escape(req.body.order)
       + ',tag = ' + pool.escape(req.body.tag) + ',viewAngle = ' + pool.escape(req.body.viewAngle)
       + ',controlModel = ' + pool.escape(req.body.controlModel) + ',projectStyle = ' + pool.escape(req.body.projectStyle)
       + ',eyeStyle = ' + pool.escape(req.body.eyeStyle) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -632,7 +632,7 @@ router.post('/room/update',function(req,res){
           connection.query(d_sql + i_sql, function(err, result) {//delete room_discount then insert room_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:'update room success'});
@@ -653,15 +653,15 @@ router.post('/room/update',function(req,res){
 
 router.get('/room/get',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'room-get failed for no id.'});}
+  if(!req.query.id){return res.status(200).jsonp({code:1,msg:'room-get failed for no id.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间
-    return res.status(401).send({code:1,msg:'room-get failed for no login.'});
+    return res.status(401).jsonp({code:1,msg:'room-get failed for no login.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -674,10 +674,10 @@ router.get('/room/get',function(req,res){
       connection.query(r_sql + ru_sql +  rd_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else if(result[0].length != 1){
-          res.status(200).send({code:1,msg:'room-get failed for not exist this room or have no right.'});
+          res.status(200).jsonp({code:1,msg:'room-get failed for not exist this room or have no right.'});
         }
         else {
           var user_arr = new Array();
@@ -699,7 +699,7 @@ router.get('/room/get',function(req,res){
             desc : result[0][0].desc,
             u3dbg : result[0][0].u3dbg,
             charge : result[0][0].charge,
-            dependencyChange : result[0][0].dependencyChange,
+            dependencyCharge : result[0][0].dependencyChange,
             order : result[0][0].order,
             viewAngle : result[0][0].viewAngle,
             controlModel : result[0][0].controlModel,
@@ -710,7 +710,7 @@ router.get('/room/get',function(req,res){
               discount : discount_arr
             }
           };
-          res.status(200).send({code:0,msg:'room-get success.',data:data});
+          res.status(200).jsonp({code:0,msg:'room-get success.',data:data});
         }
         connection.release();
       });
