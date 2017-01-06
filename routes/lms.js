@@ -4,7 +4,8 @@ var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
-var Users = require('../user/user');
+var Users = require('../third_interface/user');
+var gift = require('../third_interface/gift');
 
 var PER_COMPANY_NOMAL_USER = 0x00000001,
     PER_COMPANY_ADMIN_USER = 0x00000002,
@@ -504,7 +505,13 @@ router.post('/room/add',function(req,res){
                 var discount = req.body.chargeStrategy.discount;
                 if(userlist.length <= 0 && discount.length <= 0){
                   res.status(200).send({code:0,msg:'add room success.'});
-                  //后续对接通知礼物系统
+                  //通知礼物系统
+                  gift.room_add_del(room_insert_id.toString(),true)
+                    .then(function(resbody){
+                    })
+                    .catch(function(errmsg){
+                      console.log(errmsg);
+                    })
                   return connection.release();
                 }
                 var ru_values = ' VALUES';
@@ -530,7 +537,13 @@ router.post('/room/add',function(req,res){
                     }
                     else {//创建房间成功
                       res.status(200).send({code:0,msg:'add room success.'});
-                      //后续对接通知礼物系统
+                      //通知礼物系统
+                      gift.room_add_del(room_insert_id.toString(),true)
+                        .then(function(resbody){
+                        })
+                        .catch(function(errmsg){
+                          console.log(errmsg);
+                        })
                     }
                   connection.release();
                 });
@@ -569,6 +582,13 @@ router.delete('/room/del',function(req,res){
         }
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
+          //通知礼物系统
+          gift.room_add_del(req.query.id.toString(),false)
+            .then(function(resbody){
+            })
+            .catch(function(errmsg){
+              console.log(errmsg);
+            })
         }
         connection.release();
       });
