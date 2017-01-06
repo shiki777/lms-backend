@@ -720,16 +720,16 @@ router.get('/room/get',function(req,res){
 
 router.get('/room/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:1,msg:'room-list failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:1,msg:'room-list failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'room-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'room-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间列表
-    return res.status(401).send({code:1,msg:'room-list failed for no login.'});
+    return res.status(401).jsonp({code:1,msg:'room-list failed for no login.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -741,10 +741,10 @@ router.get('/room/list',function(req,res){
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
+          res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
         }
         connection.release();
       });

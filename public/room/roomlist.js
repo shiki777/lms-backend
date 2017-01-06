@@ -3,7 +3,8 @@
 var vm = new Vue({
     el : '#page',
     data : {
-        rooms : []
+        rooms : [],
+        url : window.hosturl + '/lms/room/list'
     },
     methods : {
         pageLoaded : function(data) {
@@ -18,7 +19,7 @@ var vm = new Vue({
                   living : item.living,
                   user : item.user,
                   id : item.id,
-                  link : 'http://www.baidu.com?id=' + item.id
+                  link : window.hosturl + '/lms/page/roomupdate?id=' + item.id
                 });
             })
             return res;
