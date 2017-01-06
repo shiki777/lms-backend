@@ -234,7 +234,7 @@ function startPushStream(token){
             connection.release();
           }
           else {
-            var setSql = 'UPDATE room SET host = ' + rows[0].id + ',hostName =' + rows[0].name + ' WHERE id = ' + rows[0].roomId + ';';
+            var setSql = 'UPDATE room SET host = ' + rows[0].id + ',hostName = ' + pool.escape(rows[0].name) + ' WHERE id = ' + rows[0].roomId + ';';
             connection.query(setSql, function(err, result) {
               if(err){
                 console.log(err);
