@@ -38,7 +38,7 @@
             Vue.http.post(url,body)
             .then(function(data) {
                 if(data.body.code == 0){
-                    location.href= 'http://127.0.0.1:3000/lms/page/roomlist';
+                    location.href= 'http://127.0.0.1:3000/lms/page/index';
                 } else {
                     alert('提交失败：' + data.body.msg);
                 }
