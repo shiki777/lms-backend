@@ -1,0 +1,65 @@
+<link rel="stylesheet" href="../../channel/channel.css">
+        <div class="ui middle aligned center aligned grid">
+            <div class="wrap">
+                <h1 class="ui header aligned">创建频道</h1>
+                <form class="ui form segment room-container">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>频道名称</label>
+                            <input placeholder="频道名称" name="name" type="text" v-model="name"/>
+                        </div>
+                        <div class="field">
+                            <label>频道权重</label>
+                            <input type="number" v-model="order"/>    
+                        </div>
+                    </div>
+                    <div class="fields two"> 
+                        <div class="field">
+                            <label>收费</label>
+                            <select v-model="dependencyCharge">
+                                <option value="0">否</option>
+                                <option value="1">是</option>
+                            </select>
+                        </div>                                            
+                    </div>                   
+                    <div class="field">
+                        <label>频道简介</label>
+                        <input placeholder="简介" name="username" type="text" v-model="desc"/>    
+                    </div>
+                    <div class="field" :style="{display : changeShow}">
+                        <label>基础定价</label>
+                        <div class="inline price-line">
+                            <input type="number" class="charge-input-money" v-model="price"/>                        
+                            <span class="charge-span">元/月</span>
+                        </div>
+                        <label>折扣策略</label>
+                        <div class="charge-wrap">
+                            <charge v-for="item in chargeStrategy" :discount="item.discount" :duration="item.duration" :id="item.id" ref="charges" v-on:remove="onChargeRemove"></charge>
+                        </div>
+                        <div class="ui primary button charge-btn" @click="addStrategy">添加策略</div>
+                    </div>
+                    <div class="field">
+                        <imguploader ref="thumbcom" title="封面上传" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
+                    </div>
+                    <div class="field">
+                        <imguploader ref="iconcom" title="角标上传" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
+                    </div>                    
+                    <div class="ui primary submit button" v-on:click="submit">提交</div>
+                </form>
+            </div>
+        </div>
+    <div class="ui modal"> <i class="close icon"></i>
+        <div class="header">恭喜您</div>
+        <div class="image content">
+            <div class="description">
+                <div class="ui header">频道创建成功！</div>
+                <p>页面将跳转...</p>
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">知道了</div>
+        </div>
+    </div>    
+<script src="../../component/imguploader.js"></script> 
+<script src="../../room/charge_component.js"></script> 
+<script src="../../channel/create.js"></script>     

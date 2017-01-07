@@ -144,24 +144,24 @@ router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
-    return res.status(400).send({code:1,msg:'user-list failed for no login or have no right.'});
+    return res.status(400).jsonp({code:1,msg:'user-list failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(500).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
-      var sql = 'SELECT name FROM user' + condition + ';';
+      var sql = 'SELECT id,name FROM user' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(500).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'get user list success.',list:rows});
+          res.status(200).jsonp({code:0,msg:'get user list success.',list:rows});
         }
         connection.release();
       });
@@ -177,7 +177,7 @@ router.get('/user/list',function(req,res){
 router.post('/channel/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
-    return res.status(400).send({code:1,msg:'channel-add failed for no body.'});
+    return res.status(200).send({code:1,msg:'channel-add failed for no body.'});
   }
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能创建频道
@@ -193,7 +193,7 @@ router.post('/channel/add',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -204,7 +204,7 @@ router.post('/channel/add',function(req,res){
       connection.query(sql, function(err, result) {//insert channel.
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -227,7 +227,7 @@ router.post('/channel/add',function(req,res){
           connection.query(cd_sql, function(err, result) {//insert channel_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(result.affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount result.affectedRows != ' + discount.length)});
@@ -247,7 +247,7 @@ router.post('/channel/add',function(req,res){
 所以在处理每个记录(包括其他表中的记录)的删除操作时都要考虑联表问题，包括更新策略，这些要在建表时确定策略*/
 router.delete('/channel/del',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-del failed for no id.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'channel-del failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除频道
     return res.status(401).send({code:1,msg:'channel-del failed for no login or have no right.'});
@@ -255,7 +255,7 @@ router.delete('/channel/del',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -265,7 +265,7 @@ router.delete('/channel/del',function(req,res){
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
         }
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
@@ -278,8 +278,8 @@ router.delete('/channel/del',function(req,res){
 
 router.post('/channel/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-update failed for no id.'});}
-  if(!req.body){return res.status(400).send({code:1,msg:'channel-update failed for no body.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'channel-update failed for no id.'});}
+  if(!req.body){return res.status(200).send({code:1,msg:'channel-update failed for no body.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改频道
     return res.status(401).send({code:1,msg:'channel-update failed for no login or have no right.'});
@@ -287,7 +287,7 @@ router.post('/channel/update',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -298,10 +298,11 @@ router.post('/channel/update',function(req,res){
       + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
       + ',channel.desc = ' + pool.escape(req.body.desc) + ',defaultRoom = ' + pool.escape(req.body.defaultRoom)
       + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      console.log(sql)
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -316,11 +317,17 @@ router.post('/channel/update',function(req,res){
             + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
           }
           var d_sql = 'DELETE FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
-          var i_sql = (discount.length <= 0) ? '' : ('INSERT INTO channel_discount(channelId,amount,discount)' + cd_values);
+          var i_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
+          // 不付费时不插入
+          if(discount.length == 0){
+            i_sql = '';
+          }          
           connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
+            } else if (discount.length == 0) {
+              res.status(200).send({code:0,msg:"update channel success."});
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
@@ -341,15 +348,15 @@ router.post('/channel/update',function(req,res){
 
 router.get('/channel/get',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-get failed for no id.'});}
+  if(!req.query.id){return res.status(400).jsonp({code:1,msg:'channel-get failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道
-    return res.status(401).send({code:1,msg:'channel-get failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-get failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -360,10 +367,10 @@ router.get('/channel/get',function(req,res){
       connection.query(c_sql + cd_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else if(result[0].length != 1){
-          res.status(200).send({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
+          res.status(200).jsonp({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
         }
         else {
           var discount_arr = new Array();
@@ -375,6 +382,7 @@ router.get('/channel/get',function(req,res){
             charge : result[0][0].charge,
             icon : result[0][0].icon,
             thumb : result[0][0].thumb,
+            desc : result[0][0].desc,
             order : result[0][0].order,
             chargeStrategy : {
               price : result[0][0].price,
@@ -382,7 +390,7 @@ router.get('/channel/get',function(req,res){
             },
             defaultRoom : result[0][0].defaultRoom
           };
-          res.status(200).send({code:0,msg:'channel-get success.',data:data});
+          res.status(200).jsonp({code:0,msg:'channel-get success.',data:data});
         }
         connection.release();
       });
@@ -392,30 +400,30 @@ router.get('/channel/get',function(req,res){
 
 router.get('/channel/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:1,msg:'channel-list failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'channel-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
-    return res.status(401).send({code:1,msg:'channel-list failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-list failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
+          res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
         }
         connection.release();
       });
@@ -425,15 +433,15 @@ router.get('/channel/list',function(req,res){
 
 router.get('/channel/roomlist',function(req,res){//根据频道channelId来获取房间列表
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-roomlist get failed for no id.'});}
+  if(!req.query.id){return res.status(200).jsonp({code:1,msg:'channel-roomlist get failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登或权限不够录则不能根据频道来获取房间列表
-    return res.status(401).send({code:1,msg:'channel-roomlist get failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-roomlist get failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -443,10 +451,10 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-roomlist get success.',data:rows});
+          res.status(200).jsonp({code:0,msg:'channel-roomlist get success.',data:rows});
         }
         connection.release();
       });
@@ -459,7 +467,7 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
 router.post('/room/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
-    return res.status(400).send({code:1,msg:'room-add failed for no body.'});
+    return res.status(200).send({code:1,msg:'room-add failed for no body.'});
   }
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够或没有房间用户则不能开通房间
@@ -477,7 +485,7 @@ router.post('/room/add',function(req,res){
         pool.getConnection(function(err,connection){
           if(err){
             console.log(err);
-            res.status(500).send({code:1,msg:err.message});
+            res.status(200).send({code:1,msg:err.message});
           }
           else {
             console.log('connected as id ' + connection.threadId);
@@ -486,13 +494,13 @@ router.post('/room/add',function(req,res){
             pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
             pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
             pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
-            pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyChange) + ',' +
+            pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyCharge) + ',' +
             pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
             pool.escape(req.body.controlModel) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ');';
             connection.query(room_sql, function(err, result) {//insert room
               if(err){
                 console.log(err);
-                res.status(500).send({code:1,msg:err.message});
+                res.status(200).send({code:1,msg:err.message});
                 connection.release();
               }
               else if(result.affectedRows != 1){
@@ -528,7 +536,7 @@ router.post('/room/add',function(req,res){
                 connection.query(ru_sql + rd_sql, function(err, result) {//insert room_user、room_discount.
                   if(err){
                     console.log(err);
-                    res.status(500).send({code:1,msg:err.message});
+                    res.status(200).send({code:1,msg:err.message});
                   }
                   else if((userlist.length <= 0 && discount.length > 0 && result[0].affectedRows != discount.length)
                     || (userlist.length > 0 && discount.length <= 0 && result[0].affectedRows != userlist.length)
@@ -598,8 +606,8 @@ router.delete('/room/del',function(req,res){
 
 router.post('/room/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'room-update failed for no id.'});}
-  if(!req.body){return res.status(400).send({code:1,msg:'room-update failed for no body.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'room-update failed for no id.'});}
+  if(!req.body){return res.status(200).send({code:1,msg:'room-update failed for no body.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能修改房间
     return res.status(401).send({code:1,msg:'room-update failed for no login or have no right.'});
@@ -607,7 +615,7 @@ router.post('/room/update',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -618,14 +626,14 @@ router.post('/room/update',function(req,res){
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',u3dbg = ' + pool.escape(req.body.u3dbg) + ',room.desc = ' + pool.escape(req.body.desc)
       + ',charge = ' + pool.escape(req.body.charge) + ',price = ' + pool.escape(req.body.chargeStrategy.price)
-      + ',dependencyChange = ' + pool.escape(req.body.dependencyChange) + ',room.order = ' + pool.escape(req.body.order)
+      + ',dependencyChange = ' + pool.escape(req.body.dependencyCharge) + ',room.order = ' + pool.escape(req.body.order)
       + ',tag = ' + pool.escape(req.body.tag) + ',viewAngle = ' + pool.escape(req.body.viewAngle)
       + ',controlModel = ' + pool.escape(req.body.controlModel) + ',projectStyle = ' + pool.escape(req.body.projectStyle)
       + ',eyeStyle = ' + pool.escape(req.body.eyeStyle) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -644,7 +652,7 @@ router.post('/room/update',function(req,res){
           connection.query(d_sql + i_sql, function(err, result) {//delete room_discount then insert room_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:'update room success'});
@@ -665,15 +673,15 @@ router.post('/room/update',function(req,res){
 
 router.get('/room/get',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'room-get failed for no id.'});}
+  if(!req.query.id){return res.status(200).jsonp({code:1,msg:'room-get failed for no id.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间
-    return res.status(401).send({code:1,msg:'room-get failed for no login.'});
+    return res.status(401).jsonp({code:1,msg:'room-get failed for no login.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -686,10 +694,10 @@ router.get('/room/get',function(req,res){
       connection.query(r_sql + ru_sql +  rd_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else if(result[0].length != 1){
-          res.status(200).send({code:1,msg:'room-get failed for not exist this room or have no right.'});
+          res.status(200).jsonp({code:1,msg:'room-get failed for not exist this room or have no right.'});
         }
         else {
           var user_arr = new Array();
@@ -711,7 +719,7 @@ router.get('/room/get',function(req,res){
             desc : result[0][0].desc,
             u3dbg : result[0][0].u3dbg,
             charge : result[0][0].charge,
-            dependencyChange : result[0][0].dependencyChange,
+            dependencyCharge : result[0][0].dependencyChange,
             order : result[0][0].order,
             viewAngle : result[0][0].viewAngle,
             controlModel : result[0][0].controlModel,
@@ -722,7 +730,7 @@ router.get('/room/get',function(req,res){
               discount : discount_arr
             }
           };
-          res.status(200).send({code:0,msg:'room-get success.',data:data});
+          res.status(200).jsonp({code:0,msg:'room-get success.',data:data});
         }
         connection.release();
       });
@@ -732,16 +740,16 @@ router.get('/room/get',function(req,res){
 
 router.get('/room/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:1,msg:'room-list failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:1,msg:'room-list failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'room-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'room-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间列表
-    return res.status(401).send({code:1,msg:'room-list failed for no login.'});
+    return res.status(401).jsonp({code:1,msg:'room-list failed for no login.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -753,10 +761,10 @@ router.get('/room/list',function(req,res){
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
+          res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
         }
         connection.release();
       });
