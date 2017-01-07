@@ -540,8 +540,8 @@ router.post('/room/add',function(req,res){
                     console.log(err);
                     res.status(200).send({code:1,msg:err.message});
                   }
-                  else if((userlist.length <= 0 && discount.length > 0 && result[0].affectedRows != discount.length)
-                    || (userlist.length > 0 && discount.length <= 0 && result[0].affectedRows != userlist.length)
+                  else if((userlist.length <= 0 && discount.length > 0 && result.affectedRows != discount.length)
+                    || (userlist.length > 0 && discount.length <= 0 && result.affectedRows != userlist.length)
                     || (userlist.length > 0 && discount.length > 0 && ((result[0].affectedRows != userlist.length) || (result[1].affectedRows != discount.length)))){
                       res.status(200).send({code:1,msg:('insert room_user.affectedRows != ' + userlist.length + 'or room_discount.affectedRows != ' + discount.length)});
                     }
