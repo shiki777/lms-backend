@@ -52,7 +52,7 @@
                     $('.ui.modal')
                     .modal('show'); 
                     setTimeout(function() {
-                      location.href= window.hosturl + '/lms/page/register';
+                      location.href= window.hosturl + '/lms/page/login';
                     },1000)
                 } else {
                     alert('提交失败：' + data.body.msg);
