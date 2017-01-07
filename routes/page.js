@@ -17,6 +17,13 @@ router.use('/', function(req, res, next) {
     }
 })
 
+router.get('/register', function(req,res) {
+  var isSuper = req.query.reg ? true : false;
+  res.render('./login/register',{
+    message : 'var isSuper = ' + isSuper,
+    title : '注册'
+  });
+});
 
 router.get('/channelcreate', function(req,res) {
   var user = req.session.user || {};

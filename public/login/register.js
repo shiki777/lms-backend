@@ -14,6 +14,10 @@
                 {
                   type   : 'empty',
                   prompt : '用户名不能为空'
+                },
+                {
+                  type : 'email',
+                  prompt : '请输入正确的邮箱格式'
                 }
               ]
             },
@@ -41,20 +45,22 @@
             }
           },
           onSuccess : function() {
-            var url = '';
-            // Vue.http.post(url,{body : this.formatData()})
-            // .then(function(data) {
-            //     if(data.body.code == 0){
-            //         $('.ui.modal')
-            //         .modal('show'); 
-            //         // location.href= '';
-            //     } else {
-            //         alert('提交失败：' + data.body.msg);
-            //     }
+            var url = window.hosturl + '/lms/admin/register';
+            Vue.http.post(url,{username : $('#username').val(), pwd : $('#pw').val()})
+            .then(function(data) {
+                if(data.body.code == 0){
+                    $('.ui.modal')
+                    .modal('show'); 
+                    setTimeout(function() {
+                      location.href= window.hosturl + '/lms/page/register';
+                    },1000)
+                } else {
+                    alert('提交失败：' + data.body.msg);
+                }
 
-            // }, function(e) {
-            //     alert('提交失败');
-            // })               
+            }, function(e) {
+                alert('提交失败');
+            })               
             return false;
           }
         })

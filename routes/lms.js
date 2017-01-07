@@ -110,7 +110,7 @@ router.post('/admin/register',function(req,res){
       pool.getConnection(function(err,connection){
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
         }
         else {
           console.log('connected as id ' + connection.threadId);
@@ -121,7 +121,7 @@ router.post('/admin/register',function(req,res){
           connection.query(sql, function(err, result) {
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if (result.affectedRows == 1) {
               res.status(200).send({code:0,msg:"register success."});
