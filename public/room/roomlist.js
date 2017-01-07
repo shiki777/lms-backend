@@ -30,42 +30,43 @@ var vm = new Vue({
             var id = ele.getAttribute('roomid');
             var self = this;
             if(id){
-                var url = window.host + 'http://127.0.0.1:5000/room/list?id=' + id;
-                // Vue.http.delete(url)
-                // .then(function(data) {
-                //     if(data.body.code == 0){
-                //         self.deleteRoom(id);
-                //     } else {
-                //         alert('删除失败 : ' + data.body.msg);
-                //     }
-                // }, function(e) {
-                //     alert('网络原因删除失败，请重试!');
-                // });
-                this.deleteRoom(id);
+                var url = window.hosturl + '/lms/room/del';
+                Vue.http.delete(url,{params : {id : id}})
+                .then(function(data) {
+                    if(data.body.code == 0){
+                    $('.ui.modal')
+                    .modal('show');                         
+                        self.deleteRoom(id);
+                    } else {
+                        alert('删除失败 : ' + data.body.msg);
+                    }
+                }, function(e) {
+                    alert('网络原因删除失败，请重试!');
+                });
             }
         },
         onCloseBtnClick : function(e) {
-            var url = 'http://127.0.0.1:5000/room/add';
+            var url = window.hosturl + '/lms/room/closeliving';
             var body = {
-                living : false
+                living : 0
             };
             e.preventDefault();
             var ele = e.target;
             var id = ele.getAttribute('roomid');
             var self = this;   
-            // Vue.http.post(url,{body : body,params : {id : id}})
-            // .then(function(data) {
-            //     if(data.body.code == 0){
-            //         $('.ui.modal')
-            //         .modal('show'); 
-            //         // location.href= '';
-            //     } else {
-            //         alert('提交失败：' + data.body.msg);
-            //     }
+            Vue.http.post(url,body,{params : {id : id}})
+            .then(function(data) {
+                if(data.body.code == 0){
+                    $('.ui.modal')
+                    .modal('show'); 
+                    this.updateRoom(id);
+                } else {
+                    alert('提交失败：' + data.body.msg);
+                }
 
-            // }, function(e) {
-            //     alert('网络原因关闭失败，请重试');
-            // });      
+            }, function(e) {
+                alert('网络原因关闭失败，请重试');
+            });      
             this.updateRoom(id);
         },
         deleteRoom : function(id) {

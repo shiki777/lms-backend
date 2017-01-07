@@ -651,6 +651,43 @@ router.post('/room/update',function(req,res){
   });
 });
 
+router.post('/room/closeliving', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(200).send({code:1,msg:'room-update failed for no id.'});}
+  if(!req.body){return res.status(200).send({code:1,msg:'room-update failed for no body.'});}
+  var user = req.session.user;
+  if(user == null){//未登录则不能修改房间
+    return res.status(401).send({code:1,msg:'room-update failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(200).send({code:1,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
+      (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
+      var sql = 'UPDATE room SET living = ' + pool.escape(0) +  ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      connection.query(sql, function(err, result) {
+        if(err){
+          console.log(err);
+          res.status(200).send({code:1,msg:err.message});
+          connection.release();
+        }
+        else if(result.affectedRows != 1){
+          res.status(200).send({code:1,msg:'update room failed that result.affectedRows != 1'});
+          connection.release();
+        } else {
+          res.status(200).send({code:0,msg:'close living room success'});
+          connection.release();
+        }
+      });
+    }
+  });  
+});
+
 router.get('/room/get',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(200).jsonp({code:1,msg:'room-get failed for no id.'});}
