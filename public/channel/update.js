@@ -79,7 +79,7 @@ var vm = new Vue({
                 if(data.body.code == 0){
                     $('.ui.modal')
                     .modal('show'); 
-                    // location.href= '';
+                    window.location.reload();
                 } else {
                     alert('提交失败：' + data.body.msg);
                 }
