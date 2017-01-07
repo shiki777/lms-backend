@@ -409,15 +409,22 @@ router.get('/channel/list',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
-      var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';
+      /*var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';*/
+      var sql = 'SELECT name,thumb,icon,id FROM channel' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
+          var chanlist = new Array();
+          var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          var pageEnd = pageStart + parseInt(req.query.pageSize);
+          for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
+            chanlist.push(rows[i]);
+          }
+          res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:chanlist}});
         }
         connection.release();
       });
@@ -750,15 +757,22 @@ router.get('/room/list',function(req,res){
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
+      /*var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';*/
+      var sql = 'SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
+          var roomlist = new Array();
+          var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          var pageEnd = pageStart + parseInt(req.query.pageSize);
+          for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
+            roomlist.push(rows[i]);
+          }
+          res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:roomlist}});
         }
         connection.release();
       });
