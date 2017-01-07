@@ -420,6 +420,7 @@ router.get('/channel/list',function(req,res){
         else {
           var chanlist = new Array();
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
           for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
             chanlist.push(rows[i]);
@@ -768,6 +769,7 @@ router.get('/room/list',function(req,res){
         else {
           var roomlist = new Array();
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
           for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
             roomlist.push(rows[i]);
