@@ -28,7 +28,8 @@ var config = {
   chatroom:{
     host:'192.168.5.137',
     port: 8066
-  }
+  },
+  host : 'http://127.0.0.1:3000'
 };
 
 module.exports = config;

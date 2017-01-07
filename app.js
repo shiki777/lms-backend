@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var multer = require('multer');
-var multerupload = multer({ dest: './uploads' });
+var multerupload = multer({ dest: './upload' });
 
 var app = express();
 app.use(session({
@@ -47,7 +47,7 @@ var upload = require('./routes/upload');
 app.use('/gms', gmsrouter);
 app.use('/lms',lms);
 app.use('/lms/page',page);
-app.use('/lms/upload',upload);
+app.use('/lms/upload',multerupload.any(),upload);
 
 
 // catch 404 and forward to error handler

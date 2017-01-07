@@ -2,7 +2,7 @@ Vue.component('imguploader',{
     template : '<div class="field">\
                 <label>{{title}}</label>\
                 <img class="ui small image"  v-bind:src="imgurl">\
-                <div class="ui primary button upload-btn" v-on:click="selectFile">上传图片<input v-on:change="onImageChanged" style="display:none;" type="file"/></div>\
+                <div class="ui primary button upload-btn" v-on:click="selectFile">上传图片<input accept="image/*" v-on:change="onImageChanged" style="display:none;" type="file"/></div>\
                 </div>',
     props : ['title', 'thumb'],
     data : function() {
@@ -30,7 +30,7 @@ Vue.component('imguploader',{
                 })
         },
         getImgUrl : function(data) {
-            return window.hosturl + '/' + data[0].newpath;
+            return data.newpath;
         }
     }
 
