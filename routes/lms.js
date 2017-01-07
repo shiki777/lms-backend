@@ -4,7 +4,8 @@ var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
-var Users = require('../user/user');
+var Users = require('../third_interface/user');
+var gift = require('../third_interface/gift');
 
 var PER_COMPANY_NOMAL_USER = 0x00000001,
     PER_COMPANY_ADMIN_USER = 0x00000002,
@@ -316,17 +317,11 @@ router.post('/channel/update',function(req,res){
             + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
           }
           var d_sql = 'DELETE FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
-          var i_sql = 'INSERT INTO channel_discount(channelId,amount,discount)' + cd_values;
-          // 不付费时不插入
-          if(discount.length == 0){
-            i_sql = '';
-          }          
+          var i_sql = (discount.length == 0) ? '' : ('INSERT INTO channel_discount(channelId,amount,discount)' + cd_values);
           connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
             if(err){
               console.log(err);
               res.status(200).send({code:1,msg:err.message});
-            } else if (discount.length == 0) {
-              res.status(200).send({code:0,msg:"update channel success."});
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
@@ -414,15 +409,23 @@ router.get('/channel/list',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
-      var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';
+      /*var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';*/
+      var sql = 'SELECT name,thumb,icon,id FROM channel' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
+          var chanlist = new Array();
+          var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          if(pageStart < 0){pageStart = 0;}
+          var pageEnd = pageStart + parseInt(req.query.pageSize);
+          for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
+            chanlist.push(rows[i]);
+          }
+          res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:chanlist}});
         }
         connection.release();
       });
@@ -512,7 +515,13 @@ router.post('/room/add',function(req,res){
                 var discount = req.body.chargeStrategy.discount;
                 if(userlist.length <= 0 && discount.length <= 0){
                   res.status(200).send({code:0,msg:'add room success.'});
-                  //后续对接通知礼物系统
+                  //通知礼物系统
+                  gift.room_add_del(room_insert_id.toString(),true)
+                    .then(function(resbody){
+                    })
+                    .catch(function(errmsg){
+                      console.log(errmsg);
+                    })
                   return connection.release();
                 }
                 var ru_values = ' VALUES';
@@ -538,7 +547,13 @@ router.post('/room/add',function(req,res){
                     }
                     else {//创建房间成功
                       res.status(200).send({code:0,msg:'add room success.'});
-                      //后续对接通知礼物系统
+                      //通知礼物系统
+                      gift.room_add_del(room_insert_id.toString(),true)
+                        .then(function(resbody){
+                        })
+                        .catch(function(errmsg){
+                          console.log(errmsg);
+                        })
                     }
                   connection.release();
                 });
@@ -577,6 +592,13 @@ router.delete('/room/del',function(req,res){
         }
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
+          //通知礼物系统
+          gift.room_add_del(req.query.id.toString(),false)
+            .then(function(resbody){
+            })
+            .catch(function(errmsg){
+              console.log(errmsg);
+            })
         }
         connection.release();
       });
@@ -773,15 +795,23 @@ router.get('/room/list',function(req,res){
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
+      /*var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';*/
+      var sql = 'SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
+          var roomlist = new Array();
+          var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          if(pageStart < 0){pageStart = 0;}
+          var pageEnd = pageStart + parseInt(req.query.pageSize);
+          for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
+            roomlist.push(rows[i]);
+          }
+          res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:roomlist}});
         }
         connection.release();
       });
