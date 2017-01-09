@@ -62,7 +62,7 @@ var vm = new Vue({
                 name : this.name,
                 thumb : this.getThumb(),
                 desc : this.desc,
-                charge : parseInt(this.dependencyCharge,10) ? true : false,
+                charge : parseInt(this.dependencyCharge,10) ? 1 : 0,
                 order : this.order,
                 icon : this.getIcon(),
                 chargeStrategy : this.getChargeStrategy()

@@ -205,6 +205,7 @@ router.post('/channel/add',function(req,res){
       + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.icon) + ',' + pool.escape(req.body.thumb)
       + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ',' + pool.escape(req.body.defaultRoom) + ');';
       connection.query(sql, function(err, result) {//insert channel.
+        var channel_insert_id = result.insertId;
         if(err){
           console.log(err);
           res.status(200).send({code:1,msg:err.message});
@@ -222,7 +223,6 @@ router.post('/channel/add',function(req,res){
             redis.insertSwitchChannelInfo(channel_insert_id);
             return connection.release();
           }
-
           var cd_values = ' VALUES';
           for(var i = 0;i < discount.length;i ++){//组建频道-折扣SQL语句
             cd_values += '(' + channel_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
@@ -288,6 +288,7 @@ router.delete('/channel/del',function(req,res){
 router.post('/channel/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(200).send({code:1,msg:'channel-update failed for no id.'});}
+  var cid = parseInt(req.query.id);
   if(!req.body){return res.status(200).send({code:1,msg:'channel-update failed for no body.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改频道
@@ -307,7 +308,6 @@ router.post('/channel/update',function(req,res){
       + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
       + ',channel.desc = ' + pool.escape(req.body.desc) + ',defaultRoom = ' + pool.escape(req.body.defaultRoom)
       + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      console.log(sql)
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
@@ -335,6 +335,8 @@ router.post('/channel/update',function(req,res){
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
               redis.insertSwitchChannelInfo(req.query.id);
+              redis.insertChannel(cid);
+              redis.insertChannelList();
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
@@ -342,6 +344,8 @@ router.post('/channel/update',function(req,res){
             else {
               res.status(200).send({code:0,msg:"update channel success."});
               redis.insertSwitchChannelInfo(req.query.id);
+              redis.insertChannel(cid);
+              redis.insertChannelList();
             }
             connection.release();
           });
@@ -526,6 +530,7 @@ router.post('/room/add',function(req,res){
                 var discount = req.body.chargeStrategy.discount;
                 if(userlist.length <= 0 && discount.length <= 0){
                   res.status(200).send({code:0,msg:'add room success.'});
+                  redis.insertDefaultChannel(room_insert_id);
                   //通知礼物系统
                   gift.room_add_del(room_insert_id.toString(),true)
                     .then(function(resbody){
@@ -561,6 +566,7 @@ router.post('/room/add',function(req,res){
                     }
                     else {//创建房间成功
                       res.status(200).send({code:0,msg:'add room success.'});
+                      redis.insertDefaultChannel(room_insert_id);
                       //通知礼物系统
                       gift.room_add_del(room_insert_id.toString(),true)
                         .then(function(resbody){
@@ -632,6 +638,7 @@ router.post('/room/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(200).send({code:1,msg:'room-update failed for no id.'});}
   if(!req.body){return res.status(200).send({code:1,msg:'room-update failed for no body.'});}
+  var roomid = parseInt(req.query.id,10);
   var user = req.session.user;
   if(user == null){//未登录则不能修改房间
     return res.status(401).send({code:1,msg:'room-update failed for no login or have no right.'});
@@ -687,6 +694,7 @@ router.post('/room/update',function(req,res){
               if(preChannelId != req.body.channelId){
                 redis.insertChannelRoomList(preChannelId);
               }
+              redis.insertDefaultChannel(roomid);
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert room_discount.affectedRows != ' + discount.length)});
@@ -698,6 +706,7 @@ router.post('/room/update',function(req,res){
               if(preChannelId != req.body.channelId){
                 redis.insertChannelRoomList(preChannelId);
               }
+              redis.insertDefaultChannel(roomid);
             }
             connection.release();
           });

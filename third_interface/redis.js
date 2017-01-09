@@ -1,17 +1,28 @@
-var epgd = require('../epgd/insertRedisData');
+var epgd_module = require('../epgd/insertRedisData');
+var client = require('../epgd/redisClient').redisClient;
+var epgd = new epgd_module(client);
 var config = require('../config/config');
 var mysql = require('mysql');
 var q = require('q');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 
-function insertDefaultChannel(conn){
-
+/*通知EPG 进入APP默认播放的房间，条件为免费的频道下的免费房间*/
+function insertDefaultChannel(roomid){
+  getDefaultData(roomid)
+    .then(function(data) {
+      console.log('default report fired!');
+      epgd.insertDefaultChannel(data);
+    })
+    .catch(function(e) {
+      console.log(e)
+    })
 }
 
 /*通知EPG 一个频道更新*/
 function insertChannel(channelid) {
   getChannelData(channelid)
     .then(function(data) {
+      console.log('channel insert fired!');
       epgd.insertChannelInfo(data);
     })
     .catch(function(e) {
@@ -23,7 +34,7 @@ function insertChannel(channelid) {
 function insertChannelList(channelid) {
   getChannelListData(channelid)
     .then(function(data) {
-      console.log(data)
+      console.log('channellist insert fired!');
       epgd.insertChannelList(data);
     })
     .catch(function(e) {
@@ -41,15 +52,51 @@ function getChannelData(channelid){
         }
         else {
           console.log('connected as id ' + connection.threadId);
-          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.order,channel.desc,channel.defaultRoom,channel_discount.id as id1,channel_discount.amount,channel_discount.discount,room.id as id2,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.tag,room.viewAngle,room.price as price1,room.controlModel,room.projectStyle,room.eyeStyle,room_discount.id as id3,room_discount.roomId,room_discount.amount as amount1,room_discount.discount as discount1 from channel,channel_discount,room,room_discount where channel.id = ' + pool.escape(channelid) + ' AND channel_discount.channelId = ' + pool.escape(channelid) + ' AND room.id = channel.defaultRoom AND room_discount.roomId = channel.defaultRoom';
-          connection.query(sql, function(err, rows, fields) {
+          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.order,channel.desc,channel.defaultRoom,room.id as id2,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.tag,room.viewAngle,room.price as price1,room.controlModel,room.projectStyle,room.eyeStyle from channel,room where channel.id = ' + pool.escape(channelid) + ' AND room.id = channel.defaultRoom;';
+          var sql2= 'select * from channel_discount where channel_discount.channelId = ' + pool.escape(channelid) + ';';
+          var sql3 = 'select * from channel,room_discount where channel.id = ' + pool.escape(channelid) + ' and room_discount.roomId = channel.defaultRoom;';
+          connection.query(sql + sql2 + sql3, function(err, result) {
             if(err){
               console.log('report redis insertChannel error : ' + err)
               defer.reject(err);
             }
             else {//查询成功
-             var channel = formatChannelInfo(rows);
+             var channel = formatChannelInfo(result[0],result[1],result[2]);
              defer.resolve(channel);
+            }
+            connection.release();
+          });
+        }
+      });
+      return defer.promise;
+}
+
+/*判断房间是否符合免费房间免费频道的要求*/
+function getDefaultData(roomid) {
+ var defer = q.defer();
+      pool.getConnection(function(err,connection){
+        if(err){
+          console.log('report redis insertDefaultChannel error : ' + err)
+          defer.reject(err);
+        }
+        else {
+          console.log('connected as id ' + connection.threadId);
+          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle from channel,room where room.id=' + pool.escape(roomid) + ' and channel.id = room.channelId';
+          connection.query(sql, function(err, rows, fields) {
+            if(err){
+              console.log('report redis insertDefaultChannel error : ' + err)
+              defer.reject(err);
+            }
+            else {//查询成功
+              if(rows.length == 0){
+                rows[0] = {};
+              }
+              if(!rows[0].charge && !rows[0].charge1){
+                var channel = formatDefaultChannelInfo(rows);
+                defer.resolve(channel);
+              } else {
+                defer.reject();
+              }
             }
             connection.release();
           });
@@ -204,7 +251,37 @@ function formatChannelList(rows) {
 }
 
 /*拼接频道数据*/
-function formatChannelInfo(rows) {
+function formatChannelInfo(data,channelrows,roomrows) {
+  var data = data[0] || {};
+  var channel = {
+    id : data.id,
+    name : data.name,
+    thumb : data.thumb,
+    icon : data.icon,
+    desc : data.desc,
+    charge : data.charge ? true : false,
+    charge_strategy : getStrategy(channelrows,data.price,data.charge),
+    default_room_info : {
+      id : data.defaultRoom,
+      name : data.name1,
+      thumb : data.thumb1,
+      desc : data.desc1,
+      charge : data.charge1 ? true : false,
+      charge_strategy : getRoomStrategy(roomrows,data.price1,data.charge1),
+      living : data.living ? true : false,
+      online : 100,
+      tag : data.tag,
+      u3d_bg : data.u3dbg,
+      view_angle : data.viewAngle,
+      project_style : data.projectStyle,
+      control_model : data.controlModel,
+      eye_style : data.eyeStyle
+    }
+  }
+  return channel;
+}
+/*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
+function formatDefaultChannelInfo(rows) {
   if(rows.length == 0){
     rows[0] ={};
   }
@@ -214,15 +291,15 @@ function formatChannelInfo(rows) {
     thumb : rows[0].thumb,
     icon : rows[0].icon,
     desc : rows[0].desc,
-    charge : rows[0].charge ? true : false,
-    charge_strategy : getStrategy(rows),
+    charge : false,
+    charge_strategy : {price : 0, discount : []},
     default_room_info : {
       id : rows[0].defaultRoom,
       name : rows[0].name1,
       thumb : rows[0].thumb1,
       desc : rows[0].desc1,
-      charge : rows[0].charge1 ? true : false,
-      charge_strategy : getRoomStrategy(rows),
+      charge : false,
+      charge_strategy : {price : 0, discount : []},
       living : rows[0].living ? true : false,
       online : 100,
       tag : rows[0].tag,
@@ -236,50 +313,44 @@ function formatChannelInfo(rows) {
   return channel;
 }
 
-function getStrategy(rows) {
-  if(!rows[0].charge){
+function getStrategy(rows,price,charge) {
+  if(!charge){
     return {
       price : 0,
       discount : []
     };
   }
   var s = {
-    price : rows[0].price,
+    price : price,
     discount : []
   };
   var ids= [];
   for(var i = 0; i < rows.length; i++){
-    if(ids.indexOf(rows[i].id1) < 0){
       s.discount.push({
         month : rows[i].amount,
         discount : rows[i].discount
       });
-       ids.push(rows[i].id1);
-    }
   }
   return s;
 }
 
-function getRoomStrategy(rows) {
-  if(!rows[0].charge1){
+function getRoomStrategy(rows,price,charge) {
+  if(!charge){
     return {
       price : 0,
       discount : []
     };
   }
   var s = {
-    price : rows[0].price1,
+    price : price,
     discount : []
   };
   var ids = [];
   for(var i = 0; i < rows.length; i++){
-    if(ids.indexOf(rows[i].id3) < 0){
       s.discount.push({
-        month : rows[i].amount1,
-        discount : rows[i].discount1
+        month : rows[i].amount,
+        discount : rows[i].discount
       });
-       ids.push(rows[i].id3);
-    }
   }
   return s;
 }
