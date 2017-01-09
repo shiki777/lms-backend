@@ -205,6 +205,7 @@ router.post('/channel/add',function(req,res){
       + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.icon) + ',' + pool.escape(req.body.thumb)
       + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ',' + pool.escape(req.body.defaultRoom) + ');';
       connection.query(sql, function(err, result) {//insert channel.
+        var channel_insert_id = result.insertId;
         if(err){
           console.log(err);
           res.status(200).send({code:1,msg:err.message});
@@ -218,11 +219,8 @@ router.post('/channel/add',function(req,res){
           var discount = req.body.chargeStrategy.discount;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
-            redis.insertChannel(result.insertId);
-            redis.insertChannelList();
             return connection.release();
           }
-          var channel_insert_id = result.insertId;
           var cd_values = ' VALUES';
           for(var i = 0;i < discount.length;i ++){//组建频道-折扣SQL语句
             cd_values += '(' + channel_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
@@ -239,8 +237,6 @@ router.post('/channel/add',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
-              redis.insertChannel(result.insertId);
-              redis.insertChannelList();              
             }
             connection.release();
           });
@@ -306,7 +302,6 @@ router.post('/channel/update',function(req,res){
       + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
       + ',channel.desc = ' + pool.escape(req.body.desc) + ',defaultRoom = ' + pool.escape(req.body.defaultRoom)
       + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      console.log(sql)
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
