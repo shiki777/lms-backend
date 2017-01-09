@@ -217,8 +217,10 @@ router.post('/channel/add',function(req,res){
         }
         else {
           var discount = req.body.chargeStrategy.discount;
+          var channel_insert_id = result.insertId;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
+            redis.insertSwitchChannelInfo();
             return connection.release();
           }
           var cd_values = ' VALUES';
@@ -237,6 +239,7 @@ router.post('/channel/add',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
+              redis.insertSwitchChannelInfo();
             }
             connection.release();
           });
@@ -272,6 +275,9 @@ router.delete('/channel/del',function(req,res){
         }
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
+          if(result.affectedRows == 1){
+            redis.insertSwitchChannelInfo();
+          }
         }
         connection.release();
       });
@@ -328,16 +334,18 @@ router.post('/channel/update',function(req,res){
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
+              redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
-              redis.insertChannelList();               
+              redis.insertChannelList();
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
             }
             else {
               res.status(200).send({code:0,msg:"update channel success."});
+              redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
-              redis.insertChannelList();                
+              redis.insertChannelList();
             }
             connection.release();
           });
@@ -530,6 +538,9 @@ router.post('/room/add',function(req,res){
                     .catch(function(errmsg){
                       console.log(errmsg);
                     })
+                  redis.insertRoomInfo(room_insert_id,req.body);
+                  redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                  redis.insertChannelRoomList(req.body.channelId);
                   return connection.release();
                 }
                 var ru_values = ' VALUES';
@@ -566,6 +577,7 @@ router.post('/room/add',function(req,res){
                       //写redis,1:插入房间，2：有可能需要插入默认频道，仅插入一次，3：插入频道房间列表,4:插入房间播放URL
                       redis.insertRoomInfo(room_insert_id,req.body);
                       redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                      redis.insertChannelRoomList(req.body.channelId);
                     }
                   connection.release();
                 });
@@ -596,15 +608,19 @@ router.delete('/room/del',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以删除任何房间，公司管理员只能删除该公司的房间
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
-      var sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      connection.query(sql, function(err, result) {
+      var s_sql = 'SELECT channelId FROM room WHERE id = ' + pool.escape(req.query.id) + ';';
+      var d_sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      connection.query(s_sql + d_sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(500).send({code:1,msg:err.message});
         }
-        else {//result.affectedRows == 1
-          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
+        else {//result[1].affectedRows == 1
+          res.status(200).send({code:0,msg:(result[1].affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
           //通知礼物系统
+          if(result[0].length == 1){
+            redis.insertChannelRoomList(result[0][0].channelId);
+          }
           gift.room_add_del(req.query.id.toString(),false)
             .then(function(resbody){
             })
@@ -637,7 +653,8 @@ router.post('/room/update',function(req,res){
       //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
+      var s_sql = 'SELECT channelId FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      var u_sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',u3dbg = ' + pool.escape(req.body.u3dbg) + ',room.desc = ' + pool.escape(req.body.desc)
       + ',charge = ' + pool.escape(req.body.charge) + ',price = ' + pool.escape(req.body.chargeStrategy.price)
@@ -645,17 +662,18 @@ router.post('/room/update',function(req,res){
       + ',tag = ' + pool.escape(req.body.tag) + ',viewAngle = ' + pool.escape(req.body.viewAngle)
       + ',controlModel = ' + pool.escape(req.body.controlModel) + ',projectStyle = ' + pool.escape(req.body.projectStyle)
       + ',eyeStyle = ' + pool.escape(req.body.eyeStyle) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      connection.query(sql, function(err, result) {
+      connection.query(s_sql + u_sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
-        else if(result.affectedRows != 1){
-          res.status(200).send({code:1,msg:'update room failed that result.affectedRows != 1'});
+        else if(result[1].affectedRows != 1){
+          res.status(200).send({code:1,msg:'update room failed that result[1].affectedRows != 1'});
           connection.release();
         }
         else {//先删除room_discount表中的关于roomId的旧记录，再在其中添加新的记录
+          var preChannelId = result[0][0].channelId;
           var discount = req.body.chargeStrategy.discount;
           var rd_values = ' VALUES';
           for(var i = 0;i < discount.length;i ++){//组建房间-折扣SQL语句
@@ -671,6 +689,11 @@ router.post('/room/update',function(req,res){
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:'update room success'});
+              redis.insertRoomInfo(req.query.id,req.body);
+              redis.insertChannelRoomList(req.body.channelId);
+              if(preChannelId != req.body.channelId){
+                redis.insertChannelRoomList(preChannelId);
+              }
               redis.insertDefaultChannel(roomid);
             }
             else if(result[1].affectedRows != discount.length){
@@ -678,6 +701,11 @@ router.post('/room/update',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:'update room success'});
+              redis.insertRoomInfo(req.query.id,req.body);
+              redis.insertChannelRoomList(req.body.channelId);
+              if(preChannelId != req.body.channelId){
+                redis.insertChannelRoomList(preChannelId);
+              }
               redis.insertDefaultChannel(roomid);
             }
             connection.release();

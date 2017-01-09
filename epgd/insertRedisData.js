@@ -72,7 +72,7 @@ epgd.prototype.insertChannelInfo = function(info) {
 // }]
 epgd.prototype.insertChannelRoomList = function(id, list) {
   var key = 'channel_' + id + '_room_list';
-  this.client.set(key, JSON.stringify(roomlist));
+  this.client.set(key, JSON.stringify(list));
 };
 
 //插入上下频道,数据格式参见频道信息定义
@@ -83,6 +83,7 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
     up: up,
     down: down
   };
+  console.log('swtich time end' + new Date().getTime());
   this.client.set(key, JSON.stringify(channelSwitchInfo));
 };
 

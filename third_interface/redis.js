@@ -132,11 +132,68 @@ function getChannelListData() {
       return defer.promise;
 }
 
-function insertChannelRoomList(conn,id){
+function insertChannelRoomList(chid){
+  if(!chid){return;}
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+    }
+    else {
+      var sql = 'SELECT id,name,thumb,room.desc,charge,living FROM room WHERE channelId = '
+       + pool.escape(chid) + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+        }
+        else {
+          epgd.insertChannelRoomList(chid,rows);
+        }
+        connection.release();
+      });
+    }
+  });
+}
 
+function insertSwitchChannelInfo(){
+  console.log(new Date().getTime());
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+    }
+    else {
+      var sql = 'SELECT id,channel.order AS chorder FROM channel ORDER BY channel.order,id;';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+        }
+        else {
+          var upid = 0,downid = 0;
+          for(var i = 0;i < rows.length;i ++){
+              upid = (i == 0) ? rows[rows.length - 1].id : rows[i - 1].id;
+              downid = (i == rows.length - 1) ? rows[0].id : rows[i + 1].id;
+              getChannelData(upid)
+                .then(function(up) {
+                  getChannelData(downid)
+                    .then(function(down) {
+                      epgd.insertSwitchChannelInfo(rows[i].id,up,down);
+                    })
+                    .catch(function(e) {
+                      console.log(e)
+                    })
+                })
+                .catch(function(e) {
+                  console.log(e)
+                })
+          }
+        }
+        connection.release();
+      });
+    }
+  });
 }
 
 function insertRoomInfo(roomId,body){
+  if(!roomId || !body){return;}
   var roominfo = {
     id : roomId,
     name : body.name,
@@ -156,15 +213,19 @@ function insertRoomInfo(roomId,body){
   epgd.insertRoomInfo(roominfo);
 }
 
-function insertRoomPlayurl(id,url){
-  epgd.insertRoomPlayurl(id,url);
+function insertRoomPlayurl(roomId,playUrl){
+  if(!roomId || !playUrl){return;}
+  epgd.insertRoomPlayurl(roomId,playUrl);
 }
-
 
 module.exports = {
   insertDefaultChannel : insertDefaultChannel,
   insertChannel : insertChannel,
-  insertChannelList : insertChannelList
+  insertChannelList : insertChannelList,
+  insertChannelRoomList : insertChannelRoomList,
+  insertSwitchChannelInfo : insertSwitchChannelInfo,
+  insertRoomInfo : insertRoomInfo,
+  insertRoomPlayurl : insertRoomPlayurl
 };
 
 /*拼接频道列表数据*/
