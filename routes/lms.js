@@ -149,7 +149,7 @@ router.get('/user/list',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).jsonp({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -158,7 +158,7 @@ router.get('/user/list',function(req,res){
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).jsonp({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
           res.status(200).jsonp({code:0,msg:'get user list success.',list:rows});
