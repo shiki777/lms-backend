@@ -29,7 +29,7 @@ var config = {
     host:'192.168.5.137',
     port: 8066
   },
-  host : 'http://127.0.0.1:3000'
+  host : 'http://192.168.5.18:3000'
 };
 
 module.exports = config;

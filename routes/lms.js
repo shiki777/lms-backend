@@ -142,6 +142,7 @@ router.post('/admin/register',function(req,res){
     })
 });
 
+/*此接口用于房间创建时候获取可以当主播的用户列表*/
 router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var user = req.session.user;
@@ -151,16 +152,16 @@ router.get('/user/list',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).jsonp({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId) + ' AND id not in (select userId from room_user)');
       var sql = 'SELECT id,name FROM user' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).jsonp({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
           res.status(200).jsonp({code:0,msg:'get user list success.',list:rows});
@@ -399,9 +400,9 @@ router.get('/channel/list',function(req,res){
   if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'channel-list failed for no page or pageSize.'});}
   if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
-  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
-    return res.status(401).jsonp({code:1,msg:'channel-list failed for no login or have no right.'});
-  }
+  // if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
+  //   return res.status(401).jsonp({code:1,msg:'channel-list failed for no login or have no right.'});
+  // }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);

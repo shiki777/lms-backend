@@ -56,7 +56,7 @@
                         </div>
                         <div class="ui primary button charge-btn" @click="addStrategy">添加策略</div>
                     </div>
-                    <imguploader ref="thumbcom" title="封面上传" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
+                    <imguploader ref="thumbcom" title="封面上传(尺寸最好为350*200)" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
                     <imguploader ref="u3dcom" title="U3D背景图片上传" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>   
                     <div class="fields four">
                         <div class="field">
@@ -101,7 +101,7 @@
             <div class="description">
                 <div class="ui header">房间创建成功！</div>
                 <p>
-                    页面将跳转到....
+                    页面将跳转到房间列表页
                 </p>
             </div>
         </div>
@@ -112,7 +112,8 @@
             </div> -->
         </div>
     </div>      
-
+         <script><%- currentmsg %></script>
+         <script><%- sidemsg %></script>
 <script src="../../component/imguploader.js"></script> 
 <script src="../../room/charge_component.js"></script> 
 <script src="../../room/channel_component.js"></script> 
