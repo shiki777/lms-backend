@@ -6,10 +6,12 @@ var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
 var Users = require('../third_interface/user');
 var gift = require('../third_interface/gift');
+var redis = require('../third_interface/redis');
 
 var PER_COMPANY_NOMAL_USER = 0x00000001,
     PER_COMPANY_ADMIN_USER = 0x00000002,
     PER_SUPER_ADMIN_USER = 0x00000004;
+var gHaveInsertDefaultChannel = false;
 
 router.post('/login',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
@@ -554,6 +556,9 @@ router.post('/room/add',function(req,res){
                         .catch(function(errmsg){
                           console.log(errmsg);
                         })
+                      //写redis,1:插入房间，2：有可能需要插入默认频道，仅插入一次，3：插入频道房间列表,4:插入房间播放URL
+                      redis.insertRoomInfo(room_insert_id,req.body);
+                      redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
                     }
                   connection.release();
                 });

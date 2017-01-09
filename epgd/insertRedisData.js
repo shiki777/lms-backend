@@ -1,4 +1,4 @@
-//var client = require('../epgd/redisClient').redisClient;
+var client = require('./redisClient').redisClient;
 function epgd(client) {
   this.client = client;
 }
@@ -89,7 +89,7 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
 };
 
 /////////////////////////////
-//插入频道信息
+//插入房间信息
 // {
 //   id: xxx, //Number 房间id，标识符
 //   name: xx, //String 房间名称
