@@ -171,19 +171,7 @@ function insertSwitchChannelInfo(){
           for(var i = 0;i < rows.length;i ++){
               upid = (i == 0) ? rows[rows.length - 1].id : rows[i - 1].id;
               downid = (i == rows.length - 1) ? rows[0].id : rows[i + 1].id;
-              getChannelData(upid)
-                .then(function(up) {
-                  getChannelData(downid)
-                    .then(function(down) {
-                      epgd.insertSwitchChannelInfo(rows[i].id,up,down);
-                    })
-                    .catch(function(e) {
-                      console.log(e)
-                    })
-                })
-                .catch(function(e) {
-                  console.log(e)
-                })
+              insertUPandDown(rows[i].id,upid,downid);
           }
         }
         connection.release();
@@ -350,4 +338,20 @@ function getRoomStrategy(rows,price,charge) {
       });
   }
   return s;
+}
+
+function insertUPandDown(selfid,upid,downid){
+  getChannelData(upid)
+    .then(function(up) {
+      getChannelData(downid)
+        .then(function(down) {
+          epgd.insertSwitchChannelInfo(selfid,up,down);
+        })
+        .catch(function(e) {
+          console.log(e)
+        })
+    })
+    .catch(function(e) {
+      console.log(e)
+    })
 }
