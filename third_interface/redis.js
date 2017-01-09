@@ -154,8 +154,8 @@ function insertChannelRoomList(chid){
   });
 }
 
-function insertSwitchChannelInfo(chid){
-  if(!chid){return;}
+function insertSwitchChannelInfo(){
+  console.log(new Date().getTime());
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
@@ -169,25 +169,22 @@ function insertSwitchChannelInfo(chid){
         else {
           var upid = 0,downid = 0;
           for(var i = 0;i < rows.length;i ++){
-            if(rows[i].id == chid){
               upid = (i == 0) ? rows[rows.length - 1].id : rows[i - 1].id;
               downid = (i == rows.length - 1) ? rows[0].id : rows[i + 1].id;
-              break;
-            }
-          }
-          getChannelData(upid)
-            .then(function(up) {
-              getChannelData(downid)
-                .then(function(down) {
-                  epgd.insertSwitchChannelInfo(chid,up,down);
+              getChannelData(upid)
+                .then(function(up) {
+                  getChannelData(downid)
+                    .then(function(down) {
+                      epgd.insertSwitchChannelInfo(rows[i].id,up,down);
+                    })
+                    .catch(function(e) {
+                      console.log(e)
+                    })
                 })
                 .catch(function(e) {
                   console.log(e)
                 })
-            })
-            .catch(function(e) {
-              console.log(e)
-            })
+          }
         }
         connection.release();
       });

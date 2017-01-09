@@ -220,7 +220,7 @@ router.post('/channel/add',function(req,res){
           var channel_insert_id = result.insertId;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
-            redis.insertSwitchChannelInfo(channel_insert_id);
+            redis.insertSwitchChannelInfo();
             return connection.release();
           }
           var cd_values = ' VALUES';
@@ -239,7 +239,7 @@ router.post('/channel/add',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
-              redis.insertSwitchChannelInfo(channel_insert_id);
+              redis.insertSwitchChannelInfo();
             }
             connection.release();
           });
@@ -276,7 +276,7 @@ router.delete('/channel/del',function(req,res){
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
           if(result.affectedRows == 1){
-            redis.insertSwitchChannelInfo(req.query.id);
+            redis.insertSwitchChannelInfo();
           }
         }
         connection.release();
@@ -334,7 +334,7 @@ router.post('/channel/update',function(req,res){
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
-              redis.insertSwitchChannelInfo(req.query.id);
+              redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
               redis.insertChannelList();
             }
@@ -343,7 +343,7 @@ router.post('/channel/update',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"update channel success."});
-              redis.insertSwitchChannelInfo(req.query.id);
+              redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
               redis.insertChannelList();
             }
