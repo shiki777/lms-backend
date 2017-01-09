@@ -695,6 +695,7 @@ router.post('/room/update',function(req,res){
                 redis.insertChannelRoomList(preChannelId);
               }
               redis.insertDefaultChannel(roomid);
+              redis.insertSwitchChannelInfo();
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert room_discount.affectedRows != ' + discount.length)});
@@ -707,6 +708,7 @@ router.post('/room/update',function(req,res){
                 redis.insertChannelRoomList(preChannelId);
               }
               redis.insertDefaultChannel(roomid);
+              redis.insertSwitchChannelInfo();
             }
             connection.release();
           });

@@ -161,7 +161,7 @@ function insertSwitchChannelInfo(){
       console.log(err);
     }
     else {
-      var sql = 'SELECT id,channel.order AS chorder FROM channel ORDER BY channel.order,id;';
+      var sql = 'SELECT id,channel.order AS chorder FROM channel ORDER BY channel.order DESC,id;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
