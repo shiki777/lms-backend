@@ -3,7 +3,7 @@
     <div class="wrap">   
         <div class="room-item" v-for="room in rooms">
             <a :href="room.link" target="_blank">
-                <img src="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg" class="thumb">
+                <img :src="room.thumb" class="thumb">
                 <div class="room-name">{{room.name}}</div>
                 <div class="room-status" :class="{show : room.living, unshow : !room.living}">{{room.user}}  正在直播</div>
                 <div class="room-status" :class="{show : !room.living, unshow : room.living}">尚未开播</div>
