@@ -397,9 +397,9 @@ router.get('/channel/list',function(req,res){
   if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'channel-list failed for no page or pageSize.'});}
   if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
-  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
-    return res.status(401).jsonp({code:1,msg:'channel-list failed for no login or have no right.'});
-  }
+  // if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
+  //   return res.status(401).jsonp({code:1,msg:'channel-list failed for no login or have no right.'});
+  // }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
