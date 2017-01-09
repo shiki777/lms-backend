@@ -3,27 +3,6 @@ var epgd = require('../epgd/insertRedisData');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 
-function insertChannelRoomList(chid){
-  if(!chid){return;}
-  pool.getConnection(function(err,connection){
-    if(err){
-      console.log(err);
-    }
-    else {
-      var sql = 'SELECT id,name,thumb,room.desc,charge,living FROM room WHERE channelId = '
-       + pool.escape(chid) + ';';
-      connection.query(sql, function(err, rows, fields) {
-        if(err){
-          console.log(err);
-        }
-        else {
-          epgd.insertChannelRoomList(chid,rows);
-        }
-        connection.release();
-      });
-    }
-  });
-
 function insertDefaultChannel(conn){
 
 }
@@ -52,6 +31,28 @@ function insertChannel(channelid){
       });
 }
 
+function insertChannelRoomList(chid){
+  if(!chid){return;}
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+    }
+    else {
+      var sql = 'SELECT id,name,thumb,room.desc,charge,living FROM room WHERE channelId = '
+       + pool.escape(chid) + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+        }
+        else {
+          epgd.insertChannelRoomList(chid,rows);
+        }
+        connection.release();
+      });
+    }
+  });
+}
+
 function insertSwitchChannelInfo(chid){
   if(!chid){return;}
   pool.getConnection(function(err,connection){
@@ -59,17 +60,21 @@ function insertSwitchChannelInfo(chid){
       console.log(err);
     }
     else {
-      var sql = 'SELECT * FROM channel,room WHERE room.id = channel.defaultRoom ORDER BY channel.order,channel.id;';
+      var sql = 'SELECT * FROM channel ORDER BY channel.order,id';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
         }
         else {
-          console.log(rows);
-          /*for(var i = 0;i < rows.length;i ++){
-
+          var upid = 0,downid = 0;
+          for(var i = 0;i < rows.length;i ++){
+            if(rows[i].id == chid){
+              upid = (i == 0) ? rows[rows.length - 1].id : rows[i - 1].id;
+              downid = (i == rows.length - 1) ? rows[0].id : rows[i + 1].id;
+              break;
+            }
           }
-          epgd.insertSwitchChannelInfo(chid,);*/
+          //epgd.insertSwitchChannelInfo(chid,);
         }
         connection.release();
       });
@@ -103,20 +108,13 @@ function insertRoomPlayurl(roomId,playUrl){
   epgd.insertRoomPlayurl(roomId,playUrl);
 }
 
-function makeChannel(data){
-  if(!data){return null;}
-  return {
-
-  };
-}
-
 module.exports = {
+  insertDefaultChannel : insertDefaultChannel,
+  insertChannel : insertChannel,
   insertChannelRoomList : insertChannelRoomList,
   insertSwitchChannelInfo : insertSwitchChannelInfo,
   insertRoomInfo : insertRoomInfo,
-  insertRoomPlayurl : insertRoomPlayurl,
-  insertDefaultChannel : insertDefaultChannel,
-  insertChannel : insertChannel
+  insertRoomPlayurl : insertRoomPlayurl
 };
 
 
