@@ -9,7 +9,7 @@ var config = {
     port: '3306',
     user: 'lms',
     password: 'lms123',
-    database: 'lms2',
+    database: 'lms',
     multipleStatements : true
   },
   push_stream: {
