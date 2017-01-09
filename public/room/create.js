@@ -52,7 +52,9 @@ var vm = new Vue({
                 if(data.body.code == 0){
                     $('.ui.modal')
                     .modal('show'); 
-                    location.href= '/lms/page/roomlist';
+                    window.setTimeout(function() {
+                         window.location.reload();
+                    }, 1500);
                 } else {
                     alert('提交失败：' + data.body.msg);
                 }
