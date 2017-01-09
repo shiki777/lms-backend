@@ -1,18 +1,57 @@
+var mysql = require('mysql');
+var config = require('../config/config');
+var pool = mysql.createPool(config.db_mysql);
 var epgd = require('../epgd/insertRedisData');
 
-function insertDefaultChannel(conn){
-
+function insertChannelRoomList(chid){
+  if(!chid){return;}
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+    }
+    else {
+      var sql = 'SELECT id,name,thumb,room.desc,charge,living FROM room WHERE channelId = '
+       + pool.escape(chid) + ';';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+        }
+        else {
+          epgd.insertChannelRoomList(chid,rows);
+        }
+        connection.release();
+      });
+    }
+  });
 }
 
-function insertChannel(conn,chid){
+function insertSwitchChannelInfo(chid){
+  if(!chid){return;}
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+    }
+    else {
+      var sql = 'SELECT * FROM channel,room WHERE room.id = channel.defaultRoom ORDER BY channel.order,channel.id;';
+      connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+        }
+        else {
+          console.log(rows);
+          /*for(var i = 0;i < rows.length;i ++){
 
-}
-
-function insertChannelRoomList(conn,id){
-
+          }
+          epgd.insertSwitchChannelInfo(chid,);*/
+        }
+        connection.release();
+      });
+    }
+  });
 }
 
 function insertRoomInfo(roomId,body){
+  if(!roomId || !body){return;}
   var roominfo = {
     id : roomId,
     name : body.name,
@@ -32,11 +71,21 @@ function insertRoomInfo(roomId,body){
   epgd.insertRoomInfo(roominfo);
 }
 
-function insertRoomPlayurl(id,url){
-  epgd.insertRoomPlayurl(id,url);
+function insertRoomPlayurl(roomId,playUrl){
+  if(!roomId || !playUrl){return;}
+  epgd.insertRoomPlayurl(roomId,playUrl);
 }
 
+function makeChannel(data){
+  if(!data){return null;}
+  return {
+
+  };
+}
 
 module.exports = {
-  insertDefaultChannel : insertDefaultChannel
+  insertChannelRoomList : insertChannelRoomList,
+  insertSwitchChannelInfo : insertSwitchChannelInfo,
+  insertRoomInfo : insertRoomInfo,
+  insertRoomPlayurl : insertRoomPlayurl
 };

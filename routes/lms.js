@@ -525,6 +525,9 @@ router.post('/room/add',function(req,res){
                     .catch(function(errmsg){
                       console.log(errmsg);
                     })
+                  redis.insertRoomInfo(room_insert_id,req.body);
+                  redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                  redis.insertChannelRoomList(req.body.channelId);
                   return connection.release();
                 }
                 var ru_values = ' VALUES';
@@ -560,6 +563,7 @@ router.post('/room/add',function(req,res){
                       //写redis,1:插入房间，2：有可能需要插入默认频道，仅插入一次，3：插入频道房间列表,4:插入房间播放URL
                       redis.insertRoomInfo(room_insert_id,req.body);
                       redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                      redis.insertChannelRoomList(req.body.channelId);
                     }
                   connection.release();
                 });
