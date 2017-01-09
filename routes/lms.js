@@ -218,6 +218,8 @@ router.post('/channel/add',function(req,res){
           var discount = req.body.chargeStrategy.discount;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
+            redis.insertChannel(result.insertId);
+            redis.insertChannelList();
             return connection.release();
           }
           var channel_insert_id = result.insertId;
@@ -237,6 +239,8 @@ router.post('/channel/add',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
+              redis.insertChannel(result.insertId);
+              redis.insertChannelList();              
             }
             connection.release();
           });
@@ -282,6 +286,7 @@ router.delete('/channel/del',function(req,res){
 router.post('/channel/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(200).send({code:1,msg:'channel-update failed for no id.'});}
+  var cid = parseInt(req.query.id);
   if(!req.body){return res.status(200).send({code:1,msg:'channel-update failed for no body.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改频道
@@ -328,12 +333,16 @@ router.post('/channel/update',function(req,res){
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
+              redis.insertChannel(cid);
+              redis.insertChannelList();               
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
             }
             else {
               res.status(200).send({code:0,msg:"update channel success."});
+              redis.insertChannel(cid);
+              redis.insertChannelList();                
             }
             connection.release();
           });
