@@ -37,8 +37,6 @@ function epgd(client) {
 // };
 epgd.prototype.insertDefaultChannel = function(info) {
   var key = 'default_channel';
-  console.log(key);
-  console.log(info);
   this.client.set(key, JSON.stringify(info));
 };
 

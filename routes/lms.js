@@ -522,6 +522,7 @@ router.post('/room/add',function(req,res){
                 var discount = req.body.chargeStrategy.discount;
                 if(userlist.length <= 0 && discount.length <= 0){
                   res.status(200).send({code:0,msg:'add room success.'});
+                  redis.insertDefaultChannel(room_insert_id);
                   //通知礼物系统
                   gift.room_add_del(room_insert_id.toString(),true)
                     .then(function(resbody){
@@ -554,6 +555,7 @@ router.post('/room/add',function(req,res){
                     }
                     else {//创建房间成功
                       res.status(200).send({code:0,msg:'add room success.'});
+                      redis.insertDefaultChannel(room_insert_id);
                       //通知礼物系统
                       gift.room_add_del(room_insert_id.toString(),true)
                         .then(function(resbody){
@@ -620,6 +622,7 @@ router.post('/room/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(200).send({code:1,msg:'room-update failed for no id.'});}
   if(!req.body){return res.status(200).send({code:1,msg:'room-update failed for no body.'});}
+  var roomid = parseInt(req.query.id,10);
   var user = req.session.user;
   if(user == null){//未登录则不能修改房间
     return res.status(401).send({code:1,msg:'room-update failed for no login or have no right.'});
@@ -668,12 +671,14 @@ router.post('/room/update',function(req,res){
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:'update room success'});
+              redis.insertDefaultChannel(roomid);
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert room_discount.affectedRows != ' + discount.length)});
             }
             else {
               res.status(200).send({code:0,msg:'update room success'});
+              redis.insertDefaultChannel(roomid);
             }
             connection.release();
           });

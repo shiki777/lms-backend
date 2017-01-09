@@ -262,13 +262,10 @@ function getStrategy(rows,price,charge) {
   };
   var ids= [];
   for(var i = 0; i < rows.length; i++){
-    if(ids.indexOf(rows[i].id1) < 0){
       s.discount.push({
         month : rows[i].amount,
         discount : rows[i].discount
       });
-       ids.push(rows[i].id1);
-    }
   }
   return s;
 }
@@ -286,13 +283,10 @@ function getRoomStrategy(rows,price,charge) {
   };
   var ids = [];
   for(var i = 0; i < rows.length; i++){
-    if(ids.indexOf(rows[i].id3) < 0){
       s.discount.push({
         month : rows[i].amount,
         discount : rows[i].discount
       });
-       ids.push(rows[i].id3);
-    }
   }
   return s;
 }
