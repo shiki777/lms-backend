@@ -1,2 +1,2 @@
 var redis = require('./redis');
-redis.insertChannelList();
+redis.insertDefaultChannel(21);

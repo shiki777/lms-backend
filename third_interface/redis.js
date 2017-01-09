@@ -4,8 +4,16 @@ var mysql = require('mysql');
 var q = require('q');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 
-function insertDefaultChannel(conn){
-
+/*通知EPG 进入APP默认播放的房间，条件为免费的频道下的免费房间*/
+function insertDefaultChannel(roomid){
+  getDefaultData(roomid)
+    .then(function(data) {
+      console.log(data)
+      epgd.insertDefaultChannel(data);
+    })
+    .catch(function(e) {
+      console.log(e)
+    })
 }
 
 /*通知EPG 一个频道更新*/
@@ -50,6 +58,40 @@ function getChannelData(channelid){
             else {//查询成功
              var channel = formatChannelInfo(rows);
              defer.resolve(channel);
+            }
+            connection.release();
+          });
+        }
+      });
+      return defer.promise;
+}
+
+/*判断房间是否符合免费房间免费频道的要求*/
+function getDefaultData(roomid) {
+ var defer = q.defer();
+      pool.getConnection(function(err,connection){
+        if(err){
+          console.log('report redis insertDefaultChannel error : ' + err)
+          defer.reject(err);
+        }
+        else {
+          console.log('connected as id ' + connection.threadId);
+          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle from channel,room where room.id=' + pool.escape(roomid) + ' and channel.id = room.channelId';
+          connection.query(sql, function(err, rows, fields) {
+            if(err){
+              console.log('report redis insertDefaultChannel error : ' + err)
+              defer.reject(err);
+            }
+            else {//查询成功
+              if(rows.length == 0){
+                rows[0] = {};
+              }
+              if(!rows[0].charge && !rows[0].charge1){
+                var channel = formatDefaultChannelInfo(rows);
+                defer.resolve(channel);
+              } else {
+                defer.reject();
+              }
             }
             connection.release();
           });
@@ -159,6 +201,38 @@ function formatChannelInfo(rows) {
       desc : rows[0].desc1,
       charge : rows[0].charge1 ? true : false,
       charge_strategy : getRoomStrategy(rows),
+      living : rows[0].living ? true : false,
+      online : 100,
+      tag : rows[0].tag,
+      u3d_bg : rows[0].u3dbg,
+      view_angle : rows[0].viewAngle,
+      project_style : rows[0].projectStyle,
+      control_model : rows[0].controlModel,
+      eye_style : rows[0].eyeStyle
+    }
+  }
+  return channel;
+}
+/*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
+function formatDefaultChannelInfo(rows) {
+  if(rows.length == 0){
+    rows[0] ={};
+  }
+  var channel = {
+    id : rows[0].id,
+    name : rows[0].name,
+    thumb : rows[0].thumb,
+    icon : rows[0].icon,
+    desc : rows[0].desc,
+    charge : false,
+    charge_strategy : {price : 0, discount : []},
+    default_room_info : {
+      id : rows[0].defaultRoom,
+      name : rows[0].name1,
+      thumb : rows[0].thumb1,
+      desc : rows[0].desc1,
+      charge : false,
+      charge_strategy : {price : 0, discount : []},
       living : rows[0].living ? true : false,
       online : 100,
       tag : rows[0].tag,
