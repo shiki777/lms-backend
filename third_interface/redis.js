@@ -14,7 +14,7 @@ function insertChannel(channelid){
         }
         else {
           console.log('connected as id ' + connection.threadId);
-          var sql = 'select channel.id, room.id from channel,channel_discount,room,room_discount where channel.id = ' + pool.escape(channelid) + ' AND channel_discount.channelId = ' + pool.escape(channelid) + ' AND room.id = channel.defaultRoom AND room_discount.roomId = channel.defaultRoom';
+          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.order,channel.desc,channel.defaultRoom,channel_discount.id as id1,channel_discount.amount,channel_discount.discount,room.id as id2,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.tag,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle,room_discount.id as id3,room_discount.roomId,room_discount.amount as amount1,room_discount.discount as discount1 from channel,channel_discount,room,room_discount where channel.id = ' + pool.escape(channelid) + ' AND channel_discount.channelId = ' + pool.escape(channelid) + ' AND room.id = channel.defaultRoom AND room_discount.roomId = channel.defaultRoom';
           console.log(sql)
           connection.query(sql, function(err, rows, fields) {
             if(err){
