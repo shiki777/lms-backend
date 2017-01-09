@@ -140,6 +140,7 @@ router.post('/admin/register',function(req,res){
     })
 });
 
+/*此接口用于房间创建时候获取可以当主播的用户列表*/
 router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var user = req.session.user;
@@ -153,7 +154,7 @@ router.get('/user/list',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId) + ' AND id not in (select userId from room_user)');
       var sql = 'SELECT id,name FROM user' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
