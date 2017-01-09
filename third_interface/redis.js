@@ -8,7 +8,7 @@ function insertDefaultChannel(conn){
 
 }
 
-/*拿符合redis格式的一个频道数据*/
+/*通知EPG 一个频道更新*/
 function insertChannel(channelid) {
   getChannelData(channelid)
     .then(function(data) {
@@ -19,6 +19,19 @@ function insertChannel(channelid) {
     })
 }
 
+/*通知EPG 频道列表更新*/
+function insertChannelList(channelid) {
+  getChannelListData(channelid)
+    .then(function(data) {
+      console.log(data)
+      epgd.insertChannelList(data);
+    })
+    .catch(function(e) {
+      console.log(e)
+    })
+}
+
+/*拿符合redis格式的一个频道数据*/
 function getChannelData(channelid){
  var defer = q.defer();
       pool.getConnection(function(err,connection){
@@ -37,6 +50,33 @@ function getChannelData(channelid){
             else {//查询成功
              var channel = formatChannelInfo(rows);
              defer.resolve(channel);
+            }
+            connection.release();
+          });
+        }
+      });
+      return defer.promise;
+}
+
+/*获取频道列表接口*/
+function getChannelListData() {
+ var defer = q.defer();
+      pool.getConnection(function(err,connection){
+        if(err){
+          console.log('report redis insertChannelList error : ' + err)
+          defer.reject(err);
+        }
+        else {
+          console.log('connected as id ' + connection.threadId);
+          var sql = 'select * from channel';
+          connection.query(sql, function(err, rows, fields) {
+            if(err){
+              console.log('report redis insertChannelList error : ' + err)
+              defer.reject(err);
+            }
+            else {//查询成功
+             var list = formatChannelList(rows);
+             defer.resolve(list);
             }
             connection.release();
           });
@@ -76,11 +116,34 @@ function insertRoomPlayurl(id,url){
 
 module.exports = {
   insertDefaultChannel : insertDefaultChannel,
-  insertChannel : insertChannel
+  insertChannel : insertChannel,
+  insertChannelList : insertChannelList
 };
 
+/*拼接频道列表数据*/
+function formatChannelList(rows) {
+  if(rows.length == 0){
+    rows[0] ={};
+  }
+  var list = [];
+  for(var i = 0; i < rows.length; i++){
+    list.push({
+      id : rows[i].id,
+      name : rows[i].name,
+      thumb : rows[i].thumb,
+      default_room_info : {
+        id : rows[i].defaultRoom
+      }
+    })
+  }
+  return list;
+}
 
+/*拼接频道数据*/
 function formatChannelInfo(rows) {
+  if(rows.length == 0){
+    rows[0] ={};
+  }
   var channel = {
     id : rows[0].id,
     name : rows[0].name,
