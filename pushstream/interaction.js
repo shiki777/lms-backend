@@ -222,7 +222,7 @@ function startPushStream(token){
       }
       else {
         console.log('connected as id ' + connection.threadId);
-        var sql = 'SELECT user.id AS id,name,roomId FROM backinfo,user,room_user WHERE token = '
+        var sql = 'SELECT user.id AS id,uid,name,roomId FROM backinfo,user,room_user WHERE token = '
         + pool.escape(token) + ' AND status = 1 AND user.id = backinfo.id AND userId = user.id;';
         connection.query(sql, function(err, rows, fields) {
           if(err){
@@ -247,7 +247,7 @@ function startPushStream(token){
               else {
                 defer.resolve("startPushStream success.");
                 //通知礼物系统
-                gift.room_play_stop(rows[0].roomId.toString(),rows[0].id.toString(),true)
+                gift.room_play_stop(rows[0].roomId.toString(),rows[0].uid.toString(),true)
                   .then(function(resbody){
                     console.log(resbody);
                   })
@@ -276,8 +276,8 @@ function stopPushStream(token){
       }
       else {
         console.log('connected as id ' + connection.threadId);
-        var sql = 'SELECT backinfo.id AS aid,roomId FROM backinfo,room_user WHERE token = '
-        + pool.escape(token) + ' AND status = 1 AND userId = backinfo.id;';
+        var sql = 'SELECT uid,roomId FROM backinfo,user,room_user WHERE token = '
+        + pool.escape(token) + ' AND status = 1 AND backinfo.id = user.id AND userId = backinfo.id;';
         connection.query(sql, function(err,rows,fields) {
           if(err){
             console.log(err);
@@ -301,7 +301,7 @@ function stopPushStream(token){
               else {
                 defer.resolve("stopPushStream success.");
                 //通知礼物系统
-                gift.room_play_stop(rows[0].roomId.toString(),rows[0].aid.toString(),false)
+                gift.room_play_stop(rows[0].roomId.toString(),rows[0].uid.toString(),false)
                   .then(function(resbody){
                     console.log(resbody);
                   })
