@@ -5,6 +5,7 @@ var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
 var Users = require('../third_interface/user');
 var gift = require('../third_interface/gift');
+var redis = require('../third_interface/redis');
 
 function login(name,pwd){
   var defer = q.defer();
@@ -222,8 +223,8 @@ function startPushStream(token){
       }
       else {
         console.log('connected as id ' + connection.threadId);
-        var sql = 'SELECT user.id AS id,uid,name,roomId FROM backinfo,user,room_user WHERE token = '
-        + pool.escape(token) + ' AND status = 1 AND user.id = backinfo.id AND userId = user.id;';
+        var sql = 'SELECT user.id AS id,uid,user.name,roomId,channelId FROM backinfo,user,room_user,room WHERE token = '
+        + pool.escape(token) + ' AND status = 1 AND user.id = backinfo.id AND userId = user.id AND room.id = roomId;';
         connection.query(sql, function(err, rows, fields) {
           if(err){
             console.log(err);
@@ -235,7 +236,7 @@ function startPushStream(token){
             connection.release();
           }
           else {
-            var setSql = 'UPDATE room SET host = ' + rows[0].id + ',hostName = ' + pool.escape(rows[0].name) + ' WHERE id = ' + rows[0].roomId + ';';
+            var setSql = 'UPDATE room SET host = ' + rows[0].id + ',hostName = ' + pool.escape(rows[0].name) + ',living = 1 WHERE id = ' + rows[0].roomId + ';';
             connection.query(setSql, function(err, result) {
               if(err){
                 console.log(err);
@@ -253,7 +254,11 @@ function startPushStream(token){
                   })
                   .catch(function(errmsg){
                     console.log(errmsg);
-                  })
+                  });
+                redis.insertRoomInfo(rows[0].roomId);
+                redis.insertChannelRoomList(rows[0].channelId);
+                redis.insertSwitchChannelInfo();
+                redis.insertChannel(rows[0].channelId);
               }
               connection.release();
             });
@@ -276,8 +281,8 @@ function stopPushStream(token){
       }
       else {
         console.log('connected as id ' + connection.threadId);
-        var sql = 'SELECT uid,roomId FROM backinfo,user,room_user WHERE token = '
-        + pool.escape(token) + ' AND status = 1 AND backinfo.id = user.id AND userId = backinfo.id;';
+        var sql = 'SELECT uid,roomId,channelId FROM backinfo,user,room_user,room WHERE token = '
+        + pool.escape(token) + ' AND status = 1 AND backinfo.id = user.id AND userId = backinfo.id AND room.id = roomId;';
         connection.query(sql, function(err,rows,fields) {
           if(err){
             console.log(err);
@@ -289,7 +294,7 @@ function stopPushStream(token){
             connection.release();
           }
           else {
-            var setSql = 'UPDATE room SET host = null,hostName = null WHERE id = ' + rows[0].roomId + ';';
+            var setSql = 'UPDATE room SET host = null,hostName = null,living = 0 WHERE id = ' + rows[0].roomId + ';';
             connection.query(setSql, function(err,result) {
               if(err){
                 console.log(err);
@@ -307,7 +312,11 @@ function stopPushStream(token){
                   })
                   .catch(function(errmsg){
                     console.log(errmsg);
-                  })
+                  });
+                redis.insertRoomInfo(rows[0].roomId);
+                redis.insertChannelRoomList(rows[0].channelId);
+                redis.insertSwitchChannelInfo();
+                redis.insertChannel(rows[0].channelId);
               }
               connection.release();
             });
