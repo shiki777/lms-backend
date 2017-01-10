@@ -28,11 +28,16 @@ function formatRoomData(data) {
     if(data.chargeStrategy.discount.length >0){
         data.chargeStrategy.discount.map(function(item) {
             discount.push({
-                discount : item.discount,
+                discount : item.discount * 10,
                 duration : item.month,
                 id : getId()
             })
         })
+    } else {
+        discount.push({
+            discount : 9,
+            duration : 3
+        });
     }
     console.log(discount)
     return {
@@ -119,7 +124,7 @@ var vm = new Vue({
                 if(charge.del == true) return;
                 discount.push({
                     month : charge.d,
-                    discount : parseFloat(charge.m,10)
+                    discount : parseFloat(charge.m,10)/10
                 });
             })     
             res.discount = discount;       

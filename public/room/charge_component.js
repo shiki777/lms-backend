@@ -10,7 +10,7 @@ Vue.component('charge',{
     props : ['discount','duration', 'id'],
     data : function() {
         return {
-            m : this.discount || 0.8,
+            m : this.discount || 8,
             d : this.duration || 3
         }
     },
