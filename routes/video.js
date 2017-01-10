@@ -89,7 +89,7 @@ router.post('/video/update', function(req, res) {
                 msg: 'connection err ' + err.message
             });
         } else {
-            var sql = 'UPDATE video SET name = ' + pool.escape(name) + ', downloadurl = ' + pool.escape(downloadurl) + ', video.desc = ' + pool.escape(desc) + ', video.order = ' + pool.escape(order) + ', thumb = ' + pool.escape(thumb) + 'where id = ' + req.query.id + ';';
+            var sql = 'UPDATE video SET name = ' + pool.escape(name) + ', downloadurl = ' + pool.escape(downloadurl) + ', video.desc = ' + pool.escape(desc) + ', video.order = ' + pool.escape(order) + ', thumb = ' + pool.escape(thumb) + ' where id = ' + req.query.id + ';';
             connection.query(sql, function(err, rows, fields) {
                 if (err) {
                     console.log('video error : ' + err);
@@ -110,7 +110,7 @@ router.post('/video/update', function(req, res) {
 
 });
 
-rouget.get('/video/get', function(req, res) {
+router.get('/video/get', function(req, res) {
     res.header("Access-Control-Allow-Origin", "*");
     if (!req.query.id) {
         return res.status(200).send({
