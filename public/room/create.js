@@ -15,7 +15,7 @@ var vm = new Vue({
         u3dbg : '',
         dependencyCharge : 0,
         chargeStrategy  : [{
-            discount : 0.9,
+            discount : 9,
             duration : 3,
             id : getId()
         }],
@@ -102,7 +102,7 @@ var vm = new Vue({
                 if(charge.del == true) return;
                 discount.push({
                     month : charge.d,
-                    discount : parseFloat(charge.m,10)
+                    discount : parseFloat(charge.m,10)/10
                 });
             })     
             res.discount = discount;       
