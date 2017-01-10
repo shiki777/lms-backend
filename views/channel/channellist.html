@@ -1,201 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>频道修改页面</title>
-    <style>
-        [ng-cloak],
-        [data-ng-cloak],
-        [x-ng-cloak],
-        .ng-cloak,
-        .x-ng-cloak {
-            display:none !important;
-        }    
-        body {
-            font-family: 'Microsoft YaHei';
-        }
-
-        ul {
-            list-style: none;
-            font-size: 16px;
-            padding: 0;
-            margin: 0;            
-        }
-        .channel-item {
-            height: 80px;
-            vertical-align: middle;
-            margin: 5px;
-            /*padding-left: 80px;*/
-            position: relative;
-        }
-        .inline {
-            display: inline-block;
-        }
-        .container {
-            min-width: 1280px !important;
-        }
-        .channel-item .inline {
-            line-height: 80px;
-            text-align: center;
-            text-overflow: ellipsis;
-            overflow: auto;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-    
-        .channel-currentstream {
-            height: 65px;
-        }
-        .channel-thead .inline {
-            height: 30px;
-            line-height: 30px;
-            text-align: center;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;            
-        }
-
-        .channel-name {
-            width: 100px;
-            cursor: pointer;
-        }
-        .channel-thumb {
-            width: 65px;
-            height: 65px;
-            position: relative;
-            top: -35px;
-            left: 5px;
-        }
-
-        .channel-thumb-title {
-            width: 60px;
-            position: relative;
-            left: 8px;
-        }
-        .channel-desc {
-            width: 200px;
-        }
-        .channel-currentstream {
-            width: 350px;
-        }
-        .channel-control {
-            width: 260px;
-        }
-        .channel-thead {
-            margin: 5px;
-            /*padding-left: 120px;*/
-        }
-        .page-header {
-            position: relative;
-
-        }
-        .search-panel {
-            position: absolute;
-            right: 210px;
-            bottom: 10px;
-        }
-        nav {
-            text-align: center;
-        }
-        .channel-currentstream {
-            overflow: visible !important;
-            position: relative;
-        }
-
-        .hover-panel {
-            display: none;
-            position: absolute;
-            width: auto;
-            height: auto;
-            background: #428bca;
-            z-index: 90;
-            top: -20px;
-            left: -90px;
-            border-radius: 10px;
-            color: #fff;
-        }
-
-        .channel-currentstream:hover .hover-panel {
-            display: block;
-        }
-
-        .scroll-con {
-            height: 100%;
-            overflow: hidden;
-        }
-        .channel-currentstream span{
-            display: block;
-            height: 25px;
-            line-height: 25px;
-            margin-top: 5px;
-            padding: 0 10px;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap; 
-        }
-        .addBtn {
-            position: absolute;
-            right: 445px;
-            bottom: 10px;
-        }
-        .addBtn a {
-            color: #fff;
-            text-decoration: none;
-        }
-    </style>
-</head>
-<body ng-app="channel" ng-controller="channelCtrl">
-    <header class="page-header container">
-        <h1>频道列表页</h1>
-        <a href="./login">返回主页</a>
-        <div class="btn btn-primary addBtn"><a href="../admin/channelinfo?id=-2" target="_blank">添加频道</a> </div>     
-        <div class="search-panel">
-            <label for="search-ipt">搜索频道</label>
-            <input type="text" class="search-ipt" id="search-ipt" placeholder="" ng-model="filterStr"/>
+<link rel="stylesheet" href="../../channel/channellist.css">
+        <div class="ui middle aligned center aligned">
+            <div class="wrap">   
+                <div class="room-item" v-for="channel in channels">
+                    <a :href="channel.link" target="_blank">
+                        <img :src="channel.thumb" class="thumb">
+                        <div class="room-name">{{channel.name}}</div>
+                    </a>                    
+                </div>                                      
+                <div class="clear"></div>                               
+            </div>
+            <div class="page-wrap">
+                <pagination :url="url" size="12" @dataloaded="pageLoaded"></pagination>
+            </div>
         </div>
-    </header>
-    <div class="container" ng-cloak>
-        <div class="channel-thead">
-            <div class="channel-thumb-title inline">频道图标</div>
-            <div class="channel-name inline">频道名称</div>
-            <div class="channel-name inline">频道权重</div>
-            <div class="channel-desc inline">频道简介</div>
-            <div class="channel-currentstream inline">频道当前流地址(鼠标移动到流地址展示完全)</div>
-            <div class="channel-control inline">频道操作</div>
-        </div>
-       <ul>
-           <li class="channel-item" ng-repeat="c in vm.channellist | filter:searchFilter">
-               <img ng-src="{{c.thumb}}" alt="" class="channel-thumb">
-               <div class="channel-name inline"><a href="{{c.link}}" target="_blank">{{c.name}}</a></div>
-               <div class="channel-name inline">{{c.index}}</div>
-               <div class="channel-desc inline">{{c.desc}}</div>
-               <div class="channel-currentstream inline">
-                    <div class="scroll-con">
-                        <span ng-repeat="s in c.stream">{{s}}</span>
-                    </div>
-                    <div class="hover-panel">
-                        <span ng-repeat="s in c.stream">{{s}}</span>
-                    </div>
-               </div>
-               <div class="channel-control inline">
-                   <div class="btn btn-danger" ng-show="c.live" ng-click="closeChannel(c)">关闭频道</div>
-                   <div class="btn btn-primary" ng-show="!c.live" ng-click="openChannel(c)">开启频道</div>
-                   <div class="btn btn-danger" ng-click="delChannel(c)">删除频道</div>
-               </div>               
-           </li>          
-       </ul>
-       <nav>
-<!--           <ul class="pagination">
-            <li class="active"><a href="#">1</a></li>
-            <li><a href="#">2</a></li>
-            <li><a href="#">3</a></li>
-            <li><a href="#">4</a></li>
-            <li><a href="#">5</a></li>
-        </ul> -->
-        <div ng-if="needPage" pagination count="{{page.count}}" pageSize="{{page.pageSize}}" currentPage="{{page.currentPage}}"></div>
-    </nav>       
-    </div>
-     <script src="../../lib/angular.js"></script>
-     <script src="../../javascripts/channellist/app.js"></script>
+         <script><%- currentmsg %></script>
+         <script><%- sidemsg %></script>        
+<script src="../../component/page.js"></script> 
+<script src="../../channel/channellist.js"></script>     
 </body>
 </html>

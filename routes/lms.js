@@ -4,11 +4,14 @@ var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
-var Users = require('../user/user');
+var Users = require('../third_interface/user');
+var gift = require('../third_interface/gift');
+var redis = require('../third_interface/redis');
 
 var PER_COMPANY_NOMAL_USER = 0x00000001,
     PER_COMPANY_ADMIN_USER = 0x00000002,
     PER_SUPER_ADMIN_USER = 0x00000004;
+var gHaveInsertDefaultChannel = false;
 
 router.post('/login',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
@@ -110,7 +113,7 @@ router.post('/admin/register',function(req,res){
       pool.getConnection(function(err,connection){
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
         }
         else {
           console.log('connected as id ' + connection.threadId);
@@ -121,7 +124,7 @@ router.post('/admin/register',function(req,res){
           connection.query(sql, function(err, result) {
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if (result.affectedRows == 1) {
               res.status(200).send({code:0,msg:"register success."});
@@ -139,28 +142,29 @@ router.post('/admin/register',function(req,res){
     })
 });
 
+/*此接口用于房间创建时候获取可以当主播的用户列表*/
 router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
-    return res.status(400).send({code:1,msg:'user-list failed for no login or have no right.'});
+    return res.status(400).jsonp({code:1,msg:'user-list failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
-      var sql = 'SELECT name FROM user' + condition + ';';
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId) + ' AND id not in (select userId from room_user)');
+      var sql = 'SELECT id,name FROM user' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'get user list success.',list:rows});
+          res.status(200).jsonp({code:0,msg:'get user list success.',list:rows});
         }
         connection.release();
       });
@@ -176,7 +180,7 @@ router.get('/user/list',function(req,res){
 router.post('/channel/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
-    return res.status(400).send({code:1,msg:'channel-add failed for no body.'});
+    return res.status(200).send({code:1,msg:'channel-add failed for no body.'});
   }
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能创建频道
@@ -192,7 +196,7 @@ router.post('/channel/add',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -201,9 +205,10 @@ router.post('/channel/add',function(req,res){
       + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.icon) + ',' + pool.escape(req.body.thumb)
       + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ',' + pool.escape(req.body.defaultRoom) + ');';
       connection.query(sql, function(err, result) {//insert channel.
+        var channel_insert_id = result.insertId;
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -212,11 +217,12 @@ router.post('/channel/add',function(req,res){
         }
         else {
           var discount = req.body.chargeStrategy.discount;
+          var channel_insert_id = result.insertId;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
+            redis.insertSwitchChannelInfo();
             return connection.release();
           }
-          var channel_insert_id = result.insertId;
           var cd_values = ' VALUES';
           for(var i = 0;i < discount.length;i ++){//组建频道-折扣SQL语句
             cd_values += '(' + channel_insert_id + ',' + pool.escape(discount[i].month) + ',' + pool.escape(discount[i].discount)
@@ -226,13 +232,14 @@ router.post('/channel/add',function(req,res){
           connection.query(cd_sql, function(err, result) {//insert channel_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(result.affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount result.affectedRows != ' + discount.length)});
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
+              redis.insertSwitchChannelInfo();
             }
             connection.release();
           });
@@ -246,7 +253,7 @@ router.post('/channel/add',function(req,res){
 所以在处理每个记录(包括其他表中的记录)的删除操作时都要考虑联表问题，包括更新策略，这些要在建表时确定策略*/
 router.delete('/channel/del',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-del failed for no id.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'channel-del failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除频道
     return res.status(401).send({code:1,msg:'channel-del failed for no login or have no right.'});
@@ -254,7 +261,7 @@ router.delete('/channel/del',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -264,10 +271,13 @@ router.delete('/channel/del',function(req,res){
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
         }
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
+          if(result.affectedRows == 1){
+            redis.insertSwitchChannelInfo();
+          }
         }
         connection.release();
       });
@@ -277,8 +287,9 @@ router.delete('/channel/del',function(req,res){
 
 router.post('/channel/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-update failed for no id.'});}
-  if(!req.body){return res.status(400).send({code:1,msg:'channel-update failed for no body.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'channel-update failed for no id.'});}
+  var cid = parseInt(req.query.id);
+  if(!req.body){return res.status(200).send({code:1,msg:'channel-update failed for no body.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能修改频道
     return res.status(401).send({code:1,msg:'channel-update failed for no login or have no right.'});
@@ -286,7 +297,7 @@ router.post('/channel/update',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -300,7 +311,7 @@ router.post('/channel/update',function(req,res){
       connection.query(sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
         else if(result.affectedRows != 1){
@@ -315,20 +326,26 @@ router.post('/channel/update',function(req,res){
             + pool.escape(discount[i].discount) + ((i == (discount.length - 1)) ? ');' : '),');
           }
           var d_sql = 'DELETE FROM channel_discount WHERE channelId = ' + pool.escape(req.query.id) + ';';
-          var i_sql = (discount.length <= 0) ? '' : ('INSERT INTO channel_discount(channelId,amount,discount)' + cd_values);
+          var i_sql = (discount.length == 0) ? '' : ('INSERT INTO channel_discount(channelId,amount,discount)' + cd_values);
           connection.query(d_sql + i_sql, function(err, result) {//delete channel_discount then insert channel_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:"update channel success."});
+              redis.insertSwitchChannelInfo();
+              redis.insertChannel(cid);
+              redis.insertChannelList();
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
             }
             else {
               res.status(200).send({code:0,msg:"update channel success."});
+              redis.insertSwitchChannelInfo();
+              redis.insertChannel(cid);
+              redis.insertChannelList();
             }
             connection.release();
           });
@@ -340,15 +357,15 @@ router.post('/channel/update',function(req,res){
 
 router.get('/channel/get',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-get failed for no id.'});}
+  if(!req.query.id){return res.status(400).jsonp({code:1,msg:'channel-get failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道
-    return res.status(401).send({code:1,msg:'channel-get failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-get failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -359,10 +376,10 @@ router.get('/channel/get',function(req,res){
       connection.query(c_sql + cd_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else if(result[0].length != 1){
-          res.status(200).send({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
+          res.status(200).jsonp({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
         }
         else {
           var discount_arr = new Array();
@@ -374,6 +391,7 @@ router.get('/channel/get',function(req,res){
             charge : result[0][0].charge,
             icon : result[0][0].icon,
             thumb : result[0][0].thumb,
+            desc : result[0][0].desc,
             order : result[0][0].order,
             chargeStrategy : {
               price : result[0][0].price,
@@ -381,7 +399,7 @@ router.get('/channel/get',function(req,res){
             },
             defaultRoom : result[0][0].defaultRoom
           };
-          res.status(200).send({code:0,msg:'channel-get success.',data:data});
+          res.status(200).jsonp({code:0,msg:'channel-get success.',data:data});
         }
         connection.release();
       });
@@ -391,30 +409,38 @@ router.get('/channel/get',function(req,res){
 
 router.get('/channel/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:1,msg:'channel-list failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'channel-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'channel-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
-  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
-    return res.status(401).send({code:1,msg:'channel-list failed for no login or have no right.'});
-  }
+  // if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取频道列表
+  //   return res.status(401).jsonp({code:1,msg:'channel-list failed for no login or have no right.'});
+  // }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有频道列表，公司管理员只能获取该公司的频道列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
-      var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
+      /*var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';*/
+      var sql = 'SELECT name,thumb,icon,id FROM channel' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
+          var chanlist = new Array();
+          var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          if(pageStart < 0){pageStart = 0;}
+          var pageEnd = pageStart + parseInt(req.query.pageSize);
+          for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
+            chanlist.push(rows[i]);
+          }
+          res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:chanlist}});
         }
         connection.release();
       });
@@ -424,15 +450,15 @@ router.get('/channel/list',function(req,res){
 
 router.get('/channel/roomlist',function(req,res){//根据频道channelId来获取房间列表
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'channel-roomlist get failed for no id.'});}
+  if(!req.query.id){return res.status(200).jsonp({code:1,msg:'channel-roomlist get failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登或权限不够录则不能根据频道来获取房间列表
-    return res.status(401).send({code:1,msg:'channel-roomlist get failed for no login or have no right.'});
+    return res.status(401).jsonp({code:1,msg:'channel-roomlist get failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -442,10 +468,10 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'channel-roomlist get success.',data:rows});
+          res.status(200).jsonp({code:0,msg:'channel-roomlist get success.',data:rows});
         }
         connection.release();
       });
@@ -458,7 +484,7 @@ router.get('/channel/roomlist',function(req,res){//根据频道channelId来获�
 router.post('/room/add',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.body){
-    return res.status(400).send({code:1,msg:'room-add failed for no body.'});
+    return res.status(200).send({code:1,msg:'room-add failed for no body.'});
   }
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够或没有房间用户则不能开通房间
@@ -476,7 +502,7 @@ router.post('/room/add',function(req,res){
         pool.getConnection(function(err,connection){
           if(err){
             console.log(err);
-            res.status(500).send({code:1,msg:err.message});
+            res.status(200).send({code:1,msg:err.message});
           }
           else {
             console.log('connected as id ' + connection.threadId);
@@ -485,13 +511,13 @@ router.post('/room/add',function(req,res){
             pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
             pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
             pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
-            pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyChange) + ',' +
+            pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyCharge) + ',' +
             pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
             pool.escape(req.body.controlModel) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ');';
             connection.query(room_sql, function(err, result) {//insert room
               if(err){
                 console.log(err);
-                res.status(500).send({code:1,msg:err.message});
+                res.status(200).send({code:1,msg:err.message});
                 connection.release();
               }
               else if(result.affectedRows != 1){
@@ -504,7 +530,17 @@ router.post('/room/add',function(req,res){
                 var discount = req.body.chargeStrategy.discount;
                 if(userlist.length <= 0 && discount.length <= 0){
                   res.status(200).send({code:0,msg:'add room success.'});
-                  //后续对接通知礼物系统
+                  redis.insertDefaultChannel(room_insert_id);
+                  //通知礼物系统
+                  gift.room_add_del(room_insert_id.toString(),true)
+                    .then(function(resbody){
+                    })
+                    .catch(function(errmsg){
+                      console.log(errmsg);
+                    })
+                  redis.insertRoomInfo(room_insert_id,req.body);
+                  redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                  redis.insertChannelRoomList(req.body.channelId);
                   return connection.release();
                 }
                 var ru_values = ' VALUES';
@@ -521,16 +557,27 @@ router.post('/room/add',function(req,res){
                 connection.query(ru_sql + rd_sql, function(err, result) {//insert room_user、room_discount.
                   if(err){
                     console.log(err);
-                    res.status(500).send({code:1,msg:err.message});
+                    res.status(200).send({code:1,msg:err.message});
                   }
-                  else if((userlist.length <= 0 && discount.length > 0 && result[0].affectedRows != discount.length)
-                    || (userlist.length > 0 && discount.length <= 0 && result[0].affectedRows != userlist.length)
+                  else if((userlist.length <= 0 && discount.length > 0 && result.affectedRows != discount.length)
+                    || (userlist.length > 0 && discount.length <= 0 && result.affectedRows != userlist.length)
                     || (userlist.length > 0 && discount.length > 0 && ((result[0].affectedRows != userlist.length) || (result[1].affectedRows != discount.length)))){
                       res.status(200).send({code:1,msg:('insert room_user.affectedRows != ' + userlist.length + 'or room_discount.affectedRows != ' + discount.length)});
                     }
                     else {//创建房间成功
                       res.status(200).send({code:0,msg:'add room success.'});
-                      //后续对接通知礼物系统
+                      redis.insertDefaultChannel(room_insert_id);
+                      //通知礼物系统
+                      gift.room_add_del(room_insert_id.toString(),true)
+                        .then(function(resbody){
+                        })
+                        .catch(function(errmsg){
+                          console.log(errmsg);
+                        })
+                      //写redis,1:插入房间，2：有可能需要插入默认频道，仅插入一次，3：插入频道房间列表,4:插入房间播放URL
+                      redis.insertRoomInfo(room_insert_id,req.body);
+                      redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                      redis.insertChannelRoomList(req.body.channelId);
                     }
                   connection.release();
                 });
@@ -561,14 +608,25 @@ router.delete('/room/del',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以删除任何房间，公司管理员只能删除该公司的房间
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
-      var sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      connection.query(sql, function(err, result) {
+      var s_sql = 'SELECT channelId FROM room WHERE id = ' + pool.escape(req.query.id) + ';';
+      var d_sql = 'DELETE FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      connection.query(s_sql + d_sql, function(err, result) {
         if(err){
           console.log(err);
           res.status(500).send({code:1,msg:err.message});
         }
-        else {//result.affectedRows == 1
-          res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
+        else {//result[1].affectedRows == 1
+          res.status(200).send({code:0,msg:(result[1].affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
+          //通知礼物系统
+          if(result[0].length == 1){
+            redis.insertChannelRoomList(result[0][0].channelId);
+          }
+          gift.room_add_del(req.query.id.toString(),false)
+            .then(function(resbody){
+            })
+            .catch(function(errmsg){
+              console.log(errmsg);
+            })
         }
         connection.release();
       });
@@ -578,8 +636,9 @@ router.delete('/room/del',function(req,res){
 
 router.post('/room/update',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'room-update failed for no id.'});}
-  if(!req.body){return res.status(400).send({code:1,msg:'room-update failed for no body.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'room-update failed for no id.'});}
+  if(!req.body){return res.status(200).send({code:1,msg:'room-update failed for no body.'});}
+  var roomid = parseInt(req.query.id,10);
   var user = req.session.user;
   if(user == null){//未登录则不能修改房间
     return res.status(401).send({code:1,msg:'room-update failed for no login or have no right.'});
@@ -587,32 +646,34 @@ router.post('/room/update',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
       //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
+      var s_sql = 'SELECT channelId FROM room WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      var u_sql = 'UPDATE room SET name = ' + pool.escape(req.body.name) + ',channelId = ' + pool.escape(req.body.channelId)
       + ',living = ' + pool.escape(req.body.living) + ',onlineRatio = ' + pool.escape(req.body.onlineRatio)
       + ',thumb = ' + pool.escape(req.body.thumb) + ',u3dbg = ' + pool.escape(req.body.u3dbg) + ',room.desc = ' + pool.escape(req.body.desc)
       + ',charge = ' + pool.escape(req.body.charge) + ',price = ' + pool.escape(req.body.chargeStrategy.price)
-      + ',dependencyChange = ' + pool.escape(req.body.dependencyChange) + ',room.order = ' + pool.escape(req.body.order)
+      + ',dependencyChange = ' + pool.escape(req.body.dependencyCharge) + ',room.order = ' + pool.escape(req.body.order)
       + ',tag = ' + pool.escape(req.body.tag) + ',viewAngle = ' + pool.escape(req.body.viewAngle)
       + ',controlModel = ' + pool.escape(req.body.controlModel) + ',projectStyle = ' + pool.escape(req.body.projectStyle)
       + ',eyeStyle = ' + pool.escape(req.body.eyeStyle) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
-      connection.query(sql, function(err, result) {
+      connection.query(s_sql + u_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:1,msg:err.message});
           connection.release();
         }
-        else if(result.affectedRows != 1){
-          res.status(200).send({code:1,msg:'update room failed that result.affectedRows != 1'});
+        else if(result[1].affectedRows != 1){
+          res.status(200).send({code:1,msg:'update room failed that result[1].affectedRows != 1'});
           connection.release();
         }
         else {//先删除room_discount表中的关于roomId的旧记录，再在其中添加新的记录
+          var preChannelId = result[0][0].channelId;
           var discount = req.body.chargeStrategy.discount;
           var rd_values = ' VALUES';
           for(var i = 0;i < discount.length;i ++){//组建房间-折扣SQL语句
@@ -624,16 +685,32 @@ router.post('/room/update',function(req,res){
           connection.query(d_sql + i_sql, function(err, result) {//delete room_discount then insert room_discount.
             if(err){
               console.log(err);
-              res.status(500).send({code:1,msg:err.message});
+              res.status(200).send({code:1,msg:err.message});
             }
             else if(discount.length <= 0){
               res.status(200).send({code:0,msg:'update room success'});
+              redis.insertRoomInfo(req.query.id,req.body);
+              redis.insertChannelRoomList(req.body.channelId);
+              if(preChannelId != req.body.channelId){
+                redis.insertChannelRoomList(preChannelId);
+              }
+              redis.insertDefaultChannel(roomid);
+              redis.insertSwitchChannelInfo();
+              redis.insertChannel(req.body.channelId);
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert room_discount.affectedRows != ' + discount.length)});
             }
             else {
               res.status(200).send({code:0,msg:'update room success'});
+              redis.insertRoomInfo(req.query.id,req.body);
+              redis.insertChannelRoomList(req.body.channelId);
+              if(preChannelId != req.body.channelId){
+                redis.insertChannelRoomList(preChannelId);
+              }
+              redis.insertDefaultChannel(roomid);
+              redis.insertSwitchChannelInfo();
+              redis.insertChannel(req.body.channelId);
             }
             connection.release();
           });
@@ -643,17 +720,52 @@ router.post('/room/update',function(req,res){
   });
 });
 
-router.get('/room/get',function(req,res){
+router.post('/room/closeliving', function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'room-get failed for no id.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'room-update failed for no id.'});}
+  if(!req.body){return res.status(200).send({code:1,msg:'room-update failed for no body.'});}
   var user = req.session.user;
-  if(user == null){//未登录则不能获取房间
-    return res.status(401).send({code:1,msg:'room-get failed for no login.'});
+  if(user == null){//未登录则不能修改房间
+    return res.status(401).send({code:1,msg:'room-update failed for no login or have no right.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
+      var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
+      (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
+      var sql = 'UPDATE room SET living = 0 WHERE id = ' + pool.escape(req.query.id) + condition + ';';
+      connection.query(sql, function(err, result) {
+        if(err){
+          console.log(err);
+          res.status(200).send({code:1,msg:err.message});
+        }
+        else if(result.affectedRows != 1){
+          res.status(200).send({code:1,msg:'update room failed that result.affectedRows != 1'});
+        } else {
+          res.status(200).send({code:0,msg:'close living room success'});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+router.get('/room/get',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.id){return res.status(200).jsonp({code:1,msg:'room-get failed for no id.'});}
+  var user = req.session.user;
+  if(user == null){//未登录则不能获取房间
+    return res.status(401).jsonp({code:1,msg:'room-get failed for no login.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -666,10 +778,10 @@ router.get('/room/get',function(req,res){
       connection.query(r_sql + ru_sql +  rd_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else if(result[0].length != 1){
-          res.status(200).send({code:1,msg:'room-get failed for not exist this room or have no right.'});
+          res.status(200).jsonp({code:1,msg:'room-get failed for not exist this room or have no right.'});
         }
         else {
           var user_arr = new Array();
@@ -691,7 +803,7 @@ router.get('/room/get',function(req,res){
             desc : result[0][0].desc,
             u3dbg : result[0][0].u3dbg,
             charge : result[0][0].charge,
-            dependencyChange : result[0][0].dependencyChange,
+            dependencyCharge : result[0][0].dependencyChange,
             order : result[0][0].order,
             viewAngle : result[0][0].viewAngle,
             controlModel : result[0][0].controlModel,
@@ -702,7 +814,7 @@ router.get('/room/get',function(req,res){
               discount : discount_arr
             }
           };
-          res.status(200).send({code:0,msg:'room-get success.',data:data});
+          res.status(200).jsonp({code:0,msg:'room-get success.',data:data});
         }
         connection.release();
       });
@@ -712,31 +824,39 @@ router.get('/room/get',function(req,res){
 
 router.get('/room/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.page || !req.query.pageSize){return res.status(400).send({code:1,msg:'room-list failed for no page or pageSize.'});}
-  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(400).send({code:1,msg:'room-list failed for wrong page or pageSize.'});}
+  if(!req.query.page || !req.query.pageSize){return res.status(200).jsonp({code:1,msg:'room-list failed for no page or pageSize.'});}
+  if(req.query.page <= 0 || req.query.pageSize <= 0){return res.status(200).jsonp({code:1,msg:'room-list failed for wrong page or pageSize.'});}
   var user = req.session.user;
   if(user == null){//未登录则不能获取房间列表
-    return res.status(401).send({code:1,msg:'room-list failed for no login.'});
+    return res.status(401).jsonp({code:1,msg:'room-list failed for no login.'});
   }
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).jsonp({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';
+      /*var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
+      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';*/
+      var sql = 'SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          res.status(200).send({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
+          var roomlist = new Array();
+          var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
+          if(pageStart < 0){pageStart = 0;}
+          var pageEnd = pageStart + parseInt(req.query.pageSize);
+          for(var i = pageStart;i < pageEnd && i < rows.length;i ++){
+            roomlist.push(rows[i]);
+          }
+          res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:roomlist}});
         }
         connection.release();
       });

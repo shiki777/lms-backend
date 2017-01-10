@@ -9,7 +9,7 @@ var config = {
     port: '3306',
     user: 'lms',
     password: 'lms123',
-    database: 'lms',
+    database: 'lms2',
     multipleStatements : true
   },
   push_stream: {
@@ -23,12 +23,13 @@ var config = {
   redis: {
     host: '192.168.5.137',
     port: 6379,
-    db_number: 8,
+    db_number: 15,
   },
   chatroom:{
     host:'192.168.5.137',
     port: 8066
-  }
+  },
+  host : 'http://127.0.0.1:3000'
 };
 
 module.exports = config;

@@ -1,47 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>登录</title>
-        <link rel="stylesheet" type="text/css" href="../../stylesheets/common/common.css">
-        <link rel="stylesheet" type="text/css" href="../../stylesheets/login/login.css">
-    </head>
-    <body>
-        <div class="bodybox">
-            <div class="loginbody" id="loginbody">
-                <input placeholder="请输入用户名" class="ipt" id="username-ipt"></input>
-                <input placeholder="请输入密码" type="password" class="ipt" id="userpwd-ipt"></input>
-                <a href="#" id="login2reg-a">注册</a>
-                <button class="normal-btn" id="login-btn">登录</button>
-            </div>
-            <div class="registerbody no-show" id="registerbody">
-                <input placeholder="请输入用户名" class="ipt" id="reg-name"></input>
-                <input placeholder="请输入密码" type="password" class="ipt" id="reg-pwd"></input>
-                <input placeholder="请再次输入密码" type="password" class="ipt" id="reg-pwd2"></input>
-                <a href="#" id="reg2login-a">返回登录</a>
-                <button class="normal-btn" id="register-btn">注册</button>
-                <p>点击「注册」按钮，即代表你同意
-                    <a href="#">《蜗牛协议》</a>
-                </p>
-            </div>
-            <div id="logoutbody"></div>
-            <div class="changepwdbody no-show" id="changepwdbody">
-                <input placeholder="请输入原密码" type="password" class="ipt" id="oldpwd-ipt"></input>
-                <input placeholder="请输入新密码" type="password" class="ipt" id="newpwd-ipt"></input>
-                <input placeholder="请再次输入新密码" type="password" class="ipt" id="newpwd2-ipt"></input>
-                <button class="normal-btn" id="cancel-btn">取消</button>
-                <button class="normal-btn" id="pwd-btn">确定</button>
-            </div>
-        </div>
-        <script><%- message %></script>
-        <script src="../../lib/jquery.min.js"></script>
-        <script>
-            if(!isSuper){
-                $('#login2reg-a').hide()
-            }
-        </script>         
-        <script src="../../lib/cookie.min.js"></script>
-        <script src="../../javascripts/login/login.js"></script>
-
-    </body>
-</html>
+ <link rel="stylesheet" href="../../login/index.css"> 
+ <div class="ui middle aligned center aligned grid login-wrap">
+     <div class="column">
+         <h2 class="ui teal image header">
+             <div class="content">Ready VR 直播管理系统</div>
+         </h2>
+         <form class="ui large form">
+             <div class="ui stacked segment">
+                 <div class="field">
+                     <div class="ui left icon input"> <i class="user icon"></i>
+                         <input type="text" name="name" placeholder="用户名" id="username" value="mw@snailgame.net"></div>
+                 </div>
+                 <div class="field">
+                     <div class="ui left icon input"> <i class="lock icon"></i>
+                         <input type="password" name="password" placeholder="密码" id="pwd" value="mw123"></div>
+                 </div>
+                 <div class="ui fluid large teal submit button" id="loginBtn">登录</div>
+             </div>
+             <div class="ui error message"></div>
+         </form>
+     </div>
+ </div>
+ <script><%- message %></script>
+ <script src="../../login/login.js"></script>

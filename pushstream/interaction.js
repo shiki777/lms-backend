@@ -3,7 +3,8 @@ var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
 var api = require('../snailcloud/api');
-var Users = require('../user/user');
+var Users = require('../third_interface/user');
+var gift = require('../third_interface/gift');
 
 function login(name,pwd){
   var defer = q.defer();
@@ -245,6 +246,14 @@ function startPushStream(token){
               }
               else {
                 defer.resolve("startPushStream success.");
+                //通知礼物系统
+                gift.room_play_stop(rows[0].roomId.toString(),rows[0].id.toString(),true)
+                  .then(function(resbody){
+                    console.log(resbody);
+                  })
+                  .catch(function(errmsg){
+                    console.log(errmsg);
+                  })
               }
               connection.release();
             });
@@ -267,21 +276,42 @@ function stopPushStream(token){
       }
       else {
         console.log('connected as id ' + connection.threadId);
-        var sql = 'UPDATE room SET host = null,hostName = null WHERE id IN(' +
-                    'SELECT roomId FROM room_user WHERE userId IN(' +
-                        'SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + ' AND status = 1));';
-        connection.query(sql, function(err,result) {
+        var sql = 'SELECT backinfo.id AS aid,roomId FROM backinfo,room_user WHERE token = '
+        + pool.escape(token) + ' AND status = 1 AND userId = backinfo.id;';
+        connection.query(sql, function(err,rows,fields) {
           if(err){
             console.log(err);
             defer.reject(err);
+            connection.release();
           }
-          else if(result.affectedRows != 1){
-            defer.reject(new Error("stopPushStream failed for not exist user or not login or wrong token or update room wrong."));
+          else if(rows.length != 1){
+            defer.reject(new Error("stopPushStream failed for not exist user or not login or wrong token."));
+            connection.release();
           }
           else {
-            defer.resolve("stopPushStream success.");
+            var setSql = 'UPDATE room SET host = null,hostName = null WHERE id = ' + rows[0].roomId + ';';
+            connection.query(setSql, function(err,result) {
+              if(err){
+                console.log(err);
+                defer.reject(err);
+              }
+              else if(result.affectedRows != 1){
+                defer.reject(new Error("stopPushStream failed for update room wrong."));
+              }
+              else {
+                defer.resolve("stopPushStream success.");
+                //通知礼物系统
+                gift.room_play_stop(rows[0].roomId.toString(),rows[0].aid.toString(),false)
+                  .then(function(resbody){
+                    console.log(resbody);
+                  })
+                  .catch(function(errmsg){
+                    console.log(errmsg);
+                  })
+              }
+              connection.release();
+            });
           }
-          connection.release();
         });
       }
     });

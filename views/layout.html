@@ -3,119 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title><%- title %></title>
-    <link rel="stylesheet" href="../../lib/css/bootstrap.min.css"></head>
-    <link rel="stylesheet" href="../../stylesheets/side.css">
+    <link rel="stylesheet" href="../../lib/css/semantic.min.css"></head>
+    <link rel="stylesheet" href="../../stylesheets/common/common.css">
+    <link rel="stylesheet" href="../../stylesheets/common/paganation.css">
+    <script src="../../lib/jquery.min.js"></script>
+    <script src="../../lib/semantic.min.js"></script>
+    <script src="../../lib/vue.js"></script>
+    <script src="../../lib/vue-resource.js"></script>
+    <script src="../../javascripts/host.js"></script>    
+       
 </head>
 <body>
-    <div class="page">
+    <div class="pagewrap">
     <!-- 侧边栏 -->
         <div class="aside" id="sidebar">
             <div class="menu">
-                <h2><span>READY_VR后台</span></h2>
+                <h2><span>直播管理系统后台</span></h2>
                 <hr class="line-mod">
                 <dl class="menu-list def-scroll keyboard-focus-obj" id="menu">
                 </dl>
             </div>
             <!-- 收起按钮 -->
-            <a class="btn-fold-menu" href="javascript:void(0);" title="收起" data-event="toggle_sidebar">收起</a>
+            <!-- <a class="btn-fold-menu" href="javascript:void(0);" title="收起" data-event="toggle_sidebar">收起</a> -->
         </div>
         <!-- 主页面区域 -->
-        <div class="main" id="appArea">
+        <div class="page main" id="page">
             <%-body -%>
         </div>
     </div>
-    <script>
-  var side = {
-    a : {
-        name : '基础防护',
-        link : 'http://www.baidu.com'
-    },
-    b : {
-        name : 'BGP高防包',
-        link : 'http://www.baidu.com'
-    },
-    c : {
-        name : '基础防护',
-        link : 'http://www.baidu.com'
-    },
-    d : {
-        name : 'DDoS分布式防御',
-        son : {
-            a : {
-                name : '概览1',
-                link : 'http://www.baidu.com'
-            },
-            b : {
-                name : '概览2',
-                link : 'http://www.baidu.com'
-            },
-            c : {
-                name : '概览3',
-                link : 'http://www.baidu.com'
-            }
-        }
-    },
-    e : {
-        name : '基础防护',
-        link : 'http://www.baidu.com'
-    },
-    f : {
-        name : 'DDoS分布式防御',
-        son : {
-            a : {
-                name : '概览1',
-                link : 'http://www.baidu.com'
-            },
-            b : {
-                name : '概览2',
-                link : 'http://www.baidu.com'
-            },
-            c : {
-                name : '概览3',
-                son : {
-                    a : {
-                        name : '内容1',
-                        link : 'http://www.baidu.com',
-                        current : true
-                    },
-                    b : {
-                        name : '四级分层',
-                        son : {
-                            a : {
-                                name  : '四级1',
-                                link : 'http://www.baidu.com'
-                            },
-                            b : {
-                                name : '四级2',
-                                link : 'http://www.baidu.com' 
-                            }
-                        }
-                    },
-                    c : {
-                        name : '内容2',
-                        link : 'http://www.baidu.com'
-                    }
-                }
-            },
-            d : {
-                name : '概览4',
-                link : 'http://www.baidu.com'
-            },
-            f : {
-                name : '概览5',
-                link : 'http://www.baidu.com'
-            },           
-            g : {
-                name : '概览6',
-                link : 'http://www.baidu.com'
-            }
-        }
-    }
-
-  }
-
-</script>
-    <script src="../../lib/jquery.min.js"></script>
-    <script src="../../javascripts/side/side.js"></script>
+    <script src="../../javascripts/side.js"></script> 
 </body>
 </html>

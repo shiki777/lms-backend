@@ -1,0 +1,139 @@
+<link rel="stylesheet" href="../../room/room.css">   
+        <div class="ui middle aligned center aligned grid">
+            <div class="wrap">
+                <h1 class="ui header aligned">修改房间</h1>
+                <form class="ui form segment room-container">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>房间名称</label>
+                            <input placeholder="房间名称" name="name" type="text" v-model="name"></div>
+                        <div class="field">
+                            <label>房间权重</label>
+                            <input type="number" v-model="order"/>    
+                        </div>
+                    </div>
+                    <div class="fields two">
+                        <div class="field">
+                            <label>标签</label>
+                            <input placeholder="标签" type="text" v-model="tag"/>
+                        </div> 
+                        <div class="field">
+                            <label>删除直播房间</label>
+                            <select v-model="deleteRoom">
+                                <option value="0">否</option>
+                                <option value="1">是</option>
+                            </select>
+                        </div>                      
+                    </div>     
+                    <div class="fields two">
+                        <div class="field">
+                            <label>直播状态</label>
+                            <div class="inline live-status">{{ roomStatus }}</div>
+                        </div>
+                        <div class="field" :style="{display: closeLivingShow}">
+                            <label>关闭直播</label>
+                            <select v-model="closeLiving">
+                                <option value="0">否</option>
+                                <option value="1">是</option>
+                            </select>
+                        </div>
+                    </div>               
+                    <div class="field">
+                        <label>房间简介</label>
+                        <input placeholder="简介" name="username" type="text" v-model="desc"/>    
+                    </div>
+                    <div class="fields three">
+                        <div class="field">
+                            <label>独立收费</label>
+                            <select name="" id="" v-model="dependencyCharge">
+                                <option value="0">否</option>
+                                <option value="1">是</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>所属频道</label>
+                            <channelselect :roomchannel="channelId" ref="channel"></channelselect>
+                        </div>
+                        <div class="field">
+                            <label>人气系数</label>
+                            <input type="number" v-model="onlineRatio"/>    
+                        </div>
+                    </div>
+                    <div class="field" :style="{display : changeShow}">
+                        <label>基础定价</label>
+                        <div class="inline price-line">
+                            <input type="number" class="charge-input-money" v-model="price">                        
+                            <span class="charge-span">元/月</span>
+                        </div>
+                        <label>折扣策略</label>
+                        <div class="charge-wrap">
+                            <charge v-for="item in chargeStrategy" :discount="item.discount" :duration="item.duration" :id="item.id" ref="charges" v-on:remove="onChargeRemove"></charge>
+                        </div>
+                        <div class="ui primary button charge-btn" @click="addStrategy">添加策略</div>
+                    </div>
+                    <div class="field">
+                    <label>主播名单</label>
+                        <p v-for="user in users">用户名：{{user.name}}</p>
+                    </div>
+                    <imguploader ref="thumbcom" title="封面上传(尺寸最好为350*200)" :thumb="thumb"></imguploader>
+                    <imguploader ref="u3dcom" title="U3D背景图片上传" :thumb="u3dbg"></imguploader>  
+                    <div class="fields four">
+                        <div class="field">
+                            <label>视频视角</label>
+                            <input type="number" v-model="viewAngle" min="60" max="130" @blur="onAngelBlur"/>    
+                        </div>      
+                        <div class="field">
+                            <label>控制模式</label>
+                            <select v-model="controlModel">
+                                <option value="0">陀螺仪</option>
+                                <option value="1">触摸</option>
+                                <option value="2">陀螺仪+触摸</option>
+                            </select>
+                        </div>    
+                        <div class="field">
+                            <label>投影方式</label>
+                            <select v-model="projectStyle">
+                                <option value="0">360-3D-Left-Right</option>
+                                <option value="1">360-3D-Up-Down</option>
+                                <option value="2">360-2D</option>
+                                <option value="3">180-3D-Left-Right</option>
+                                <option value="4">180-3D-Up-Down</option>
+                                <option value="5">180-2D</option>
+                                <option value="6">2D</option>
+                            </select>
+                        </div>    
+                        <div class="field">
+                            <label>单双目</label>
+                            <select v-model="eyeStyle">
+                                <option value="0">单目</option>
+                                <option value="1">双目</option>
+                            </select>
+                        </div>                                                                                           
+                    </div>                         
+                    <div class="ui primary submit button" v-on:click="submit">提交</div>
+                </form>
+            </div>
+        </div>
+    <div class="ui modal"> <i class="close icon"></i>
+        <div class="header">恭喜您</div>
+        <div class="image content">
+            <div class="description">
+                <div class="ui header">房间修改成功！</div>
+                <p>接下来会刷新页面,若删除了该房间，会跳转到房间列表页</p>
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">知道了</div>
+<!--             <div class="ui positive right labeled icon button">
+                Yep, that's me <i class="checkmark icon"></i>
+            </div> -->
+        </div>
+    </div>
+             <script><%- currentmsg %></script>
+         <script><%- sidemsg %></script>
+<script src="../../component/imguploader.js"></script> 
+<script src="../../room/charge_component.js"></script> 
+<script src="../../room/channel_component.js"></script> 
+<script src="../../room/update.js"></script> 
+</body>
+</html>
