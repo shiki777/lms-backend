@@ -43,9 +43,11 @@ var gmsrouter = require('./routes/gms');
 var lms = require('./routes/lms');
 var page = require('./routes/page');
 var upload = require('./routes/upload');
+var video = require('./routes/video');
 
 app.use('/gms', gmsrouter);
 app.use('/lms',lms);
+app.use('/lms',video);
 app.use('/lms/page',page);
 app.use('/lms/upload',multerupload.any(),upload);
 
