@@ -23,7 +23,7 @@ var config = {
   redis: {
     host: '192.168.5.137',
     port: 6379,
-    db_number: 5,
+    db_number: 15,
   },
   chatroom:{
     host:'192.168.5.137',
