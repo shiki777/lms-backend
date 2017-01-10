@@ -95,7 +95,7 @@ var communication_applyPushURL = function(call, callback) {
     debug('getPushUrl result:', result);
     callback(null, {
       code: 0,
-      URL: 'rtmp://push.snail.woniucloud.com:1937/push1/mi1t9sta?wsSecret=ffd4aeff04e1f3b4fa37da8c39c75824&wsTime=585c97b6'
+      URL: result
     });
   }).catch(function(err) {
     logger.error('getPushUrl err:', err.message);
