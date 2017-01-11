@@ -11,52 +11,30 @@ function epgd(client) {
 //   icon: xx,//String,缩略图
 //   desc: '测试频道',
 //   charge: false,
-<<
-<<
-<< < HEAD: epgd / redisData.js
-  //   charge_strategy: {
-  //     price: 10,
-  //     discount: [{
-  //       month: 5,
-  //       discount: 0.75
-  //     }]
-  //   },
-  ===
-  ===
-  =
-  //     charge_strategy : {
-  //	     price : 10,
-  //	     discount: [{month:5,discount : 0.75}]
-  //      },
-  >>>
-  >>>
-  > 2771 fc59103bdd1956926ddbe6d8beee7bcca3df: epgd / insertRedisData.js
-  //   default_room_info:{
-  //     id:0,
-  //     name:'测试房间',
-  //     thumb: xx,//String,背景地址
-  //     desc: '测试房间',//String,描述
-  //     charge: false,
-  <<
-  <<
-  << < HEAD: epgd / redisData.js
-  //     charge_strategy: {
-  //        price: 10,
-  //        discount: [{
-  //          month: 5,
-  //          discount: 0.75
-  //       }]
-  //     },
-  ===
-  ===
-  =
-  //     charge_strategy : {
-  //	     price : 10,
-  //	     discount: [{month:5,discount : 0.75}]
-  //      },
-  >>>
-  >>>
-  > 2771 fc59103bdd1956926ddbe6d8beee7bcca3df: epgd / insertRedisData.js
+//   charge_strategy: {
+//     price: 10,
+//     discount: [{
+//       month: 5,
+//       discount: 0.75
+//     }]
+//   },
+//   default_room_info:{
+//     id:0,
+//     name:'测试房间',
+//     thumb: xx,//String,背景地址
+//     desc: '测试房间',//String,描述
+//     charge: false,
+//     charge_strategy: {
+//        price: 10,
+//        discount: [{
+//          month: 5,
+//          discount: 0.75
+//       }]
+//     },
+//     charge_strategy : {
+//	     price : 10,
+//	     discount: [{month:5,discount : 0.75}]
+//      },
 //     living: true,//Boolean,是否在直播
 //     online : 100,//Number,在线人数
 //     tag : '测试房间',//String,标签

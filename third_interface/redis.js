@@ -1,4 +1,4 @@
-var epgd_module = require('../epgd/insertRedisData');
+var epgd_module = require('../epgd/redisData');
 var client = require('../epgd/redisClient').redisClient;
 var epgd = new epgd_module(client);
 var config = require('../config/config');
