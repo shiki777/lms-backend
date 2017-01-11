@@ -1,4 +1,4 @@
-var client = require('./redisClient').redisClient;
+//var client = require('../epgd/redisClient').redisClient;
 function epgd(client) {
   this.client = client;
 }
@@ -11,20 +11,26 @@ function epgd(client) {
 //   icon: xx,//String,缩略图
 //   desc: '测试频道',
 //   charge: false,
-//   charge_strategy: [{
-//     fee: 100,
-//     days: 50
-//   }],
+//   charge_strategy: {
+//     price: 10,
+//     discount: [{
+//       month: 5,
+//       discount: 0.75
+//     }]
+//   },
 //   default_room_info:{
 //     id:0,
 //     name:'测试房间',
 //     thumb: xx,//String,背景地址
 //     desc: '测试房间',//String,描述
 //     charge: false,
-//     charge_strategy: [{
-//       fee: 100,
-//       days: 50
-//     }],
+//     charge_strategy: {
+//        price: 10,
+//        discount: [{
+//          month: 5,
+//          discount: 0.75
+//       }]
+//     },
 //     living: true,//Boolean,是否在直播
 //     online : 100,//Number,在线人数
 //     tag : '测试房间',//String,标签
@@ -72,7 +78,7 @@ epgd.prototype.insertChannelInfo = function(info) {
 // }]
 epgd.prototype.insertChannelRoomList = function(id, list) {
   var key = 'channel_' + id + '_room_list';
-  this.client.set(key, JSON.stringify(list));
+  this.client.set(key, JSON.stringify(roomlist));
 };
 
 //插入上下频道,数据格式参见频道信息定义
@@ -83,12 +89,11 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
     up: up,
     down: down
   };
-  console.log('swtich time end' + new Date().getTime());
   this.client.set(key, JSON.stringify(channelSwitchInfo));
 };
 
 /////////////////////////////
-//插入房间信息
+//插入频道信息
 // {
 //   id: xxx, //Number 房间id，标识符
 //   name: xx, //String 房间名称
@@ -115,5 +120,31 @@ epgd.prototype.insertRoomInfo = function(info) {
 epgd.prototype.insertRoomPlayurl = function(id,url) {
   var key = 'room_' + id + '_playurl';
   this.client.set(key, JSON.stringify(url));
+};
+
+//删除房间仅仅删除房间信息和播放地址，但是不能删除频道房间列表中的字段，需要单独修改房间频道列表
+epgd.prototype.delRoom = function(id) {
+  //删除房间信息
+  var key = 'room_' + id + '_info';
+  this.client.del(key);
+  //删除频道房间播放地址
+  key = 'room_' + id + '_playurl';
+  this.client.del(key);
+};
+//删除频道，只删除频道信息，频道房间列表，频道的上下频道，但是无法删除关联此频道的上下频道，需要重新组合
+epgd.prototype.delChannel = function(id) {
+  //删除频道信息
+  var key = 'channel_' + id + '_info';
+  this.client.del(key);
+  //删除频道房间列表
+  key = 'channel_' + id + '_room_list';
+  this.client.del(key);
+  //删除此频道上下频道
+  key = 'channel_' + id + '_switch_info';
+  this.client.del(key);
+};
+//删除所有数据
+epgd.prototype.delAll = function(){
+  this.client.flushdb();
 };
 module.exports = epgd;
