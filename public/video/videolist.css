@@ -1,0 +1,46 @@
+.wrap {
+    width: 800px;
+    margin: 0 auto;
+    padding-top: 40px;
+}
+
+.room-item {
+    float: left;
+    width: 150px;
+    height: 280px;
+    margin: 0 20px;
+}
+
+.thumb {
+    width: 150px;
+    height: 150px;
+}
+
+.room-name {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 3px;
+}
+
+.room-status {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 3px;
+}
+
+.room-btn {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.page-wrap {
+    text-align: center;
+}
+
+.show {
+    display: block;
+}
+
+.unshow {
+    display: none;
+}

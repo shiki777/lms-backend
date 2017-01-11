@@ -1,0 +1,19 @@
+<link rel="stylesheet" href="../../video/videolist.css">
+        <div class="ui middle aligned center aligned">
+            <div class="wrap">   
+                <div class="room-item" v-for="video in videoes">
+                    <a :href="video.link" target="_blank">
+                        <img :src="video.thumb" class="thumb">
+                        <div class="room-name">{{video.name}}</div>
+                    </a>                    
+                </div>                                      
+                <div class="clear"></div>                               
+            </div>
+            <div class="page-wrap">
+                <pagination :url="url" size="12" @dataloaded="pageLoaded"></pagination>
+            </div>
+        </div>
+         <script><%- currentmsg %></script>
+         <script><%- sidemsg %></script>        
+<script src="../../component/page.js"></script> 
+<script src="../../video/videolist.js"></script>     

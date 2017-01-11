@@ -158,7 +158,7 @@ router.get('/video/list', function(req, res) {
             });
         } else {
             console.log('connected as id ' + connection.threadId);
-            var sql = 'SELECT * FROM video';
+            var sql = 'SELECT * FROM video ORDER BY video.order DESC';
             connection.query(sql, function(err, rows, fields) {
                 if (err) {
                     console.log('videolist connection err ' + err.message);

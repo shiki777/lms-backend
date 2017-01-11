@@ -124,4 +124,44 @@ router.get('/roomlist', function(req, res) {
   });
 });
 
+router.get('/videocreate', function(req, res) {
+  var user = req.session.user || {permission : 1};
+  var isSuper = user.permission == 8 ? true : false;
+  var html = '';
+  res.render('./video/create',{
+    message : html,
+    user : user.name,
+    title : '创建视频',
+    sidemsg : 'var side =' + portal.getSide(user.permission),
+    currentmsg : 'var currentUrl = "/lms/page/videocreate"'
+  });
+});
+
+router.get('/videoupdate', function(req, res) {
+  var user = req.session.user || {permission : 1};
+  var isSuper = user.permission == 8 ? true : false;
+  var html = '';
+  res.render('./video/update',{
+    message : html,
+    user : user.name,
+    title : '创建视频',
+    sidemsg : 'var side =' + portal.getSide(user.permission),
+    currentmsg : 'var currentUrl = "/lms/page/videoupdate"'
+  });
+});
+
+router.get('/videolist', function(req, res) {
+  var user = req.session.user || {permission : 1};
+  console.log(user)
+  var isSuper = user.permission == 8 ? true : false;
+  var html = '';
+  res.render('./video/videolist',{
+    message : html,
+    user : user.name,
+    title : '创建视频',
+    sidemsg : 'var side =' + portal.getSide(user.permission),
+    currentmsg : 'var currentUrl = "/lms/page/videolist"'
+  });
+});
+
 module.exports = router;
