@@ -11,20 +11,20 @@ function epgd(client) {
 //   icon: xx,//String,缩略图
 //   desc: '测试频道',
 //   charge: false,
-//   charge_strategy: [{
-//     fee: 100,
-//     days: 50
-//   }],
+//     charge_strategy : {
+//	     price : 10,
+//	     discount: [{month:5,discount : 0.75}]
+//      },
 //   default_room_info:{
 //     id:0,
 //     name:'测试房间',
 //     thumb: xx,//String,背景地址
 //     desc: '测试房间',//String,描述
 //     charge: false,
-//     charge_strategy: [{
-//       fee: 100,
-//       days: 50
-//     }],
+//     charge_strategy : {
+//	     price : 10,
+//	     discount: [{month:5,discount : 0.75}]
+//      },
 //     living: true,//Boolean,是否在直播
 //     online : 100,//Number,在线人数
 //     tag : '测试房间',//String,标签
@@ -95,10 +95,10 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
 //   thumb: xx, //String 房间封面
 //   desc: xxx, //String 房间简介
 //   charge: xxx, //Boolean 房间是否收费
-//   charge_strategy: [{//房间收费策略
-//     fee: xx, //Number
-//     days: xx //Number
-//   }],
+//     charge_strategy : {
+//	     price : 10,
+//	     discount: [{month:5,discount : 0.75}]
+//      },
 //   living: xx, //Boolean 房间直播状态
 //   online: xx, //Number 在线人数
 //   tag: xx, //String 标签
