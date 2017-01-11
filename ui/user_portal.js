@@ -8,14 +8,18 @@ var rolePage = {
         '频道列表页' : '/lms/page/channellist',
         '注册页' : '/lms/page/register',
         '房间创建页' : '/lms/page/roomcreate',
-        '频道创建页' : '/lms/page/channelcreate'
+        '频道创建页' : '/lms/page/channelcreate',
+        '视频创建页' : '/lms/page/videocreate',
+        '视频列表页' : '/lms/page/videolist'
     },
     4 : {
         '房间列表页' : '/lms/page/roomlist',
         '频道列表页' : '/lms/page/channellist',
         '注册页' : '/lms/page/register',
         '房间创建页' : '/lms/page/roomcreate',
-        '频道创建页' : '/lms/page/channelcreate'       
+        '频道创建页' : '/lms/page/channelcreate',
+        '视频创建页' : '/lms/page/videocreate',
+        '视频列表页' : '/lms/page/videolist'      
     }
 }
 
@@ -50,28 +54,37 @@ function getSide(role) {
                 link : '/lms/page/index'
             },
             a : {
-                name : '房间列表',
-                link : '/lms/page/roomlist'
-            },
-            b : {
                 name : '频道列表',
                 link : '/lms/page/channellist'
             },
-            c : {
-                name : '账户注册',
-                link : '/lms/page/register'
+            b : {
+                name : '频道创建',
+                link : '/lms/page/channelcreate'
             },
-            d : {
+            c : {
                 name : '房间创建',
                 link : '/lms/page/roomcreate'
             },
+            d : {
+                name : '房间列表',
+                link : '/lms/page/roomlist'
+            },
             e : {
-                name : '频道创建',
-                link : '/lms/page/channelcreate'
+                name : '账户注册',
+                link : '/lms/page/register'
+            },
+            f : {
+                name : '视频创建',
+                link : '/lms/page/videocreate'
+            },
+            g : {
+                name : '视频列表',
+                link : '/lms/page/videolist'
             }
         });
     }
 }
+
 
 
 module.exports = {

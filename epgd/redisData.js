@@ -11,26 +11,52 @@ function epgd(client) {
 //   icon: xx,//String,缩略图
 //   desc: '测试频道',
 //   charge: false,
-//   charge_strategy: {
-//     price: 10,
-//     discount: [{
-//       month: 5,
-//       discount: 0.75
-//     }]
-//   },
-//   default_room_info:{
-//     id:0,
-//     name:'测试房间',
-//     thumb: xx,//String,背景地址
-//     desc: '测试房间',//String,描述
-//     charge: false,
-//     charge_strategy: {
-//        price: 10,
-//        discount: [{
-//          month: 5,
-//          discount: 0.75
-//       }]
-//     },
+<<
+<<
+<< < HEAD: epgd / redisData.js
+  //   charge_strategy: {
+  //     price: 10,
+  //     discount: [{
+  //       month: 5,
+  //       discount: 0.75
+  //     }]
+  //   },
+  ===
+  ===
+  =
+  //     charge_strategy : {
+  //	     price : 10,
+  //	     discount: [{month:5,discount : 0.75}]
+  //      },
+  >>>
+  >>>
+  > 2771 fc59103bdd1956926ddbe6d8beee7bcca3df: epgd / insertRedisData.js
+  //   default_room_info:{
+  //     id:0,
+  //     name:'测试房间',
+  //     thumb: xx,//String,背景地址
+  //     desc: '测试房间',//String,描述
+  //     charge: false,
+  <<
+  <<
+  << < HEAD: epgd / redisData.js
+  //     charge_strategy: {
+  //        price: 10,
+  //        discount: [{
+  //          month: 5,
+  //          discount: 0.75
+  //       }]
+  //     },
+  ===
+  ===
+  =
+  //     charge_strategy : {
+  //	     price : 10,
+  //	     discount: [{month:5,discount : 0.75}]
+  //      },
+  >>>
+  >>>
+  > 2771 fc59103bdd1956926ddbe6d8beee7bcca3df: epgd / insertRedisData.js
 //     living: true,//Boolean,是否在直播
 //     online : 100,//Number,在线人数
 //     tag : '测试房间',//String,标签
@@ -100,10 +126,10 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
 //   thumb: xx, //String 房间封面
 //   desc: xxx, //String 房间简介
 //   charge: xxx, //Boolean 房间是否收费
-//   charge_strategy: [{//房间收费策略
-//     fee: xx, //Number
-//     days: xx //Number
-//   }],
+//     charge_strategy : {
+//	     price : 10,
+//	     discount: [{month:5,discount : 0.75}]
+//      },
 //   living: xx, //Boolean 房间直播状态
 //   online: xx, //Number 在线人数
 //   tag: xx, //String 标签
@@ -117,7 +143,7 @@ epgd.prototype.insertRoomInfo = function(info) {
   var key = 'room_' + info.id + '_info';
   this.client.set(key, JSON.stringify(info));
 };
-epgd.prototype.insertRoomPlayurl = function(id,url) {
+epgd.prototype.insertRoomPlayurl = function(id, url) {
   var key = 'room_' + id + '_playurl';
   this.client.set(key, JSON.stringify(url));
 };
@@ -144,7 +170,7 @@ epgd.prototype.delChannel = function(id) {
   this.client.del(key);
 };
 //删除所有数据
-epgd.prototype.delAll = function(){
+epgd.prototype.delAll = function() {
   this.client.flushdb();
 };
 module.exports = epgd;
