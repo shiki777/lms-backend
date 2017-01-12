@@ -210,6 +210,18 @@ function insertRoomPlayurl(roomId,playUrl){
   epgd.insertRoomPlayurl(roomId,playUrl);
 }
 
+function deleteRoom(roomId){
+  epgd.delRoom(roomId);
+}
+
+function deleteChannel(chid){
+  epgd.delChannel(chid);
+}
+
+function deleteAllData(){
+  epgd.delAll();
+}
+
 module.exports = {
   insertDefaultChannel : insertDefaultChannel,
   insertChannel : insertChannel,
@@ -217,7 +229,10 @@ module.exports = {
   insertChannelRoomList : insertChannelRoomList,
   insertSwitchChannelInfo : insertSwitchChannelInfo,
   insertRoomInfo : insertRoomInfo,
-  insertRoomPlayurl : insertRoomPlayurl
+  insertRoomPlayurl : insertRoomPlayurl,
+  deleteRoom : deleteRoom,
+  deleteChannel : deleteChannel,
+  deleteAllData : deleteAllData
 };
 
 /*拼接频道列表数据*/

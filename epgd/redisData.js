@@ -126,7 +126,7 @@ epgd.prototype.insertRoomPlayurl = function(id, url) {
   this.client.set(key, JSON.stringify(url));
 };
 
-//删除房间仅仅删除房间信息和播放地址，但是不能删除频道房间列表中的字段，需要单独修改房间频道列表
+//删除房间
 epgd.prototype.delRoom = function(id) {
   //删除房间信息
   var key = 'room_' + id + '_info';
@@ -135,7 +135,7 @@ epgd.prototype.delRoom = function(id) {
   key = 'room_' + id + '_playurl';
   this.client.del(key);
 };
-//删除频道，只删除频道信息，频道房间列表，频道的上下频道，但是无法删除关联此频道的上下频道，需要重新组合
+//删除频道
 epgd.prototype.delChannel = function(id) {
   //删除频道信息
   var key = 'channel_' + id + '_info';
