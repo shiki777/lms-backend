@@ -112,8 +112,12 @@ router.get('/videolist', function(req,res) {
 /*提供给用户系统查询计费*/
 router.get('/lms/charge', function(req, res) {
     var tableConfig = {
-        1 : 'channel_discount',
-        2 : 'room_discount'
+        1 : 'channel',
+        2 : 'room'
+    };
+    var keyConfig = {
+        1 : 'channelId',
+        2 : 'roomId'
     };
     var id = req.query.id;
     var type = req.query.type;
@@ -133,7 +137,7 @@ router.get('/lms/charge', function(req, res) {
         });
     }
     var type = parseInt(type,10);
-    if(type != 2 || type != 1){
+    if(type != 2 && type != 1){
         return res.status(200).json({
             code : 5,
             msg : 'type illegal',
@@ -157,8 +161,11 @@ router.get('/lms/charge', function(req, res) {
             });
         } else {
             var table = tableConfig[type];
-            var r_sql = 'SELECT * FROM ' + pool.escape(table) + ' WHERE id = ' + pool.escape(id) + ';';
-            connection.query(r_sql, function(err, rows, field) {
+            var discountTable = table + '_discount';
+            var sql = 'select ' + table + '.price as price, ' + discountTable + '.amount as amount, ' + discountTable
+            + '.discount as discount from ' + table + ' LEFT JOIN ' + discountTable + ' on ' + table + '.id = ' + discountTable + '.' + keyConfig[type] +  ' where ' 
+            + table + '.id = ' + pool.escape(id) + ';';
+            connection.query(sql, function(err, rows, field) {
                 if (err) {
                     console.log(err);
                     res.status(200).jsonp({
@@ -168,7 +175,21 @@ router.get('/lms/charge', function(req, res) {
                     });
                 } else {
                     if (rows[0]) {
-
+                        var price = rows[0].price;
+                        var discount = getStrategy(rows);
+                        if(price == 0){
+                            res.status(200).jsonp({
+                                code : 0,
+                                msg : 'ok',
+                                amount : 0
+                            });                            
+                        } else {
+                            res.status(200).jsonp({
+                                code : 0,
+                                msg : 'ok',
+                                amount : getAmount(count, discount,price)
+                            }); 
+                        }
                     } else {
                         res.status(200).jsonp({
                             code : 7,
@@ -184,29 +205,27 @@ router.get('/lms/charge', function(req, res) {
 
 });
 
-function getStrategy(rows,price,charge) {
-  if(!charge){
-    return {
-      price : 0,
-      discount : []
-    };
-  }
-  var s = {
-    price : price,
-    discount : []
-  };
-  var ids = [];
+function getStrategy(rows) {
+  var s = [];
   for(var i = 0; i < rows.length; i++){
-      s.discount.push({
-        month : rows[i].amount,
+      s.push({
+        mouth : rows[i].amount,
         discount : rows[i].discount
       });
   }
   return s;
 }
 
-function getAmount(count,discounts) {
-
+function getAmount(count,discounts,price) {
+    if(discounts.length == 0){
+        return count * price;
+    }
+    for(var i = 0; i < discounts.length; i++){
+        if(discounts[i].mouth == count){
+            return count * price * discounts[i].discount;
+        }
+    }
+    return count * price;
 }
 
 module.exports = router;
