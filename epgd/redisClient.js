@@ -1,8 +1,8 @@
 var log4js = require('log4js');
-var logger = log4js.getLogger("modules/v2/redisClient");
+var logger = log4js.getLogger("epgd/redisClient");
 var redis = require("redis");
 var config = require('../config/config.js');
-var debug = require('debug')('lms:server');
+var debug = require('debug')('lms:epgd');
 
 var redisClient = redis.createClient(config.redis.port, config.redis.host);
 
