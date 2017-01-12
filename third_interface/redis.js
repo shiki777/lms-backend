@@ -270,6 +270,9 @@ function formatChannelInfo(data,channelrows,roomrows) {
   if(!channel.charge){
     delete channel.charge_strategy;
   }
+  if(!channel.default_room_info.charge){
+    delete channel.default_room_info.charge_strategy;
+  }
   return channel;
 }
 /*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/

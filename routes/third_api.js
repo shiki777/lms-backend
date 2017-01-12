@@ -121,14 +121,14 @@ router.get('/lms/charge', function(req, res) {
     if(!id){
         return res.status(200).json({
             code : 1,
-            msg : 'need id'
+            msg : 'need id',
             amount : -1
         });
     }
     if(!type){
         return res.status(200).json({
             code : 2,
-            msg : 'need type'
+            msg : 'need type',
             amount : -1
         });
     }
@@ -136,14 +136,14 @@ router.get('/lms/charge', function(req, res) {
     if(type != 2 || type != 1){
         return res.status(200).json({
             code : 5,
-            msg : 'type illegal'
+            msg : 'type illegal',
             amount : -1
         });        
     }
     if (!count) {
         return res.status(200).json({
             code: 3,
-            msg: 'need id'
+            msg: 'need id',
             amount: -1
         });
     }
