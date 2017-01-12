@@ -273,7 +273,7 @@ router.delete('/channel/del',function(req,res){
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
           if(result.affectedRows == 1){
-            redis.deleteChannel(pool.escape(req.query.id));
+            redis.deleteChannel(req.query.id);
             redis.insertChannelList();
             redis.insertSwitchChannelInfo();
           }
@@ -618,7 +618,7 @@ router.delete('/room/del',function(req,res){
         }
         else {//result[1].affectedRows == 1
           res.status(200).send({code:0,msg:(result[1].affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
-          redis.deleteRoom(pool.escape(req.query.id));
+          redis.deleteRoom(req.query.id);
           if(result[0].length == 1){
             redis.insertChannelRoomList(result[0][0].channelId);
           }

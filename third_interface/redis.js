@@ -147,7 +147,7 @@ function insertChannelRoomList(chid){
           console.log('report redis insertChannelRoomList error : ' + err);
         }
         else {
-          epgd.insertChannelRoomList(chid,rows);
+          epgd.insertChannelRoomList(parseInt(chid),rows);
         }
         connection.release();
       });
@@ -207,15 +207,15 @@ function insertRoomInfo(roomId){
 
 function insertRoomPlayurl(roomId,playUrl){
   if(!roomId || !playUrl){return;}
-  epgd.insertRoomPlayurl(roomId,playUrl);
+  epgd.insertRoomPlayurl(parseInt(roomId),playUrl);
 }
 
 function deleteRoom(roomId){
-  epgd.delRoom(roomId);
+  epgd.delRoom(parseInt(roomId));
 }
 
 function deleteChannel(chid){
-  epgd.delChannel(chid);
+  epgd.delChannel(parseInt(chid));
 }
 
 function deleteAllData(){
@@ -397,7 +397,7 @@ function insertUpAndDown(selfid,upid,downid){
     .then(function(up) {
       getChannelData(downid)
         .then(function(down) {
-          epgd.insertSwitchChannelInfo(selfid,up,down);
+          epgd.insertSwitchChannelInfo(parseInt(selfid),up,down);
         })
         .catch(function(e) {
           console.log(e)
