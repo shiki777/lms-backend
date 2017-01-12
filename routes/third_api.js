@@ -110,79 +110,79 @@ router.get('/videolist', function(req,res) {
 });
 
 /*提供给用户系统查询计费*/
-// router.get('/lms/charge', function(req, res) {
-//     var tableConfig = {
-//         1 : 'channel_discount',
-//         2 : 'room_discount'
-//     };
-//     var id = req.query.id;
-//     var type = req.query.type;
-//     var count = req.query.count;
-//     if(!id){
-//         return res.status(200).json({
-//             code : 1,
-//             msg : 'need id'
-//             amount : -1
-//         });
-//     }
-//     if(!type){
-//         return res.status(200).json({
-//             code : 2,
-//             msg : 'need type'
-//             amount : -1
-//         });
-//     }
-//     var type = parseInt(type,10);
-//     if(type != 2 || type != 1){
-//         return res.status(200).json({
-//             code : 5,
-//             msg : 'type illegal'
-//             amount : -1
-//         });        
-//     }
-//     if (!count) {
-//         return res.status(200).json({
-//             code: 3,
-//             msg: 'need id'
-//             amount: -1
-//         });
-//     }
-//     pool.getConnection(function(err, connection) {
-//         if (err) {
-//             console.log(err);
-//             res.status(200).jsonp({
-//                 code: 4,
-//                 msg: err.message,
-//                 amount: -1
-//             });
-//         } else {
-//             var table = tableConfig[type];
-//             var r_sql = 'SELECT * FROM ' + pool.escape(table) + ' WHERE id = ' + pool.escape(id) + ';';
-//             connection.query(r_sql, function(err, rows, field) {
-//                 if (err) {
-//                     console.log(err);
-//                     res.status(200).jsonp({
-//                         code: 1,
-//                         msg: err.message,
-//                         amount : -1
-//                     });
-//                 } else {
-//                     if (rows[0]) {
+router.get('/lms/charge', function(req, res) {
+    var tableConfig = {
+        1 : 'channel_discount',
+        2 : 'room_discount'
+    };
+    var id = req.query.id;
+    var type = req.query.type;
+    var count = req.query.count;
+    if(!id){
+        return res.status(200).json({
+            code : 1,
+            msg : 'need id'
+            amount : -1
+        });
+    }
+    if(!type){
+        return res.status(200).json({
+            code : 2,
+            msg : 'need type'
+            amount : -1
+        });
+    }
+    var type = parseInt(type,10);
+    if(type != 2 || type != 1){
+        return res.status(200).json({
+            code : 5,
+            msg : 'type illegal'
+            amount : -1
+        });        
+    }
+    if (!count) {
+        return res.status(200).json({
+            code: 3,
+            msg: 'need id'
+            amount: -1
+        });
+    }
+    pool.getConnection(function(err, connection) {
+        if (err) {
+            console.log(err);
+            res.status(200).jsonp({
+                code: 4,
+                msg: err.message,
+                amount: -1
+            });
+        } else {
+            var table = tableConfig[type];
+            var r_sql = 'SELECT * FROM ' + pool.escape(table) + ' WHERE id = ' + pool.escape(id) + ';';
+            connection.query(r_sql, function(err, rows, field) {
+                if (err) {
+                    console.log(err);
+                    res.status(200).jsonp({
+                        code: 1,
+                        msg: err.message,
+                        amount : -1
+                    });
+                } else {
+                    if (rows[0]) {
 
-//                     } else {
-//                         res.status(200).jsonp({
-//                             code : 7,
-//                             msg : 'no room/channel exists',
-//                             amount : -1
-//                         })
-//                     }
-//                 }
-//                 connection.release();
-//             });
-//         }
-//     });    
+                    } else {
+                        res.status(200).jsonp({
+                            code : 7,
+                            msg : 'no room/channel exists',
+                            amount : -1
+                        })
+                    }
+                }
+                connection.release();
+            });
+        }
+    });    
 
-// });
+});
 
 function getAmount(count,discounts) {
     
