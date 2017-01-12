@@ -118,7 +118,7 @@ router.get('/roomlist', function(req, res) {
   res.render('./room/roomlist',{
     message : html,
     user : user.name,
-    title : '房间修改',
+    title : '房间列表',
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/roomlist"'
   });

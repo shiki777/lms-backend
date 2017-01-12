@@ -38,7 +38,11 @@ var vm = new Vue({
                     .modal('show');                         
                         self.deleteRoom(id);
                     } else {
-                        alert('删除失败 : ' + data.body.msg);
+                        if(data.body.code ==3){
+                            alert('删除失败，该房间是频道默认房间，请先修改对应频道的默认房间！')
+                        } else {
+                            alert('删除失败 : ' + data.body.msg);
+                        }
                     }
                 }, function(e) {
                     alert('网络原因删除失败，请重试!');

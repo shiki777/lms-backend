@@ -44,65 +44,14 @@ var lms = require('./routes/lms');
 var page = require('./routes/page');
 var upload = require('./routes/upload');
 var video = require('./routes/video');
+var thirdApi = require('./routes/third_api');
 
 app.use('/gms', gmsrouter);
 app.use('/lms',lms);
 app.use('/lms',video);
+app.use('/',thirdApi);
 app.use('/lms/page',page);
 app.use('/lms/upload',multerupload.any(),upload);
-
-/*假接口 room/info*/
-app.get('/room/info', function(req,res) {
-  var query = req.query;
-  var roomid = query.id ? parseInt(query.id,10) : 1;
-  res.jsonp(getData(roomid));
-});
-/*假接口 视频下载*/
-app.get('/videolist', function(req, res) {
-  var query = req.query;
-  var page = query.page ? parseInt(query.page) : 0;
-  var pageSize = query.pageSize ? parseInt(query.pageSize) : 12; 
-  var roominfo = {
-    name : '房间',
-    thumb : 'http://w3.hoopchina.com.cn/82/cc/af/82ccaf82fb2b428b8d64f072625d3339001.jpg',
-    desc : 'VR视频',
-    downloadurl : 'http://epg.readyvr.woniucloud.com/images/cf90bf4ad41d792ad92700f8d4e7abcc.mp4?name=weidong&passward=snailgame'
-  };
-  res.jsonp({
-    code: 0,
-    msg: 'ok',
-    data: {
-      count: 100,
-      list : createRoomList(page,pageSize,roominfo)
-    }
-  })
-});
-function getData(id) {
-  var imgs = ['http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b5e2cfeafe61dca2e0e216d8650bcf6b.png','http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/937d4c197e98480d0bcd1e599e05d414.png','http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/1c7978c009ec38788423afa3e80999b5.png'];
-  var img = imgs[id%3];
-  var titles = ['你好世界','这是网红直播','百家频道正在直播'];
-  var title = titles[id%3];
-  var popular = id * 33 + parseInt(Math.random()*10000,10);
-  return {
-    img : img,
-    title : title,
-    popular : popular
-  }
-}
-function createRoomList(page,size,room) {
-  var a = [];
-  for(var i = 0; i < size; i++){
-    var index = page*size + i + 1;
-    a.push({
-      name : room.name + index,
-      thumb : room.thumb,
-      downloadurl : room.downloadurl,
-      desc : room.desc
-    });
-  }
-  return a;  
-}
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
