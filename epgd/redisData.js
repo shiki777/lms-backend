@@ -105,7 +105,7 @@ epgd.prototype.insertChannelInfo = function(info) {
 //   living: xx //Boolean 房间是否在直播
 // }]
 epgd.prototype.insertChannelRoomList = function(id, list) {
-  if (!((typeof id == 'number') && id.constructor == Number && isNaN(id))) {
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
     debug("insertChannelRoomList idid is not number:",id);
     logger.error("insertChannelRoomList id is not number:",id);
     return -1;
@@ -125,7 +125,7 @@ epgd.prototype.insertChannelRoomList = function(id, list) {
 //插入上下频道,数据格式参见频道信息定义
 //up，down的格式为channelinfo，第一个频道的上一个为最后一个频道，最后一个频道的下个为第一个频道
 epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
-  if (!((typeof id == 'number') && id.constructor == Number && isNaN(id))) {
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
     debug("insertSwitchChannelInfo id is not number:",id);
     logger.error("insertSwitchChannelInfo id is not number:",id);
     return -1;
@@ -185,7 +185,7 @@ epgd.prototype.insertRoomInfo = function(info) {
 };
 //插入房间播放地址，必须是字符串，不接受其他格式
 epgd.prototype.insertRoomPlayurl = function(id, url) {
-  if (!((typeof id == 'number') && id.constructor == Number && isNaN(id))) {
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
     debug("insertRoomPlayurl id is not number:",id);
     logger.error("insertRoomPlayurl id is not number:",id);
     return -1;
@@ -203,7 +203,7 @@ epgd.prototype.insertRoomPlayurl = function(id, url) {
 
 //删除房间仅仅删除房间信息和播放地址，但是不能删除频道房间列表中的字段，需要单独修改频道房间列表
 epgd.prototype.delRoom = function(id) {
-  if (!((typeof id == 'number') && id.constructor == Number && isNaN(id))) {
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
     debug("delRoom id is not number:",id);
     logger.error("delRoom id is not number:",id);
     return -1;
@@ -222,7 +222,7 @@ epgd.prototype.delRoom = function(id) {
 
 //删除频道，只删除频道信息，频道房间列表，频道的上下频道，但是无法删除关联此频道的上下频道，需要重新组合,还要注意需要修改默认频道
 epgd.prototype.delChannel = function(id) {
-  if (!((typeof id == 'number') && id.constructor == Number && isNaN(id))) {
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
     debug("delChannel id is not number:",id);
     logger.error("delChannel id is not number:",id);
     return -1;
