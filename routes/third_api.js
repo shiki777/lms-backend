@@ -125,14 +125,14 @@ router.get('/lms/charge', function(req, res) {
     if(!id){
         return res.status(200).json({
             code : 1,
-            msg : 'need id',
+            msg : 'id empty',
             amount : -1
         });
     }
     if(!type){
         return res.status(200).json({
             code : 2,
-            msg : 'need type',
+            msg : 'type  empty',
             amount : -1
         });
     }
@@ -147,9 +147,17 @@ router.get('/lms/charge', function(req, res) {
     if (!count) {
         return res.status(200).json({
             code: 3,
-            msg: 'need id',
+            msg: 'count empty',
             amount: -1
         });
+    }
+    var count = parseInt(count,10);
+    if(isNaN(count)){
+        return res.status(200).json({
+            code: 5,
+            msg: 'count illegal',
+            amount: -1
+        });        
     }
     pool.getConnection(function(err, connection) {
         if (err) {
