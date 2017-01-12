@@ -267,6 +267,9 @@ function formatChannelInfo(data,channelrows,roomrows) {
       eye_style : data.eyeStyle
     }
   }
+  if(!channel.charge){
+    delete channel.charge_strategy;
+  }
   return channel;
 }
 /*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
@@ -281,7 +284,6 @@ function formatDefaultChannelInfo(rows) {
     icon : rows[0].icon,
     desc : rows[0].desc,
     charge : false,
-    charge_strategy : {price : 0, discount : []},
     default_room_info : {
       id : rows[0].defaultRoom,
       name : rows[0].name1,
@@ -332,6 +334,10 @@ function formatRoomInfo(roomRows,discountRows){
     control_model : roomRows[0].controlModel,
     eye_style : roomRows[0].eyeStyle
   };
+  /*不收费不需要字段，为了兼容U3D*/
+  if(!roomInfo.charge){
+    delete roomInfo.charge_strategy;
+  }
   return roomInfo;
 }
 

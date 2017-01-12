@@ -184,8 +184,29 @@ router.get('/lms/charge', function(req, res) {
 
 });
 
+function getStrategy(rows,price,charge) {
+  if(!charge){
+    return {
+      price : 0,
+      discount : []
+    };
+  }
+  var s = {
+    price : price,
+    discount : []
+  };
+  var ids = [];
+  for(var i = 0; i < rows.length; i++){
+      s.discount.push({
+        month : rows[i].amount,
+        discount : rows[i].discount
+      });
+  }
+  return s;
+}
+
 function getAmount(count,discounts) {
-    
+
 }
 
 module.exports = router;
