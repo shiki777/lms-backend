@@ -146,7 +146,7 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
 };
 
 /////////////////////////////
-//插入频道信息
+//插入房间信息
 // {
 //   id: xxx, //Number 房间id，标识符
 //   name: xx, //String 房间名称
@@ -191,7 +191,7 @@ epgd.prototype.insertRoomPlayurl = function(id, url) {
   this.client.set(key, url);
 };
 
-//删除房间仅仅删除房间信息和播放地址，但是不能删除频道房间列表中的字段，需要单独修改房间频道列表
+//删除房间仅仅删除房间信息和播放地址，但是不能删除频道房间列表中的字段，需要单独修改频道房间列表
 epgd.prototype.delRoom = function(id) {
   if (!((typeof id == 'number') && id.constructor == Number)) {
     debug("delRoom id is not number");
@@ -205,6 +205,7 @@ epgd.prototype.delRoom = function(id) {
   key = 'room_' + id + '_playurl';
   this.client.del(key);
 };
+
 //删除频道，只删除频道信息，频道房间列表，频道的上下频道，但是无法删除关联此频道的上下频道，需要重新组合,还要注意需要修改默认频道
 epgd.prototype.delChannel = function(id) {
   if (!((typeof id == 'number') && id.constructor == Number)) {
