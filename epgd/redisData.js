@@ -121,9 +121,10 @@ epgd.prototype.insertRoomInfo = function(info) {
   var key = 'room_' + info.id + '_info';
   this.client.set(key, JSON.stringify(info));
 };
+//插入房间播放地址，必须是字符串，不接受其他格式
 epgd.prototype.insertRoomPlayurl = function(id, url) {
   var key = 'room_' + id + '_playurl';
-  this.client.set(key, JSON.stringify(url));
+  this.client.set(key, url);
 };
 
 //删除房间仅仅删除房间信息和播放地址，但是不能删除频道房间列表中的字段，需要单独修改房间频道列表
