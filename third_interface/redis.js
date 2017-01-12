@@ -147,7 +147,12 @@ function insertChannelRoomList(chid){
           console.log('report redis insertChannelRoomList error : ' + err);
         }
         else {
-          epgd.insertChannelRoomList(chid,rows);
+<<<<<<< HEAD
+          var result = formatChannelRoomList(rows);
+          epgd.insertChannelRoomList(chid,result);
+=======
+          epgd.insertChannelRoomList(parseInt(chid),rows);
+>>>>>>> 145cf7e966810c9d89be76bc51f070aeee3fe21c
         }
         connection.release();
       });
@@ -207,15 +212,15 @@ function insertRoomInfo(roomId){
 
 function insertRoomPlayurl(roomId,playUrl){
   if(!roomId || !playUrl){return;}
-  epgd.insertRoomPlayurl(roomId,playUrl);
+  epgd.insertRoomPlayurl(parseInt(roomId),playUrl);
 }
 
 function deleteRoom(roomId){
-  epgd.delRoom(roomId);
+  epgd.delRoom(parseInt(roomId));
 }
 
 function deleteChannel(chid){
-  epgd.delChannel(chid);
+  epgd.delChannel(parseInt(chid));
 }
 
 function deleteAllData(){
@@ -282,6 +287,12 @@ function formatChannelInfo(data,channelrows,roomrows) {
       eye_style : data.eyeStyle
     }
   }
+  if(!channel.charge){
+    delete channel.charge_strategy;
+  }
+  if(!channel.default_room_info.charge){
+    delete channel.default_room_info.charge_strategy;
+  }
   return channel;
 }
 /*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
@@ -296,14 +307,12 @@ function formatDefaultChannelInfo(rows) {
     icon : rows[0].icon,
     desc : rows[0].desc,
     charge : false,
-    charge_strategy : {price : 0, discount : []},
     default_room_info : {
       id : rows[0].defaultRoom,
       name : rows[0].name1,
       thumb : rows[0].thumb1,
       desc : rows[0].desc1,
       charge : false,
-      charge_strategy : {price : 0, discount : []},
       living : rows[0].living ? true : false,
       online : 100,
       tag : rows[0].tag,
@@ -315,6 +324,21 @@ function formatDefaultChannelInfo(rows) {
     }
   }
   return channel;
+}
+
+function formatChannelRoomList(rows) {
+  var res = [];
+  for(var i = 0; i < rows.length; i++){
+    res.push({
+      id: rows[i].id, //Number 房间id，标识符
+      name: rows[i].name, //String 房间名
+      thumb: rows[i].thumb, //String 房间封面
+      desc: rows[i].desc, //String 房间简介
+      charge: rows[i].charge ? true : false, //Boolean 房间是否（独立）收费
+      living: rows[i].living ? true : false //Boolean 房间是否在直播
+    });
+  }
+  return res;
 }
 
 function formatRoomInfo(roomRows,discountRows){
@@ -347,6 +371,10 @@ function formatRoomInfo(roomRows,discountRows){
     control_model : roomRows[0].controlModel,
     eye_style : roomRows[0].eyeStyle
   };
+  /*不收费不需要字段，为了兼容U3D*/
+  if(!roomInfo.charge){
+    delete roomInfo.charge_strategy;
+  }
   return roomInfo;
 }
 
@@ -397,7 +425,7 @@ function insertUpAndDown(selfid,upid,downid){
     .then(function(up) {
       getChannelData(downid)
         .then(function(down) {
-          epgd.insertSwitchChannelInfo(selfid,up,down);
+          epgd.insertSwitchChannelInfo(parseInt(selfid),up,down);
         })
         .catch(function(e) {
           console.log(e)

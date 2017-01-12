@@ -273,7 +273,7 @@ router.delete('/channel/del',function(req,res){
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
           if(result.affectedRows == 1){
-            redis.deleteChannel(pool.escape(req.query.id));
+            redis.deleteChannel(req.query.id);
             redis.insertChannelList();
             redis.insertSwitchChannelInfo();
           }
@@ -595,7 +595,7 @@ router.post('/room/add',function(req,res){
 
 router.delete('/room/del',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
-  if(!req.query.id){return res.status(400).send({code:1,msg:'room-del failed for no id.'});}
+  if(!req.query.id){return res.status(200).send({code:1,msg:'room-del failed for no id.'});}
   var user = req.session.user;
   if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除房间
     return res.status(401).send({code:1,msg:'room-del failed for no login or have no right.'});
@@ -603,7 +603,7 @@ router.delete('/room/del',function(req,res){
   pool.getConnection(function(err,connection){
     if(err){
       console.log(err);
-      res.status(500).send({code:1,msg:err.message});
+      res.status(200).send({code:1,msg:err.message});
     }
     else {
       console.log('connected as id ' + connection.threadId);
@@ -614,11 +614,11 @@ router.delete('/room/del',function(req,res){
       connection.query(s_sql + d_sql, function(err, result) {
         if(err){
           console.log(err);
-          res.status(500).send({code:1,msg:err.message});
+          res.status(200).send({code:3,msg:err.message});
         }
         else {//result[1].affectedRows == 1
           res.status(200).send({code:0,msg:(result[1].affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
-          redis.deleteRoom(pool.escape(req.query.id));
+          redis.deleteRoom(req.query.id);
           if(result[0].length == 1){
             redis.insertChannelRoomList(result[0][0].channelId);
           }
