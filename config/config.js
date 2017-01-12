@@ -9,7 +9,7 @@ var config = {
     port: '3306',
     user: 'lms',
     password: 'lms123',
-    database: 'lms2',
+    database: 'lms2_copy',
     multipleStatements : true
   },
   push_stream: {
@@ -23,7 +23,7 @@ var config = {
   redis: {
     host: '192.168.5.137',
     port: 6379,
-    db_number: 5,
+    db_number: 13,
   },
   chatroom:{
     host:'192.168.5.225',
