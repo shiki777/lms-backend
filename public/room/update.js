@@ -105,7 +105,11 @@ var vm = new Vue({
                         location.href= '/lms/page/roomlist';
                     }, 1500);
                         } else {
-                            alert('提交失败：' + data.body.msg);
+                        if(data.body.code ==3){
+                            alert('删除失败，该房间是频道默认房间，请先修改对应频道的默认房间！')
+                        } else {
+                            alert('删除失败 : ' + data.body.msg);
+                        }
                         }
                     }, function(e) {
                         alert('提交失败');
