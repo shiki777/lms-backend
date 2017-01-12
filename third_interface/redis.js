@@ -147,8 +147,12 @@ function insertChannelRoomList(chid){
           console.log('report redis insertChannelRoomList error : ' + err);
         }
         else {
+<<<<<<< HEAD
           var result = formatChannelRoomList(rows);
           epgd.insertChannelRoomList(chid,result);
+=======
+          epgd.insertChannelRoomList(parseInt(chid),rows);
+>>>>>>> 145cf7e966810c9d89be76bc51f070aeee3fe21c
         }
         connection.release();
       });
@@ -208,7 +212,19 @@ function insertRoomInfo(roomId){
 
 function insertRoomPlayurl(roomId,playUrl){
   if(!roomId || !playUrl){return;}
-  epgd.insertRoomPlayurl(roomId,playUrl);
+  epgd.insertRoomPlayurl(parseInt(roomId),playUrl);
+}
+
+function deleteRoom(roomId){
+  epgd.delRoom(parseInt(roomId));
+}
+
+function deleteChannel(chid){
+  epgd.delChannel(parseInt(chid));
+}
+
+function deleteAllData(){
+  epgd.delAll();
 }
 
 module.exports = {
@@ -218,7 +234,10 @@ module.exports = {
   insertChannelRoomList : insertChannelRoomList,
   insertSwitchChannelInfo : insertSwitchChannelInfo,
   insertRoomInfo : insertRoomInfo,
-  insertRoomPlayurl : insertRoomPlayurl
+  insertRoomPlayurl : insertRoomPlayurl,
+  deleteRoom : deleteRoom,
+  deleteChannel : deleteChannel,
+  deleteAllData : deleteAllData
 };
 
 /*拼接频道列表数据*/
@@ -406,7 +425,7 @@ function insertUpAndDown(selfid,upid,downid){
     .then(function(up) {
       getChannelData(downid)
         .then(function(down) {
-          epgd.insertSwitchChannelInfo(selfid,up,down);
+          epgd.insertSwitchChannelInfo(parseInt(selfid),up,down);
         })
         .catch(function(e) {
           console.log(e)

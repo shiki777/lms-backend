@@ -219,7 +219,6 @@ router.post('/channel/add',function(req,res){
           var channel_insert_id = result.insertId;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
-            redis.insertSwitchChannelInfo();
             return connection.release();
           }
           var cd_values = ' VALUES';
@@ -238,7 +237,6 @@ router.post('/channel/add',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
-              redis.insertSwitchChannelInfo();
             }
             connection.release();
           });
@@ -275,6 +273,8 @@ router.delete('/channel/del',function(req,res){
         else {//result.affectedRows == 1
           res.status(200).send({code:0,msg:(result.affectedRows == 1) ? 'channel-del success.' : 'not exist this channel or have no right'});
           if(result.affectedRows == 1){
+            redis.deleteChannel(req.query.id);
+            redis.insertChannelList();
             redis.insertSwitchChannelInfo();
           }
         }
@@ -381,7 +381,7 @@ router.get('/channel/get',function(req,res){
           res.status(200).jsonp({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
         }
         else {
-          var discount_arr = new Array();
+          var discount_arr = [];
           for(var i = 0;i < result[1].length;i ++){
             discount_arr.push({month:result[1][i].amount,discount:result[1][i].discount});
           }
@@ -432,7 +432,7 @@ router.get('/channel/list',function(req,res){
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          var chanlist = new Array();
+          var chanlist = [];
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
@@ -505,10 +505,12 @@ router.post('/room/add',function(req,res){
           }
           else {
             console.log('connected as id ' + connection.threadId);
+            var pushUrl = (roomUrl.pushUrl instanceof Array) ? pool.escape(roomUrl.pushUrl[0]) : pool.escape(roomUrl.pushUrl);
+            var liveUrl = (roomUrl.liveUrl instanceof Array) ? pool.escape(roomUrl.liveUrl[0]) : pool.escape(roomUrl.liveUrl);
             var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
             'room.desc,charge,price,dependencyChange,room.order,tag,viewAngle,controlModel,projectStyle,eyeStyle) VALUES(' +
-            pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(roomUrl.pushUrl) + ',' +
-            pool.escape(roomUrl.liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
+            pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pushUrl + ',' +
+            liveUrl + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
             pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
             pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyCharge) + ',' +
             pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
@@ -538,7 +540,7 @@ router.post('/room/add',function(req,res){
                       console.log(errmsg);
                     })
                   redis.insertRoomInfo(room_insert_id);
-                  redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                  redis.insertRoomPlayurl(room_insert_id,liveUrl);
                   redis.insertChannelRoomList(req.body.channelId);
                   return connection.release();
                 }
@@ -575,7 +577,7 @@ router.post('/room/add',function(req,res){
                         })
                       //写redis,1:插入房间，2：有可能需要插入默认频道，仅插入一次，3：插入频道房间列表,4:插入房间播放URL
                       redis.insertRoomInfo(room_insert_id);
-                      redis.insertRoomPlayurl(room_insert_id,roomUrl.liveUrl);
+                      redis.insertRoomPlayurl(room_insert_id,liveUrl);
                       redis.insertChannelRoomList(req.body.channelId);
                     }
                   connection.release();
@@ -616,10 +618,11 @@ router.delete('/room/del',function(req,res){
         }
         else {//result[1].affectedRows == 1
           res.status(200).send({code:0,msg:(result[1].affectedRows == 1) ? 'room-del success.' : 'not exist this room or have no right.'});
-          //通知礼物系统
+          redis.deleteRoom(req.query.id);
           if(result[0].length == 1){
             redis.insertChannelRoomList(result[0][0].channelId);
           }
+          //通知礼物系统
           gift.room_add_del(req.query.id.toString(),false)
             .then(function(resbody){
             })
@@ -783,8 +786,8 @@ router.get('/room/get',function(req,res){
           res.status(200).jsonp({code:1,msg:'room-get failed for not exist this room or have no right.'});
         }
         else {
-          var user_arr = new Array();
-          var discount_arr = new Array();
+          var user_arr = [];
+          var discount_arr = [];
           for(var i = 0;i < result[1].length;i ++){
             user_arr.push({name:result[1][i].name,id:result[1][i].id});
           }
@@ -848,7 +851,7 @@ router.get('/room/list',function(req,res){
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          var roomlist = new Array();
+          var roomlist = [];
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
