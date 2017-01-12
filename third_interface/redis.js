@@ -147,7 +147,8 @@ function insertChannelRoomList(chid){
           console.log('report redis insertChannelRoomList error : ' + err);
         }
         else {
-          epgd.insertChannelRoomList(chid,rows);
+          var result = formatChannelRoomList(rows);
+          epgd.insertChannelRoomList(chid,result);
         }
         connection.release();
       });
@@ -305,6 +306,21 @@ function formatDefaultChannelInfo(rows) {
     }
   }
   return channel;
+}
+
+function formatChannelRoomList(rows) {
+  var res = [];
+  for(var i = 0; i < rows.length; i++){
+    res.push({
+      id: rows[i].id, //Number 房间id，标识符
+      name: rows[i].name, //String 房间名
+      thumb: rows[i].thumb, //String 房间封面
+      desc: rows[i].desc, //String 房间简介
+      charge: rows[i].charge ? true : false, //Boolean 房间是否（独立）收费
+      living: rows[i].living ? true : false //Boolean 房间是否在直播
+    });
+  }
+  return res;
 }
 
 function formatRoomInfo(roomRows,discountRows){
