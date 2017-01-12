@@ -219,7 +219,6 @@ router.post('/channel/add',function(req,res){
           var channel_insert_id = result.insertId;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
-            redis.insertSwitchChannelInfo();
             return connection.release();
           }
           var cd_values = ' VALUES';
@@ -238,7 +237,6 @@ router.post('/channel/add',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
-              redis.insertSwitchChannelInfo();
             }
             connection.release();
           });
@@ -383,7 +381,7 @@ router.get('/channel/get',function(req,res){
           res.status(200).jsonp({code:1,msg:'channel-get failed for not exist this channel or have no right.'});
         }
         else {
-          var discount_arr = new Array();
+          var discount_arr = [];
           for(var i = 0;i < result[1].length;i ++){
             discount_arr.push({month:result[1][i].amount,discount:result[1][i].discount});
           }
@@ -434,7 +432,7 @@ router.get('/channel/list',function(req,res){
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          var chanlist = new Array();
+          var chanlist = [];
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
@@ -788,8 +786,8 @@ router.get('/room/get',function(req,res){
           res.status(200).jsonp({code:1,msg:'room-get failed for not exist this room or have no right.'});
         }
         else {
-          var user_arr = new Array();
-          var discount_arr = new Array();
+          var user_arr = [];
+          var discount_arr = [];
           for(var i = 0;i < result[1].length;i ++){
             user_arr.push({name:result[1][i].name,id:result[1][i].id});
           }
@@ -853,7 +851,7 @@ router.get('/room/list',function(req,res){
           res.status(200).jsonp({code:1,msg:err.message});
         }
         else {
-          var roomlist = new Array();
+          var roomlist = [];
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
