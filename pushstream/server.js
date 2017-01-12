@@ -4,7 +4,10 @@ var HashMap = require('hashmap').HashMap;
 var host = require('../config/config.js').push_stream.host;
 var port = require('../config/config.js').push_stream.port;
 var assistant = grpc.load(PROTO_PATH).liveassistant;
-var room = require('../snailcloud/room');
+var interaction = require('./interaction');
+var log4js = require('log4js');
+var logger = log4js.getLogger('pushstream/server');
+var debug = require('debug')('pushstream/server');
 
 function server() {
   this.usermap = new HashMap();
@@ -22,7 +25,7 @@ server.prototype.start = function() {
     roomInfo: communication_roomInfo,
     chatInfo: communication_chatInfo
   });
-  host = host+':'+port;
+  host = host + ':' + port;
   server.bind(host, grpc.ServerCredentials.createInsecure());
   console.log('host ', host);
   server.start();
@@ -40,19 +43,21 @@ var communication_login = function(call, callback) {
 
   console.log('username: ' + username + ' password: ' + password);
 
-  room.login(username, password)
+  interaction.login(username, password)
     .then(function(result) {
-      console.log(result);
+      logger.info('login result:', result);
+      debug('login result:', result);
       callback(null, {
         code: 0,
         message: 'success',
         creds: result,
         token: result
       });
-      service.addUser(user,clientInfo);
+      //service.addUser(user, clientInfo);
     })
     .catch(function(err) {
-      console.log(err.message);
+      logger.error('login err:', err.message);
+      debug('login err1111:', err.message);
       callback(null, {
         code: 1,
         message: err.message,
@@ -66,93 +71,162 @@ var communication_logout = function(call, callback) {
   console.log("communication_logout");
   var creds = call.request.creds;
   console.log('creds:', creds);
-  callback(null, {
-    code: 0,
-    message: 'success'
+  interaction.logout(creds).then(function(result) {
+    callback(null, {
+      code: 0,
+      message: 'success'
+    });
+  }).catch(function(err) {
+    console.log(err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
   });
+
 };
 
 var communication_applyPushURL = function(call, callback) {
   console.log("communication_ApplyPushURL");
   var creds = call.request.creds;
   console.log('creds:', creds);
-  var ret = {
-    code: 0,
-    URL: 'rtmp://push.snail.woniucloud.com:1937/push1/mi1t9sta?wsSecret=ffd4aeff04e1f3b4fa37da8c39c75824&wsTime=585c97b6'
-  };
-  console.log(ret);
-  callback(null, ret);
+  interaction.getPushUrl(creds).then(function(result) {
+    logger.info('getPushUrl result:', result);
+    debug('getPushUrl result:', result);
+    callback(null, {
+      code: 0,
+      URL: result
+    });
+  }).catch(function(err) {
+    logger.error('getPushUrl err:', err.message);
+    debug('getPushUrl err:', err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
+  });
+
 };
 
 var communication_startStream = function(call, callback) {
   var creds = call.request.creds;
   console.log('creds:', creds);
   console.log("communication_startStream");
-  var ret = {
-    code: 0,
-    message: 'success'
-  };
-  console.log(ret);
-  callback(null, ret);
+  interaction.startPushStream(creds).then(function(result) {
+    logger.info('startPushStream result:', result);
+    debug('startPushStream result:', result);
+    callback(null, {
+      code: 0,
+      message: 'success'
+    });
+  }).catch(function(err) {
+    logger.error('startPushStream err:', err.message);
+    debug('startPushStream err:', err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
+  });
 };
 
 var communication_stopStream = function(call, callback) {
   var creds = call.request.creds;
   console.log('creds:', creds);
   console.log("communication_stopStream");
-  var ret = {
-    code: 0,
-    message: 'success'
-  };
-  console.log(ret);
-  callback(null, ret);
+
+  interaction.stopPushStream(creds).then(function(result) {
+    logger.info('stopPushStream result:', result);
+    debug('stopPushStream result:', result);
+    callback(null, {
+      code: 0,
+      message: 'success'
+    });
+  }).catch(function(err) {
+    logger.error('stopPushStream err:', err.message);
+    debug('stopPushStream err:', err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
+  });
 };
 
 var communication_userInfo = function(call, callback) {
   var creds = call.request.creds;
   console.log('creds:', creds);
   console.log("communication_userInfo");
-  var ret = {
-    code: 0,
-    message: 'success',
-    nickname: 'testname',
-    head_icon: 'http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b5e2cfeafe61dca2e0e216d8650bcf6b.png'
-  };
-  console.log(ret);
-  callback(null, ret);
+
+  interaction.getUserInfo(creds).then(function(result) {
+    logger.info('getUserInfo result:', result);
+    debug('getUserInfo result:', result);
+    callback(null, {
+      code: 0,
+      message: 'success',
+      nickname: result.nickname,
+      head_icon: result.head_icon
+    });
+  }).catch(function(err) {
+    logger.error('getUserInfo err:', err.message);
+    debug('getUserInfo err:', err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
+  });
+
 };
 
 var communication_roomInfo = function(call, callback) {
   var creds = call.request.creds;
   console.log('creds:', creds);
   console.log("communication_roomInfo");
-  var ret = {
-    code: 0,
-    message: 'success',
-    room_id: 1001,
-    room_name: '测试房间1001',
-    channel_name:'测试频道1',
-    ninki:1,
-    audience_count:1,
-    play_status:1
-  };
-  console.log(ret);
-  callback(null, ret);
+
+  interaction.getRoomInfo(creds).then(function(result) {
+    logger.info('getRoomInfo result:', result);
+    debug('getRoomInfo result:', result);
+    callback(null, {
+      code: 0,
+      message: 'success',
+      room_id: result.room_id,
+      room_name: result.room_name,
+      channel_name: result.channel_name,
+      ninki: result.ninki,
+      audience_count: result.audience_count,
+      play_status: result.play_status
+    });
+  }).catch(function(err) {
+    logger.error('getRoomInfo err:', err.message);
+    debug('getRoomInfo err:', err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
+  });
 };
 
 var communication_chatInfo = function(call, callback) {
   var creds = call.request.creds;
   console.log('creds:', creds);
   console.log("communication_chatInfo");
-  var ret ={
-    code: 0,
-    message: 'success',
-    chat_id:1001,
-    host:'192.168.5.137',
-    port:8066
-  };
-  console.log(ret);
-  callback(null, ret);
+
+  interaction.getChatInfo(creds).then(function(result) {
+    logger.info('getChatInfo result:', result);
+    debug('getChatInfo result:', result);
+    callback(null, {
+      code: 0,
+      message: 'success',
+      chat_id: result.chat_id,
+      host: result.host,
+      port: result.port
+    });
+  }).catch(function(err) {
+    logger.error('getChatInfo err:', err.message);
+    debug('getChatInfo err:', err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
+  });
 };
 
 module.exports = server;

@@ -5,7 +5,6 @@ var config = require('../config/config');
 router.post('/', function(req, res) {
     res.header("Access-Control-Allow-Origin", "*");
     var files = req.files;
-    console.log(files)
     var file;
     for (var key in files) {
         var v = files[key];

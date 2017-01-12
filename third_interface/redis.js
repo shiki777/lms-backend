@@ -1,4 +1,4 @@
-var epgd_module = require('../epgd/insertRedisData');
+var epgd_module = require('../epgd/redisData');
 var client = require('../epgd/redisClient').redisClient;
 var epgd = new epgd_module(client);
 var config = require('../config/config');
@@ -136,14 +136,15 @@ function insertChannelRoomList(chid){
   if(!chid){return;}
   pool.getConnection(function(err,connection){
     if(err){
-      console.log(err);
+      console.log('report redis insertChannelRoomList error : ' + err);
     }
     else {
+      console.log('connected as id ' + connection.threadId);
       var sql = 'SELECT id,name,thumb,room.desc,charge,living FROM room WHERE channelId = '
        + pool.escape(chid) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
-          console.log(err);
+          console.log('report redis insertChannelRoomList error : ' + err);
         }
         else {
           epgd.insertChannelRoomList(chid,rows);
@@ -158,20 +159,21 @@ function insertSwitchChannelInfo(){
   console.log(new Date().getTime());
   pool.getConnection(function(err,connection){
     if(err){
-      console.log(err);
+      console.log('report redis insertSwitchChannelInfo error : ' + err);
     }
     else {
+      console.log('connected as id ' + connection.threadId);
       var sql = 'SELECT id,channel.order AS chorder FROM channel ORDER BY channel.order DESC,id;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
-          console.log(err);
+          console.log('report redis insertSwitchChannelInfo error : ' + err);
         }
         else {
           var upid = 0,downid = 0;
           for(var i = 0;i < rows.length;i ++){
               upid = (i == 0) ? rows[rows.length - 1].id : rows[i - 1].id;
               downid = (i == rows.length - 1) ? rows[0].id : rows[i + 1].id;
-              insertUPandDown(rows[i].id,upid,downid);
+              insertUpAndDown(rows[i].id,upid,downid);
           }
         }
         connection.release();
@@ -180,25 +182,27 @@ function insertSwitchChannelInfo(){
   });
 }
 
-function insertRoomInfo(roomId,body){
-  if(!roomId || !body){return;}
-  var roominfo = {
-    id : roomId,
-    name : body.name,
-    thumb : body.thumb,
-    desc : body.desc,
-    charge : body.charge,
-    charge_strategy : body.chargeStrategy,
-    living : body.living,
-    online : 100,
-    tag : body.tag,
-    u3d_bg : body.u3dbg,
-    view_angle : body.viewAngle,
-    project_style : body.projectStyle,
-    control_model : body.controlModel,
-    eye_style : body.eyeStyle
-  }
-  epgd.insertRoomInfo(roominfo);
+function insertRoomInfo(roomId){
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log('report redis insertRoomInfo error : ' + err);
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var r_sql = 'SELECT * FROM room WHERE id = ' + pool.escape(roomId) + ';';
+      var rd_sql = 'SELECT * FROM room_discount WHERE roomId = ' + pool.escape(roomId) + ';';
+      connection.query(r_sql + rd_sql, function(err, result) {
+        if(err){
+          console.log('report redis insertRoomInfo error : ' + err);
+        }
+        else {
+          var roomInfo = formatRoomInfo(result[0],result[1]);
+          epgd.insertRoomInfo(roomInfo);
+        }
+        connection.release();
+      });
+    }
+  });
 }
 
 function insertRoomPlayurl(roomId,playUrl){
@@ -298,6 +302,39 @@ function formatDefaultChannelInfo(rows) {
   return channel;
 }
 
+function formatRoomInfo(roomRows,discountRows){
+  var strategy = {
+    price : 0,
+    discount : []
+  };
+  if(roomRows[0].charge){
+    strategy.price = roomRows[0].price;
+    for(var i = 0; i < discountRows.length; i++){
+        strategy.discount.push({
+          month : discountRows[i].amount,
+          discount : discountRows[i].discount
+        });
+    }
+  }
+  var roomInfo = {
+    id : roomRows[0].id,
+    name : roomRows[0].name,
+    thumb : roomRows[0].thumb,
+    desc : roomRows[0].desc,
+    charge : roomRows[0].charge ? true : false,
+    charge_strategy : strategy,
+    living : roomRows[0].living ? true : false,
+    online : 100,
+    tag : roomRows[0].tag,
+    u3d_bg : roomRows[0].u3dbg,
+    view_angle : roomRows[0].viewAngle,
+    project_style : roomRows[0].projectStyle,
+    control_model : roomRows[0].controlModel,
+    eye_style : roomRows[0].eyeStyle
+  };
+  return roomInfo;
+}
+
 function getStrategy(rows,price,charge) {
   if(!charge){
     return {
@@ -340,7 +377,7 @@ function getRoomStrategy(rows,price,charge) {
   return s;
 }
 
-function insertUPandDown(selfid,upid,downid){
+function insertUpAndDown(selfid,upid,downid){
   getChannelData(upid)
     .then(function(up) {
       getChannelData(downid)
