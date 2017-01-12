@@ -294,7 +294,6 @@ function formatDefaultChannelInfo(rows) {
       thumb : rows[0].thumb1,
       desc : rows[0].desc1,
       charge : false,
-      charge_strategy : {price : 0, discount : []},
       living : rows[0].living ? true : false,
       online : 100,
       tag : rows[0].tag,
