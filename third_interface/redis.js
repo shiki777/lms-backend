@@ -147,12 +147,8 @@ function insertChannelRoomList(chid){
           console.log('report redis insertChannelRoomList error : ' + err);
         }
         else {
-<<<<<<< HEAD
           var result = formatChannelRoomList(rows);
-          epgd.insertChannelRoomList(chid,result);
-=======
-          epgd.insertChannelRoomList(parseInt(chid),rows);
->>>>>>> 145cf7e966810c9d89be76bc51f070aeee3fe21c
+          epgd.insertChannelRoomList(parseInt(chid),result);
         }
         connection.release();
       });
