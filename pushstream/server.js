@@ -27,7 +27,8 @@ server.prototype.start = function() {
   });
   host = host + ':' + port;
   server.bind(host, grpc.ServerCredentials.createInsecure());
-  console.log('host ', host);
+  logger.info('start host ', host);
+  debug('start host ', host);
   server.start();
 };
 server.prototype.addUser = function(username, userinfo) {
@@ -37,11 +38,10 @@ server.prototype.delUser = function(username, userinfo) {
   usermap.remove(userinfo);
 };
 var communication_login = function(call, callback) {
-  console.log("communication_login");
   var username = call.request.username;
   var password = call.request.password;
 
-  console.log('username: ' + username + ' password: ' + password);
+  logger.info('communication_login username: ' + username + ' password: ' + password);
 
   interaction.login(username, password)
     .then(function(result) {
@@ -68,9 +68,8 @@ var communication_login = function(call, callback) {
 };
 
 var communication_logout = function(call, callback) {
-  console.log("communication_logout");
   var creds = call.request.creds;
-  console.log('creds:', creds);
+  logger.info('communication_logout creds:', creds);
   interaction.logout(creds).then(function(result) {
     callback(null, {
       code: 0,
@@ -87,9 +86,8 @@ var communication_logout = function(call, callback) {
 };
 
 var communication_applyPushURL = function(call, callback) {
-  console.log("communication_ApplyPushURL");
   var creds = call.request.creds;
-  console.log('creds:', creds);
+  logger.info('communication_ApplyPushURL creds:', creds);
   interaction.getPushUrl(creds).then(function(result) {
     logger.info('getPushUrl result:', result);
     debug('getPushUrl result:', result);
@@ -110,8 +108,7 @@ var communication_applyPushURL = function(call, callback) {
 
 var communication_startStream = function(call, callback) {
   var creds = call.request.creds;
-  console.log('creds:', creds);
-  console.log("communication_startStream");
+  logger.info('communication_startStream creds:', creds);
   interaction.startPushStream(creds).then(function(result) {
     logger.info('startPushStream result:', result);
     debug('startPushStream result:', result);
@@ -131,19 +128,15 @@ var communication_startStream = function(call, callback) {
 
 var communication_stopStream = function(call, callback) {
   var creds = call.request.creds;
-  console.log('creds:', creds);
-  console.log("communication_stopStream");
-
+  logger.info('communication_stopStream creds:', creds);
   interaction.stopPushStream(creds).then(function(result) {
     logger.info('stopPushStream result:', result);
-    debug('stopPushStream result:', result);
     callback(null, {
       code: 0,
       message: 'success'
     });
   }).catch(function(err) {
     logger.error('stopPushStream err:', err.message);
-    debug('stopPushStream err:', err.message);
     callback(null, {
       code: 1,
       message: 'creds is error'
@@ -153,12 +146,10 @@ var communication_stopStream = function(call, callback) {
 
 var communication_userInfo = function(call, callback) {
   var creds = call.request.creds;
-  console.log('creds:', creds);
-  console.log("communication_userInfo");
+  logger.info('communication_userInfo creds:', creds);
 
   interaction.getUserInfo(creds).then(function(result) {
     logger.info('getUserInfo result:', result);
-    debug('getUserInfo result:', result);
     callback(null, {
       code: 0,
       message: 'success',
@@ -178,9 +169,8 @@ var communication_userInfo = function(call, callback) {
 
 var communication_roomInfo = function(call, callback) {
   var creds = call.request.creds;
-  console.log('creds:', creds);
-  console.log("communication_roomInfo");
-
+  logger.info('communication_roomInfo creds:', creds);
+  debug('communication_roomInfo creds:', creds);
   interaction.getRoomInfo(creds).then(function(result) {
     logger.info('getRoomInfo result:', result);
     debug('getRoomInfo result:', result);
@@ -206,8 +196,7 @@ var communication_roomInfo = function(call, callback) {
 
 var communication_chatInfo = function(call, callback) {
   var creds = call.request.creds;
-  console.log('creds:', creds);
-  console.log("communication_chatInfo");
+  logger.info('communication_chatInfo creds:', creds);
 
   interaction.getChatInfo(creds).then(function(result) {
     logger.info('getChatInfo result:', result);
