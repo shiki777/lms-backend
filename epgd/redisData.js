@@ -1,6 +1,6 @@
 var log4js = require('log4js');
-var logger = log4js.getLogger("epgd/redisData");
-var debug = require('debug')('lms:epgd');
+var logger = log4js.getLogger('epgd/redisData');
+var debug = require('debug')('epgd/redisData');
 //var client = require('../epgd/redisClient').redisClient;
 function epgd(client) {
   this.client = client;
