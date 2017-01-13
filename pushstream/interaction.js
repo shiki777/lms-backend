@@ -42,6 +42,7 @@ function login(name,pwd){
                     defer.reject(err);
                   }
                   else {
+                    console.log("SDK login name:" + name + " token:" + token);
                     defer.resolve(token);
                   }
           				connection.release();
@@ -248,6 +249,8 @@ function startPushStream(token){
               else {
                 defer.resolve("startPushStream success.");
                 //通知礼物系统
+                console.log('startPushStream send to gift roomid : ' + rows[0].roomId);
+                console.log('startPushStream send to gift uid : ' + rows[0].uid);
                 gift.room_play_stop(rows[0].roomId.toString(),rows[0].uid.toString(),true)
                   .then(function(resbody){
                     console.log(resbody);
