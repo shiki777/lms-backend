@@ -133,7 +133,7 @@ function getChannelListData() {
 }
 
 function insertChannelRoomList(chid){
-  if(!chid){return;}
+  if(chid == null){return console.log('report redis insertChannelRoomList error : chid == null');}
   pool.getConnection(function(err,connection){
     if(err){
       console.log('report redis insertChannelRoomList error : ' + err);
@@ -184,6 +184,7 @@ function insertSwitchChannelInfo(){
 }
 
 function insertRoomInfo(roomId){
+  if(roomId == null){return console.log('report redis insertRoomInfo error : roomId == null');}
   pool.getConnection(function(err,connection){
     if(err){
       console.log('report redis insertRoomInfo error : ' + err);
@@ -207,15 +208,17 @@ function insertRoomInfo(roomId){
 }
 
 function insertRoomPlayurl(roomId,playUrl){
-  if(!roomId || !playUrl){return;}
+  if(roomId == null || playUrl == null){return console.log('report redis insertRoomPlayurl error : roomId == null || playUrl == null');}
   epgd.insertRoomPlayurl(parseInt(roomId),playUrl);
 }
 
 function deleteRoom(roomId){
+  if(roomId == null){return console.log('report redis deleteRoom error : roomId == null');}
   epgd.delRoom(parseInt(roomId));
 }
 
 function deleteChannel(chid){
+  if(chid == null){return console.log('report redis deleteChannel error : chid == null');}
   epgd.delChannel(parseInt(chid));
 }
 
