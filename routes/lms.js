@@ -336,6 +336,7 @@ router.post('/channel/update',function(req,res){
               redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
               redis.insertChannelList();
+              redis.insertChannelRoomList(cid);
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
@@ -345,6 +346,7 @@ router.post('/channel/update',function(req,res){
               redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
               redis.insertChannelList();
+              redis.insertChannelRoomList(cid);
             }
             connection.release();
           });
@@ -533,7 +535,7 @@ router.post('/room/add',function(req,res){
                   res.status(200).send({code:0,msg:'add room success.'});
                   redis.insertDefaultChannel(room_insert_id);
                   //通知礼物系统
-                  gift.room_add_del(room_insert_id.toString(),true)
+                  gift.room_add_del(room_insert_id,true)
                     .then(function(resbody){
                     })
                     .catch(function(errmsg){
@@ -569,7 +571,7 @@ router.post('/room/add',function(req,res){
                       res.status(200).send({code:0,msg:'add room success.'});
                       redis.insertDefaultChannel(room_insert_id);
                       //通知礼物系统
-                      gift.room_add_del(room_insert_id.toString(),true)
+                      gift.room_add_del(room_insert_id,true)
                         .then(function(resbody){
                         })
                         .catch(function(errmsg){
@@ -623,7 +625,7 @@ router.delete('/room/del',function(req,res){
             redis.insertChannelRoomList(result[0][0].channelId);
           }
           //通知礼物系统
-          gift.room_add_del(req.query.id.toString(),false)
+          gift.room_add_del(req.query.id,false)
             .then(function(resbody){
             })
             .catch(function(errmsg){

@@ -254,14 +254,13 @@ function startPushStream(token){
               else {
                 defer.resolve("startPushStream success.");
                 //通知礼物系统
-                console.log('SDK startPushStream send to gift roomid : ' + rows[0].roomId);
-                console.log('SDK startPushStream send to gift uid : ' + rows[0].uid);
-                gift.room_play_stop(rows[0].roomId.toString(),rows[0].uid.toString(),true)
+                console.log('SDK startPushStream send to gift roomid : ' + rows[0].roomId + ' uid : ' + rows[0].uid);
+                gift.room_play_stop(rows[0].roomId,rows[0].uid,true)
                   .then(function(resbody){
-                    console.log(resbody);
+                    console.log("gift startPushStream res msg:" + resbody);
                   })
                   .catch(function(errmsg){
-                    console.log(errmsg);
+                    console.log("gift startPushStream res msg:" + errmsg);
                   });
                 redis.insertRoomInfo(rows[0].roomId);
                 redis.insertChannelRoomList(rows[0].channelId);
@@ -315,12 +314,12 @@ function stopPushStream(token){
               else {
                 defer.resolve("stopPushStream success.");
                 //通知礼物系统
-                gift.room_play_stop(rows[0].roomId.toString(),rows[0].uid.toString(),false)
+                gift.room_play_stop(rows[0].roomId,rows[0].uid,false)
                   .then(function(resbody){
-                    console.log(resbody);
+                    console.log("gift stopPushStream res msg:" + resbody);
                   })
                   .catch(function(errmsg){
-                    console.log(errmsg);
+                    console.log("gift stopPushStream res msg:" + errmsg);
                   });
                 redis.insertRoomInfo(rows[0].roomId);
                 redis.insertChannelRoomList(rows[0].channelId);
