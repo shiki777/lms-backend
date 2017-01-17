@@ -4,7 +4,8 @@ var config = {
   },
   snail_cloud: {
     host: '192.168.5.233',
-    port: 8999
+    port: 8999,
+    apply_playtoken_port : 8104
   },
   /*mysql访问*/
   db_mysql: {
@@ -12,7 +13,7 @@ var config = {
     port: '3306',
     user: 'lms',
     password: 'lms123',
-    database: 'lms2_copy',
+    database: 'lms2',
     multipleStatements : true
   },
   push_stream: {
