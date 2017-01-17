@@ -104,7 +104,7 @@ function applyTokenAndUrl(user_ip,playUrl){
   var body = '';
   var defer = q.defer();
   var options = {
-      url : 'http://' + domain + ':' + 8104 + path + '?user_addr=' + user_ip + '&uri=' + uri,
+      url : 'http://' + domain + ':' + config.snail_cloud.apply_playtoken_port + path + '?user_addr=' + user_ip + '&uri=' + uri,
       method : 'GET',
       headers: snailHeaders.setHeader({body : body,method: 'get',uri : uri}),
       json : false,
