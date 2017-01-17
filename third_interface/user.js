@@ -10,7 +10,6 @@ function register(name,pwd){
   if(!name || !pwd){defer.reject('name or pwd == null.');}
   else {
     var pwd_md5 = crypto.createHash('md5').update(pwd).digest('hex');
-    console.log(pwd_md5);
     var path = '/app/email/register';
     var body = {"email":name,"password":md5To16(pwd_md5),"type":"MD5"};
     var options = {
@@ -22,9 +21,8 @@ function register(name,pwd){
     userLogger.info('register - email:' + body.email + 'password:' + body.password + 'type:' + body.type);
     request(options, function(err,res,resbody) {
         if(err){
-            console.log('error is ' +  err)
             defer.reject(err);
-            userLogger.info('register request failed - email:' + body.email + 'error msg is ' + err);
+            userLogger.error('register request failed - email:' + body.email + 'error msg is ' + err);
         } else {
             if(resbody.code == 0){
                 defer.resolve(resbody);
@@ -55,7 +53,7 @@ function authentication(name,pwd){
     request(options, function(err,res,resbody) {
         if(err){
             defer.reject(err);
-            userLogger.info('login request failed - email:' + body.email + 'error msg is ' + err);
+            userLogger.error('login request failed - email:' + body.email + 'error msg is ' + err);
         } else {
             if(resbody.code == 0){
                 defer.resolve(resbody);
@@ -85,7 +83,7 @@ function userinfo(token){
     request(options, function(err,res,resbody) {
         if(err){
             defer.reject(err);
-            userLogger.info('getuserinfo request failed - token:' + token + 'error msg is ' + err);
+            userLogger.error('getuserinfo request failed - token:' + token + 'error msg is ' + err);
         } else {
             if(resbody.code == 0){
                 defer.resolve(resbody);

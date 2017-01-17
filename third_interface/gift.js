@@ -25,9 +25,9 @@ function room_add_del(roomId,isAdd){
         if(err){
             defer.reject(err);
             if(isAdd){
-              giftLogger.info('addroom request failed - roomid:' + body.rid + ' err msg is ' + err);
+              giftLogger.error('addroom request failed - roomid:' + body.rid + ' err msg is ' + err);
             } else {
-              giftLogger.info('deleteroom request failed - roomid:' + body.rid + ' err msg is ' + err);
+              giftLogger.error('deleteroom request failed - roomid:' + body.rid + ' err msg is ' + err);
             }
         } else {
             if(resbody.code == 0){
@@ -71,9 +71,9 @@ function room_play_stop(roomId, userId, isPlay) {
       if (err) {
         defer.reject(err);
         if (isPlay) {
-          giftLogger.info('startlive request failed - roomid:' + body.rid + ' userid:' + body.aid + ' err msg is ' + err);
+          giftLogger.error('startlive request failed - roomid:' + body.rid + ' userid:' + body.aid + ' err msg is ' + err);
         } else {
-          giftLogger.info('stoplive request failed - roomid:' + body.rid + ' userid:' + body.aid + ' err msg is ' + err);
+          giftLogger.error('stoplive request failed - roomid:' + body.rid + ' userid:' + body.aid + ' err msg is ' + err);
         }
       } else {
         if (resbody.code == 0) {
