@@ -38,9 +38,14 @@ var vm = new Vue({
             this.removeStrategy(e.id);
         },
         submit : function(e) {
+            var data = this.formatData();
             var url = window.hosturl + '/lms/channel/add';
             var self = this;
-            Vue.http.post(url,this.formatData())
+            if(!data.name){
+                alert('请填写频道名称!');
+                return;
+            }
+            Vue.http.post(url,data)
             .then(function(data) {
                 if(data.body.code == 0){
                     $('.ui.modal')

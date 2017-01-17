@@ -4,15 +4,17 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('server:server');
-var http = require('http');
-var config = require('../config/config')
-/**
+ /**
  * Initialise log4js first, so we don't miss any log messages
  */
 var log4js = require('log4js');
 log4js.configure('./config/log4js.json');
+
+var app = require('../app');
+var debug = require('debug')('server:server');
+var http = require('http');
+var config = require('../config/config')
+
 
 /**
  * Get port from environment and store in Express.

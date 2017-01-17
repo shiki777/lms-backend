@@ -1,44 +1,52 @@
 {
-    "appenders": [{
-      "type": "dateFile",
-      "filename": "./log/access.log",
-      "pattern": "-yyyy-MM-dd",
-      "category": "http"
-    }, {
-      "type": "file",
-      "filename": "./log/upload.log",
-      "category": "upload"
-    }, {
-      "type": "file",
-      "filename": "./log/third_api/user_sys.log",
-      "category": "user_sys"
-    }, {
-      "type": "file",
-      "filename": "./log/third_api/gift_sys.log",
-      "category": "gift_sys"
-    }, {
-      "type": "file",
-      "filename": "./log/third_api/redis_sys.log",
-      "category": "redis_sys"
-    }, {
-      "type" : "file",
-      "filename" : "./log/third_api/push_url.log",
-      "category" : "push_url"
-    },{
-      "type" : "file",
-      "filename" : "./log/third_api/third_api.log",
-      "category" : "third"
-    },{
-      "type" : "file",
-      "filename" : "./log/third_api/cloud_api.log",
-      "category" : "cloud"
-    },{
-      "type": "file",
-      "filename": "./log/404.log",
-      "category": "404"
-    }, {
-      "type": "file",
-      "filename": "./log/error.log",
-      "category": "error"
-    }]
+  "appenders": [{
+    "type": "dateFile",
+    "filename": "./log/access.log",
+    "pattern": "-yyyy-MM-dd",
+    "category": "http"
+  }, {
+    "type": "file",
+    "filename": "./log/upload.log",
+    "category": "upload"
+  }, {
+    "type": "file",
+    "filename": "./log/third_api/user_sys.log",
+    "category": "user_sys"
+  }, {
+    "type": "file",
+    "filename": "./log/third_api/gift_sys.log",
+    "category": "gift_sys"
+  }, {
+    "type": "file",
+    "filename": "./log/third_api/redis_sys.log",
+    "category": "redis_sys"
+  }, {
+    "type": "file",
+    "filename": "./log/third_api/push_url.log",
+    "category": "push_url"
+  }, {
+    "type": "file",
+    "filename": "./log/third_api/third_api.log",
+    "category": "third"
+  }, {
+    "type": "file",
+    "filename": "./log/third_api/cloud_api.log",
+    "category": "cloud"
+  }, {
+    "type": "file",
+    "filename": "./log/404.log",
+    "category": "404"
+  }, {
+    "type": "file",
+    "filename": "./log/error.log",
+    "category": "error"
+  }, {
+    "type": "file",
+    "filename": "./log/pushstream.log",
+    "category": "pushstream"
+  }, {
+    "type": "file",
+    "filename": "./log/epgd.log",
+    "category": "epgd"
+  }]
 }
