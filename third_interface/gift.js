@@ -6,10 +6,10 @@ var giftLogger = log4js.getLogger('gift_sys');
 
 function room_add_del(roomId,isAdd){
   var defer = q.defer();
-  if(roomId == null){defer.reject('roomId == null.');}
+  if(!roomId && parseInt(roomId) != 0){defer.reject('roomId == null.');}
   else {
     var path = isAdd ? '/addroom' : '/delroom';
-    var body = {"rid":roomId};
+    var body = {"rid":roomId + ''};
     var options = {
         url : 'http://' + config.chatroom.host + ':' + config.chatroom.port + path,
         method : 'POST',
@@ -48,14 +48,11 @@ function room_add_del(roomId,isAdd){
 
 function room_play_stop(roomId, userId, isPlay) {
   var defer = q.defer();
-  if (roomId == null || userId == null) {
-    defer.reject('roomId or userId == null.');
-  } else {
+  if((!roomId && parseInt(roomId) != 0)
+  || (!userId && parseInt(userId) != 0)){defer.reject('roomId or userId == null.');}
+  else {
     var path = isPlay ? '/startlive' : '/stoplive';
-    var body = {
-      "rid": roomId,
-      "aid": userId
-    };
+    var body = {"rid":roomId + '',"aid":userId + ''};
     var options = {
       url: 'http://' + config.chatroom.host + ':' + config.chatroom.port + path,
       method: 'POST',
