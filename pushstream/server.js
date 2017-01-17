@@ -6,7 +6,7 @@ var port = require('../config/config.js').push_stream.port;
 var assistant = grpc.load(PROTO_PATH).liveassistant;
 var interaction = require('./interaction');
 var log4js = require('log4js');
-var logger = log4js.getLogger('pushstream/server');
+var logger = log4js.getLogger('pushstream');
 var debug = require('debug')('pushstream/server');
 
 function server() {
@@ -45,8 +45,8 @@ var communication_login = function(call, callback) {
   debug('communication_login username: ' + username + ' password: ' + password);
   interaction.login(username, password)
     .then(function(result) {
-      logger.info(username,'login result:', result);
-      debug(username,'login result:', result);
+      logger.info(username, 'login result:', result);
+      debug(username, 'login result:', result);
       callback(null, {
         code: 0,
         message: 'success',
@@ -56,8 +56,8 @@ var communication_login = function(call, callback) {
       //service.addUser(user, clientInfo);
     })
     .catch(function(err) {
-      logger.error(username,'login err:', err.message);
-      debug(username,'login err:', err.message);
+      logger.error(username, 'login err:', err.message);
+      debug(username, 'login err:', err.message);
       callback(null, {
         code: 1,
         message: err.message,

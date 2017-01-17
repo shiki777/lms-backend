@@ -44,5 +44,9 @@
     "type": "file",
     "filename": "./log/pushstream.log",
     "category": "pushstream"
+  }, {
+    "type": "file",
+    "filename": "./log/epgd.log",
+    "category": "epgd"
   }]
 }
