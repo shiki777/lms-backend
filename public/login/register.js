@@ -55,11 +55,11 @@
                       window.location.reload();
                     },1000)
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert('注册失败请重试');
                 }
 
             }, function(e) {
-                alert('提交失败');
+                alert('注册失败');
             })               
             return false;
           }

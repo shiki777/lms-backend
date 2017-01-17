@@ -40,11 +40,11 @@
                 if(data.body.code == 0){
                     location.href= window.hosturl + '/lms/page/index';
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert('登录失败请重试');
                 }
 
             }, function(e) {
-                alert('提交失败');
+                alert('登录失败');
             })               
             return false;
           }
