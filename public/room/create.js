@@ -45,9 +45,22 @@ var vm = new Vue({
             this.removeStrategy(e.id);
         },
         submit : function(e) {
+            var data = this.formatData();
+            if(!data.channelId){
+                alert('请选择默认频道！');
+                return;
+            }
+            if(!data.name){
+                alert('请填写名字！');
+                return;
+            }
+            if(!data.getUserIds.length) {
+                alert('请选择主播！');
+                return;
+            }
             var url = window.hosturl + '/lms/room/add';
             var self = this;
-            Vue.http.post(url,this.formatData())
+            Vue.http.post(url,data)
             .then(function(data) {
                 if(data.body.code == 0){
                     $('.ui.modal')
