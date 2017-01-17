@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var multer = require('multer');
 var multerupload = multer({ dest: './upload' });
+var log4js = require('log4js');
 
 var app = express();
 app.use(session({

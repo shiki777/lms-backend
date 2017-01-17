@@ -261,7 +261,7 @@ module.exports = {
 
 /*拼接频道列表数据*/
 function formatChannelList(rows) {
-  logger.info('formatChannelList enter rows:',rows);
+  logger.trace('formatChannelList enter rows:',rows);
   if(rows.length == 0){
     rows[0] ={};
   }
@@ -276,13 +276,13 @@ function formatChannelList(rows) {
       }
     })
   }
-  logger.info('formatChannelList rtn list:',list);
+  logger.trace('formatChannelList rtn list:',list);
   return list;
 }
 
 /*拼接频道数据*/
 function formatChannelInfo(data,channelrows,roomrows) {
-  logger.info('formatChannelInfo enter:',data,channelrows,roomrows);
+  logger.trace('formatChannelInfo enter:',data,channelrows,roomrows);
   var data = data[0] || {};
   var channel = {
     id : data.id,
@@ -315,12 +315,12 @@ function formatChannelInfo(data,channelrows,roomrows) {
   if(!channel.default_room_info.charge){
     delete channel.default_room_info.charge_strategy;
   }
-  logger.info('formatChannelInfo rtn channel:',channel);
+  logger.trace('formatChannelInfo rtn channel:',channel);
   return channel;
 }
 /*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
 function formatDefaultChannelInfo(rows) {
-  logger.info('formatDefaultChannelInfo enter rows:',rows);
+  logger.trace('formatDefaultChannelInfo enter rows:',rows);
   if(rows.length == 0){
     rows[0] ={};
   }
@@ -347,12 +347,12 @@ function formatDefaultChannelInfo(rows) {
       eye_style : rows[0].eyeStyle
     }
   }
-  logger.info('formatDefaultChannelInfo rtn channel:',channel);
+  logger.trace('formatDefaultChannelInfo rtn channel:',channel);
   return channel;
 }
 
 function formatChannelRoomList(rows) {
-  logger.info('formatChannelRoomList enter rows:',rows);
+  logger.trace('formatChannelRoomList enter rows:',rows);
   var res = [];
   for(var i = 0; i < rows.length; i++){
     res.push({
@@ -364,12 +364,12 @@ function formatChannelRoomList(rows) {
       living: rows[i].living ? true : false //Boolean 房间是否在直播
     });
   }
-  logger.info('formatChannelRoomList rtn list:',res);
+  logger.trace('formatChannelRoomList rtn list:',res);
   return res;
 }
 
 function formatRoomInfo(roomRows,discountRows){
-  logger.info('formatRoomInfo enter:',roomRows,discountRows);
+  logger.trace('formatRoomInfo enter:',roomRows,discountRows);
   var strategy = {
     price : 0,
     discount : []
@@ -403,12 +403,12 @@ function formatRoomInfo(roomRows,discountRows){
   if(!roomInfo.charge){
     delete roomInfo.charge_strategy;
   }
-  logger.info('formatRoomInfo rtn:',roomInfo);
+  logger.trace('formatRoomInfo rtn:',roomInfo);
   return roomInfo;
 }
 
 function getStrategy(rows,price,charge) {
-  logger.info('getStrategy enter price:' + price + ' charge:' + charge,rows)
+  logger.trace('getStrategy enter price:' + price + ' charge:' + charge,rows)
   if(!charge){
     return {
       price : 0,
@@ -426,12 +426,12 @@ function getStrategy(rows,price,charge) {
         discount : rows[i].discount
       });
   }
-  logger.info('getStrategy rtn:',s);
+  logger.trace('getStrategy rtn:',s);
   return s;
 }
 
 function getRoomStrategy(rows,price,charge) {
-  logger.info('getRoomStrategy enter price:' + price + ' charge:' + charge,rows)
+  logger.trace('getRoomStrategy enter price:' + price + ' charge:' + charge,rows)
   if(!charge){
     return {
       price : 0,
@@ -449,7 +449,7 @@ function getRoomStrategy(rows,price,charge) {
         discount : rows[i].discount
       });
   }
-  logger.info('getRoomStrategy rtn:',s);
+  logger.trace('getRoomStrategy rtn:',s);
   return s;
 }
 
