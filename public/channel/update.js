@@ -77,9 +77,14 @@ var vm = new Vue({
             this.removeStrategy(e.id);
         },
         submit : function(e) {
+            var data = this.formatData();
+            if(!data.defaultRoom){
+                alert('请选择默认房间！');
+                return;
+            }
             var url = window.hosturl + '/lms/channel/update';
             var self = this;
-            Vue.http.post(url,this.formatData(),{params : {id : channelid}})
+            Vue.http.post(url,data,{params : {id : channelid}})
             .then(function(data) {
                 if(data.body.code == 0){
                     $('.ui.modal')

@@ -42,7 +42,7 @@
     "category": "error"
   }, {
     "type": "file",
-    "filename": ".log/pushstream.log",
+    "filename": "./log/pushstream.log",
     "category": "pushstream"
   }]
 }

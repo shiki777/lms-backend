@@ -58,7 +58,7 @@ app.use('/lms/upload',multerupload.any(),upload);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  notfoundLogger.info('404 at :' req.url);
+  notfoundLogger.info('404 at :' + req.url);
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
