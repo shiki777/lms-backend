@@ -7,9 +7,6 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var multer = require('multer');
 var multerupload = multer({ dest: './upload' });
-var log4js = require('log4js');
-var notfoundLogger = log4js.getLogger('404');
-var errorLogger = log4js.getLogger('error');
 
 var app = express();
 app.use(session({
@@ -59,7 +56,6 @@ app.use('/lms/upload',multerupload.any(),upload);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  notfoundLogger.info('404 at :' + req.url);
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
@@ -71,7 +67,6 @@ app.use(function(req, res, next) {
 // will print stacktrace
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
-    errorLogger.error('err happend, msg is : ' + err.message);
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
@@ -84,7 +79,6 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-  errorLogger.error('err happend, msg is : ' + err.message);
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,

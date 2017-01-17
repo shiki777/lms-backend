@@ -4,12 +4,15 @@ var config = require('../config/config');
 var snailHeaders = require('./headers');
 var SECRETKEY = require('./secretkey').SECRETKEY;
 var crypto = require('crypto');
+var log4js = require('log4js');
+var logger = log4js.getLogger('cloud');
 
 /**
  * 从云平台获取房间推流/播放地址
  * @returns {promise}
  */
 function getRoomStreams() {
+    logger.info('getRoomStreams enter.');
     var path = '/v1/snailcloud/ppurl/application';
     var body = '';
     var defer = q.defer();
@@ -20,9 +23,10 @@ function getRoomStreams() {
         json : false,
         body : body
     };
+    logger.info('getRoomStreams options:',options);
     request(options, function(err,res,body) {
         if(err){
-            console.log('error is ' +  err)
+            logger.error('getRoomStreams request err' , err)
             defer.reject(err);
         } else {
             if(typeof body == 'string'){
@@ -31,9 +35,12 @@ function getRoomStreams() {
                 data = body;
             }
             if(parseInt(data.errorCode,10) == 200){
-                defer.resolve(formatRoomStreams(data));
+              var formatData = formatRoomStreams(data);
+              logger.info('getRoomStreams success:',formatData);
+              defer.resolve(formatData);
             } else {
-                defer.reject(data.errorMessage);
+              logger.error('getRoomStreams err:',data);
+              defer.reject(data.errorMessage);
             }
         }
     });
@@ -45,6 +52,7 @@ function getRoomStreams() {
  * @returns {string} 带令牌的推流地址
  */
 function getRoomPushUrl(url) {
+    logger.info('getRoomPushUrl enter url:' + url);
     var reg = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
     /*获取path*/
     var uri = '/' + reg.exec(url)[5];
@@ -59,6 +67,7 @@ function getRoomPushUrl(url) {
  * @returns {promise}
  */
 function dropRoomStream(pushUrl) {
+  logger.info('dropRoomStream enter pushUrl:' + pushUrl);
     var path = '/v1/snailcloud/stream/drop';
     var body = '';
     var defer = q.defer();
@@ -69,10 +78,10 @@ function dropRoomStream(pushUrl) {
         json : false,
         body : body
     }
-    console.log(options.url)
+    logger.info('dropRoomStream options:',options);
     request(options, function(err,res,body) {
         if(err){
-            console.log('err is ' + err);
+            logger.error('dropRoomStream request err:',err);
             defer.reject(err);
         } else {
             if(typeof body == 'string'){
@@ -81,8 +90,10 @@ function dropRoomStream(pushUrl) {
                 data = body;
             }
             if(parseInt(data.errorCode,10) == 200){
+              logger.info('dropRoomStream success.');
                 defer.resolve();
             } else {
+              logger.error('dropRoomStream err:',data);
                 defer.reject(data.errorMessage);
             }
         }
@@ -97,6 +108,7 @@ function dropRoomStream(pushUrl) {
  * @returns {promise}
  */
 function applyTokenAndUrl(user_ip,playUrl){
+  logger.info('applyTokenAndUrl enter user_ip:' + user_ip + ' playUrl:' + playUrl);
   var reg = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
   var domain = reg.exec(playUrl)[3];
   var uri = '/' + reg.exec(playUrl)[5];
@@ -110,13 +122,13 @@ function applyTokenAndUrl(user_ip,playUrl){
       json : false,
       body : body
   };
-  console.log(options.url);
+  logger.info('applyTokenAndUrl options:',options);
   request(options, function(err,res,body) {
       if(err){
-          console.log('error is ' +  err)
+          logger.error('applyTokenAndUrl request err:',err);
           defer.reject(err);
       } else {
-          //console.log(body);
+          logger.info('applyTokenAndUrl success token:' + body);
           defer.resolve(playUrl + '?wsSecret=' + body);
       }
   });

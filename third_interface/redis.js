@@ -5,63 +5,70 @@ var config = require('../config/config');
 var mysql = require('mysql');
 var q = require('q');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
+var log4js = require('log4js');
+var logger = log4js.getLogger('redis_sys');
 
 /*通知EPG 进入APP默认播放的房间，条件为免费的频道下的免费房间*/
 function insertDefaultChannel(roomid){
+  logger.info('insertDefaultChannel roomid :' + roomid);
   getDefaultData(roomid)
     .then(function(data) {
-      console.log('default report fired!');
+      logger.info('insertDefaultChannel report fired:',data);
       epgd.insertDefaultChannel(data);
     })
     .catch(function(e) {
-      console.log(e)
+      logger.error('insertDefaultChannel err',e);
     })
 }
 
 /*通知EPG 一个频道更新*/
 function insertChannel(channelid) {
+  logger.info('insertChannel channelid :' + channelid);
   getChannelData(channelid)
     .then(function(data) {
-      console.log('channel insert fired!');
+      logger.info('insertChannel insert fired:',data);
       epgd.insertChannelInfo(data);
     })
     .catch(function(e) {
-      console.log(e)
+      logger.error('insertChannel err',e);
     })
 }
 
 /*通知EPG 频道列表更新*/
 function insertChannelList(channelid) {
+  logger.info('insertChannelList channelid :' + channelid);
   getChannelListData(channelid)
     .then(function(data) {
-      console.log('channellist insert fired!');
+      logger.info('insertChannelList insert fired:',data);
       epgd.insertChannelList(data);
     })
     .catch(function(e) {
-      console.log(e)
+      logger.error('insertChannelList err',e);
     })
 }
 
 /*拿符合redis格式的一个频道数据*/
 function getChannelData(channelid){
+  logger.info('getChannelData channelid :' + channelid);
  var defer = q.defer();
       pool.getConnection(function(err,connection){
         if(err){
-          console.log('report redis insertChannel error : ' + err)
+          logger.error('getChannelData pool.getConnection error :',err);
           defer.reject(err);
         }
         else {
-          console.log('connected as id ' + connection.threadId);
+          logger.info('connected as id ' + connection.threadId);
           var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.order,channel.desc,channel.defaultRoom,room.id as id2,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.tag,room.viewAngle,room.price as price1,room.controlModel,room.projectStyle,room.eyeStyle from channel,room where channel.id = ' + pool.escape(channelid) + ' AND room.id = channel.defaultRoom;';
           var sql2= 'select * from channel_discount where channel_discount.channelId = ' + pool.escape(channelid) + ';';
           var sql3 = 'select * from channel,room_discount where channel.id = ' + pool.escape(channelid) + ' and room_discount.roomId = channel.defaultRoom;';
           connection.query(sql + sql2 + sql3, function(err, result) {
             if(err){
-              console.log('report redis insertChannel error : ' + err)
+              logger.error('getChannelData connection.query error :',err);
               defer.reject(err);
             }
             else {//查询成功
              var channel = formatChannelInfo(result[0],result[1],result[2]);
+             logger.info('getChannelData success',channel);
              defer.resolve(channel);
             }
             connection.release();
@@ -73,18 +80,19 @@ function getChannelData(channelid){
 
 /*判断房间是否符合免费房间免费频道的要求*/
 function getDefaultData(roomid) {
+  logger.info('getDefaultData roomid :' + roomid);
  var defer = q.defer();
       pool.getConnection(function(err,connection){
         if(err){
-          console.log('report redis insertDefaultChannel error : ' + err)
+          logger.error('getDefaultData pool.getConnection error :',err);
           defer.reject(err);
         }
         else {
-          console.log('connected as id ' + connection.threadId);
+          logger.info('connected as id ' + connection.threadId);
           var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle from channel,room where room.id=' + pool.escape(roomid) + ' and channel.id = room.channelId';
           connection.query(sql, function(err, rows, fields) {
             if(err){
-              console.log('report redis insertDefaultChannel error : ' + err)
+              logger.error('getDefaultData connection.query error :',err);
               defer.reject(err);
             }
             else {//查询成功
@@ -93,8 +101,10 @@ function getDefaultData(roomid) {
               }
               if(!rows[0].charge && !rows[0].charge1){
                 var channel = formatDefaultChannelInfo(rows);
+                logger.info('getDefaultData success:',channel);
                 defer.resolve(channel);
               } else {
+                logger.error('getDefaultData !rows[0].charge && !rows[0].charge1:',rows[0]);
                 defer.reject();
               }
             }
@@ -107,22 +117,24 @@ function getDefaultData(roomid) {
 
 /*获取频道列表接口*/
 function getChannelListData() {
+  logger.info('getChannelListData enter.');
  var defer = q.defer();
       pool.getConnection(function(err,connection){
         if(err){
-          console.log('report redis insertChannelList error : ' + err)
+          logger.error('getChannelListData pool.getConnection error :',err);
           defer.reject(err);
         }
         else {
-          console.log('connected as id ' + connection.threadId);
+          logger.info('connected as id ' + connection.threadId);
           var sql = 'select * from channel';
           connection.query(sql, function(err, rows, fields) {
             if(err){
-              console.log('report redis insertChannelList error : ' + err)
+              logger.error('getChannelListData connection.query error :',err);
               defer.reject(err);
             }
             else {//查询成功
              var list = formatChannelList(rows);
+             logger.info('getChannelListData success:',list);
              defer.resolve(list);
             }
             connection.release();
@@ -133,21 +145,23 @@ function getChannelListData() {
 }
 
 function insertChannelRoomList(chid){
-  if(!chid && parseInt(chid) != 0){return console.log('report redis insertChannelRoomList error : chid == null');}
+  logger.info('insertChannelRoomList chid:' + chid);
+  if(!chid && parseInt(chid) != 0){return logger.info('report redis insertChannelRoomList error : chid == null');}
   pool.getConnection(function(err,connection){
     if(err){
-      console.log('report redis insertChannelRoomList error : ' + err);
+      logger.error('insertChannelRoomList pool.getConnection error :',err);
     }
     else {
-      console.log('connected as id ' + connection.threadId);
+      logger.info('connected as id ' + connection.threadId);
       var sql = 'SELECT id,name,thumb,room.desc,charge,living FROM room WHERE channelId = '
        + pool.escape(chid) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){
-          console.log('report redis insertChannelRoomList error : ' + err);
+          logger.error('insertChannelRoomList connection.query error :',err);
         }
         else {
           var result = formatChannelRoomList(rows);
+          logger.info('insertChannelRoomList success chid:' + chid + ' list:',result);
           epgd.insertChannelRoomList(parseInt(chid),result);
         }
         connection.release();
@@ -157,17 +171,17 @@ function insertChannelRoomList(chid){
 }
 
 function insertSwitchChannelInfo(){
-  console.log(new Date().getTime());
+  logger.info('insertSwitchChannelInfo enter.');
   pool.getConnection(function(err,connection){
     if(err){
-      console.log('report redis insertSwitchChannelInfo error : ' + err);
+      logger.error('insertSwitchChannelInfo pool.getConnection error :',err);
     }
     else {
-      console.log('connected as id ' + connection.threadId);
+      logger.info('connected as id ' + connection.threadId);
       var sql = 'SELECT id,channel.order AS chorder FROM channel WHERE defaultRoom IS NOT NULL ORDER BY channel.order DESC,id;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
-          console.log('report redis insertSwitchChannelInfo error : ' + err);
+          logger.error('insertSwitchChannelInfo connection.query error :',err);
         }
         else {
           var upid = 0,downid = 0;
@@ -184,21 +198,23 @@ function insertSwitchChannelInfo(){
 }
 
 function insertRoomInfo(roomId){
-  if(!roomId && parseInt(roomId) != 0){return console.log('report redis insertRoomInfo error : roomId == null');}
+  logger.info('insertRoomInfo roomId:' + roomId);
+  if(!roomId && parseInt(roomId) != 0){return logger.info('report redis insertRoomInfo error : roomId == null');}
   pool.getConnection(function(err,connection){
     if(err){
-      console.log('report redis insertRoomInfo error : ' + err);
+      logger.error('insertRoomInfo pool.getConnection error :',err);
     }
     else {
-      console.log('connected as id ' + connection.threadId);
+      logger.info('connected as id ' + connection.threadId);
       var r_sql = 'SELECT * FROM room WHERE id = ' + pool.escape(roomId) + ';';
       var rd_sql = 'SELECT * FROM room_discount WHERE roomId = ' + pool.escape(roomId) + ';';
       connection.query(r_sql + rd_sql, function(err, result) {
         if(err){
-          console.log('report redis insertRoomInfo error : ' + err);
+          logger.error('insertRoomInfo connection.query error :',err);
         }
         else {
           var roomInfo = formatRoomInfo(result[0],result[1]);
+          logger.info('insertRoomInfo success ' , roomInfo);
           epgd.insertRoomInfo(roomInfo);
         }
         connection.release();
@@ -208,21 +224,25 @@ function insertRoomInfo(roomId){
 }
 
 function insertRoomPlayurl(roomId,playUrl){
-  if((!roomId && parseInt(roomId) != 0) || !playUrl){return console.log('report redis insertRoomPlayurl error : roomId == null || playUrl == null');}
+  logger.info('insertRoomPlayurl roomId:' + roomId + ' playUrl:' + playUrl);
+  if((!roomId && parseInt(roomId) != 0) || !playUrl){return logger.info('report redis insertRoomPlayurl error : roomId == null || playUrl == null');}
   epgd.insertRoomPlayurl(parseInt(roomId),playUrl);
 }
 
 function deleteRoom(roomId){
+  logger.info('deleteRoom roomId:' + roomId);
   if(!roomId && parseInt(roomId) != 0){return console.log('report redis deleteRoom error : roomId == null');}
   epgd.delRoom(parseInt(roomId));
 }
 
 function deleteChannel(chid){
+  logger.info('deleteChannel chid:' + chid);
   if(!chid && parseInt(chid) != 0){return console.log('report redis deleteChannel error : chid == null');}
   epgd.delChannel(parseInt(chid));
 }
 
 function deleteAllData(){
+  logger.info('deleteAllData enter.');
   epgd.delAll();
 }
 
@@ -241,6 +261,7 @@ module.exports = {
 
 /*拼接频道列表数据*/
 function formatChannelList(rows) {
+  logger.info('formatChannelList enter rows:',rows);
   if(rows.length == 0){
     rows[0] ={};
   }
@@ -255,11 +276,13 @@ function formatChannelList(rows) {
       }
     })
   }
+  logger.info('formatChannelList rtn list:',list);
   return list;
 }
 
 /*拼接频道数据*/
 function formatChannelInfo(data,channelrows,roomrows) {
+  logger.info('formatChannelInfo enter:',data,channelrows,roomrows);
   var data = data[0] || {};
   var channel = {
     id : data.id,
@@ -292,10 +315,12 @@ function formatChannelInfo(data,channelrows,roomrows) {
   if(!channel.default_room_info.charge){
     delete channel.default_room_info.charge_strategy;
   }
+  logger.info('formatChannelInfo rtn channel:',channel);
   return channel;
 }
 /*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
 function formatDefaultChannelInfo(rows) {
+  logger.info('formatDefaultChannelInfo enter rows:',rows);
   if(rows.length == 0){
     rows[0] ={};
   }
@@ -322,10 +347,12 @@ function formatDefaultChannelInfo(rows) {
       eye_style : rows[0].eyeStyle
     }
   }
+  logger.info('formatDefaultChannelInfo rtn channel:',channel);
   return channel;
 }
 
 function formatChannelRoomList(rows) {
+  logger.info('formatChannelRoomList enter rows:',rows);
   var res = [];
   for(var i = 0; i < rows.length; i++){
     res.push({
@@ -337,10 +364,12 @@ function formatChannelRoomList(rows) {
       living: rows[i].living ? true : false //Boolean 房间是否在直播
     });
   }
+  logger.info('formatChannelRoomList rtn list:',res);
   return res;
 }
 
 function formatRoomInfo(roomRows,discountRows){
+  logger.info('formatRoomInfo enter:',roomRows,discountRows);
   var strategy = {
     price : 0,
     discount : []
@@ -374,10 +403,12 @@ function formatRoomInfo(roomRows,discountRows){
   if(!roomInfo.charge){
     delete roomInfo.charge_strategy;
   }
+  logger.info('formatRoomInfo rtn:',roomInfo);
   return roomInfo;
 }
 
 function getStrategy(rows,price,charge) {
+  logger.info('getStrategy enter price:' + price + ' charge:' + charge,rows)
   if(!charge){
     return {
       price : 0,
@@ -395,10 +426,12 @@ function getStrategy(rows,price,charge) {
         discount : rows[i].discount
       });
   }
+  logger.info('getStrategy rtn:',s);
   return s;
 }
 
 function getRoomStrategy(rows,price,charge) {
+  logger.info('getRoomStrategy enter price:' + price + ' charge:' + charge,rows)
   if(!charge){
     return {
       price : 0,
@@ -416,6 +449,7 @@ function getRoomStrategy(rows,price,charge) {
         discount : rows[i].discount
       });
   }
+  logger.info('getRoomStrategy rtn:',s);
   return s;
 }
 
@@ -424,13 +458,14 @@ function insertUpAndDown(selfid,upid,downid){
     .then(function(up) {
       getChannelData(downid)
         .then(function(down) {
+          logger.info('insertUpAndDown epgd.insertSwitchChannelInfo chid :' + selfid,up,down);
           epgd.insertSwitchChannelInfo(parseInt(selfid),up,down);
         })
         .catch(function(e) {
-          console.log(e)
+          logger.info('insertUpAndDown getChannelData2 err chid:' + selfid,e);
         })
     })
     .catch(function(e) {
-      console.log(e)
+      logger.info('insertUpAndDown getChannelData1 err chid:' + selfid,e);
     })
 }
