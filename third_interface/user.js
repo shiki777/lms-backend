@@ -49,18 +49,18 @@ function authentication(name,pwd){
         json : true,
         body : body
     };
-    userLogger.info('login - email:' + body.email + 'password:' + body.password + 'type:' + body.type + 'devid:' + body.devid);
+    userLogger.info('login - email:' + body.username + 'password:' + body.password + 'type:' + body.type + 'devid:' + body.devid);
     request(options, function(err,res,resbody) {
         if(err){
             defer.reject(err);
-            userLogger.error('login request failed - email:' + body.email + 'error msg is ' + err);
+            userLogger.error('login request failed - email:' + body.username + 'error msg is ' + err);
         } else {
             if(resbody.code == 0){
                 defer.resolve(resbody);
             } else {
                 defer.reject(resbody.message);
             }
-            userLogger.info('login request success - email:' + body.email + ' code is ' + resbody.code + ' msg is ' + resbody.message);
+            userLogger.info('login request success - email:' + body.username + ' code is ' + resbody.code + ' msg is ' + resbody.message);
         }
     });
   }
