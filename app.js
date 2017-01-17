@@ -37,6 +37,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(cookieParser());
+app.use(log4js.connectLogger(log4js.getLogger('http'), { level: log4js.levels.INFO }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/upload',express.static(path.join(__dirname, 'upload')));
 app.use('/views',express.static(path.join(__dirname, 'views')));
