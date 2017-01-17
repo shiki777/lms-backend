@@ -2,6 +2,8 @@ var express = require('express');
 var mysql = require('mysql');
 var config = require('../config/config');
 var pool = mysql.createPool(config.db_mysql);//pool具有自动重连机制
+var log4js = require('log4js');
+var thirdLogger = log4js.getLogger('third');
 
 var router = express.Router();
 
@@ -18,22 +20,21 @@ router.get('/room/info', function(req, res) {
     var user = req.session.user;
     pool.getConnection(function(err, connection) {
         if (err) {
-            console.log(err);
             res.status(200).jsonp({
                 code: 1,
                 msg: err.message
             });
+            thirdLogger.error('/room/info db error :' + err.message);
         } else {
-            console.log('connected as id ' + connection.threadId);
             //超级管理员可以获取任何房间信息，公司管理员只能获取该公司所有的房间信息，而公司普通用户只能获取该用户所对应的房间信息
             var r_sql = 'SELECT * FROM room WHERE id = ' + pool.escape(id) + ';';
             connection.query(r_sql, function(err, rows, field) {
                 if (err) {
-                    console.log(err);
                     res.status(200).jsonp({
                         code: 1,
                         msg: err.message
                     });
+                    thirdLogger.error('/room/info query error :' + err.message);
                 } else {
                     if (rows[0]) {
                         var data = {
@@ -64,21 +65,20 @@ router.get('/videolist', function(req,res) {
     var pageSize = req.query.pageSize ? parseInt(req.query.pageSize,10) : 12;
     pool.getConnection(function(err, connection) {
         if (err) {
-            console.log(err);
             res.status(200).jsonp({
                 code: 1,
                 msg: err.message
             });
+            thirdLogger.error('/videolist db error :' + err.message);
         } else {
-            console.log('connected as id ' + connection.threadId);
             var sql = 'SELECT * FROM video ORDER BY video.order DESC';
             connection.query(sql, function(err, rows, fields) {
                 if (err) {
-                    console.log('videolist connection err ' + err.message);
                     res.status(200).jsonp({
                         code: 1,
                         msg: err.message
                     });
+                    thirdLogger.error('/videolist query error :' + err.message);
                 } else {
                     var videolist = new Array();
                     var pageStart = page * pageSize;
@@ -123,21 +123,24 @@ router.get('/lms/charge', function(req, res) {
     var type = req.query.type;
     var count = req.query.count;
     if(!id){
+        thirdLogger.error('/lms/charge empty id error');
         return res.status(200).json({
             code : 1,
-            msg : 'need id',
+            msg : 'id empty',
             amount : -1
         });
     }
     if(!type){
+        thirdLogger.error('/lms/charge empty type error');
         return res.status(200).json({
             code : 2,
-            msg : 'need type',
+            msg : 'type  empty',
             amount : -1
         });
     }
     var type = parseInt(type,10);
     if(type != 2 && type != 1){
+        thirdLogger.error('/lms/charge type illegal error - type is ' + type);
         return res.status(200).json({
             code : 5,
             msg : 'type illegal',
@@ -145,15 +148,25 @@ router.get('/lms/charge', function(req, res) {
         });        
     }
     if (!count) {
+        thirdLogger.error('/lms/charge empty count error');
         return res.status(200).json({
             code: 3,
-            msg: 'need id',
+            msg: 'count empty',
             amount: -1
         });
     }
+    var count = parseInt(count,10);
+    if(isNaN(count)){
+        thirdLogger.error('/lms/charge count illegal error - count is ' + count);
+        return res.status(200).json({
+            code: 5,
+            msg: 'count illegal',
+            amount: -1
+        });        
+    }
     pool.getConnection(function(err, connection) {
         if (err) {
-            console.log(err);
+            thirdLogger.error('/lms/charge db error :' + err.message);
             res.status(200).jsonp({
                 code: 4,
                 msg: err.message,
@@ -167,7 +180,7 @@ router.get('/lms/charge', function(req, res) {
             + table + '.id = ' + pool.escape(id) + ';';
             connection.query(sql, function(err, rows, field) {
                 if (err) {
-                    console.log(err);
+                    thirdLogger.error('/lms/charge query error :' + err.message);
                     res.status(200).jsonp({
                         code: 1,
                         msg: err.message,

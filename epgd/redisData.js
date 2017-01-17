@@ -1,6 +1,6 @@
 var log4js = require('log4js');
-var logger = log4js.getLogger("epgd/redisData");
-var debug = require('debug')('lms:epgd');
+var logger = log4js.getLogger('epgd/redisData');
+var debug = require('debug')('epgd/redisData');
 //var client = require('../epgd/redisClient').redisClient;
 function epgd(client) {
   this.client = client;
@@ -50,12 +50,13 @@ function epgd(client) {
 // };
 epgd.prototype.insertDefaultChannel = function(info) {
   if (!((typeof info == 'object') && info.constructor == Object)) {
-    debug("insertDefaultChannel info is not object");
-    logger.info("insertDefaultChannel info is not object");
+    debug("insertDefaultChannel info is not object:",info);
+    logger.error("insertDefaultChannel info is not object:",info);
     return -1;
   }
   var key = 'default_channel';
   this.client.set(key, JSON.stringify(info));
+  logger.info("insertDefaultChannel:",key,info);
   return 0;
 };
 
@@ -71,23 +72,25 @@ epgd.prototype.insertDefaultChannel = function(info) {
 // }]
 epgd.prototype.insertChannelList = function(list) {
   if (!((typeof list == 'object') && list.constructor == Array)) {
-    debug("insertChannelList list is not array");
-    logger.info("insertChannelList list is not array");
+    debug("insertChannelList list is not array:",list);
+    logger.error("insertChannelList list is not array:",list);
     return -1;
   }
   var key = 'channellist';
   this.client.set(key, JSON.stringify(list));
+  logger.info("insertChannelList:",key,list);
   return 0;
 };
 //插入频道信息,数据格式参见频道信息定义
 epgd.prototype.insertChannelInfo = function(info) {
   if (!((typeof info == 'object') && info.constructor == Object)) {
-    debug("insertChannelInfo info is not object");
-    logger.info("insertChannelInfo info is not object");
+    debug("insertChannelInfo info is not object:",info);
+    logger.error("insertChannelInfo info is not object:",info);
     return -1;
   }
   var key = 'channel_' + info.id + '_info';
   this.client.set(key, JSON.stringify(info));
+  logger.info("insertChannelInfo:",key,info);
   return 0;
 };
 
@@ -102,38 +105,39 @@ epgd.prototype.insertChannelInfo = function(info) {
 //   living: xx //Boolean 房间是否在直播
 // }]
 epgd.prototype.insertChannelRoomList = function(id, list) {
-  if (!((typeof id == 'number') && id.constructor == Number)) {
-    debug("insertChannelRoomList idid is not number");
-    logger.info("insertChannelRoomList id is not number");
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
+    debug("insertChannelRoomList idid is not number:",id);
+    logger.error("insertChannelRoomList id is not number:",id);
     return -1;
   }
 
   if (!((typeof list == 'object') && list.constructor == Array)) {
-    debug("insertChannelRoomList list is not array");
-    logger.info("insertChannelRoomList list is not array");
+    debug("insertChannelRoomList list is not array:",list);
+    logger.error("insertChannelRoomList list is not array:",list);
     return -1;
   }
   var key = 'channel_' + id + '_room_list';
   this.client.set(key, JSON.stringify(list));
+  logger.info("insertChannelRoomList:",key,list);
   return 0;
 };
 
 //插入上下频道,数据格式参见频道信息定义
 //up，down的格式为channelinfo，第一个频道的上一个为最后一个频道，最后一个频道的下个为第一个频道
 epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
-  if (!((typeof id == 'number') && id.constructor == Number)) {
-    debug("insertSwitchChannelInfo id is not number");
-    logger.info("insertSwitchChannelInfo id is not number");
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
+    debug("insertSwitchChannelInfo id is not number:",id);
+    logger.error("insertSwitchChannelInfo id is not number:",id);
     return -1;
   }
   if (!((typeof up == 'object') && up.constructor == Object)) {
-    debug("insertSwitchChannelInfo up is not object");
-    logger.info("insertSwitchChannelInfo up is not object");
+    debug("insertSwitchChannelInfo up is not object:",up);
+    logger.error("insertSwitchChannelInfo up is not object:",up);
     return -1;
   }
   if (!((typeof down == 'object') && down.constructor == Object)) {
-    debug("insertSwitchChannelInfo down is not object");
-    logger.info("insertSwitchChannelInfo down is not object");
+    debug("insertSwitchChannelInfo down is not object:",up);
+    logger.error("insertSwitchChannelInfo down is not object:",up);
     return -1;
   }
   var key = 'channel_' + id + '_switch_info';
@@ -142,6 +146,8 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
     down: down
   };
   this.client.set(key, JSON.stringify(channelSwitchInfo));
+  debug("insertSwitchChannelInfo:",key,channelSwitchInfo);
+  logger.info("insertSwitchChannelInfo:",key,channelSwitchInfo);
   return 0;
 };
 
@@ -168,60 +174,74 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
 // };
 epgd.prototype.insertRoomInfo = function(info) {
   if (!((typeof info == 'object') && info.constructor == Object)) {
-    debug("insertRoomInfo info is not object");
-    logger.info("insertRoomInfo info is not object");
+    debug("insertRoomInfo info is not object:",info);
+    logger.error("insertRoomInfo info is not object:",info);
     return -1;
   }
   var key = 'room_' + info.id + '_info';
   this.client.set(key, JSON.stringify(info));
+  debug("insertRoomInfo:",key,info);
+  logger.info("insertRoomInfo:",key,info);
 };
 //插入房间播放地址，必须是字符串，不接受其他格式
 epgd.prototype.insertRoomPlayurl = function(id, url) {
-  if (!((typeof id == 'number') && id.constructor == Number)) {
-    debug("insertRoomPlayurl id is not number");
-    logger.info("insertRoomPlayurl id is not number");
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
+    debug("insertRoomPlayurl id is not number:",id);
+    logger.error("insertRoomPlayurl id is not number:",id);
     return -1;
   }
   if (!((typeof url == 'string') && url.constructor == String)) {
-    debug("insertRoomPlayurl url is not string");
-    logger.info("insertRoomPlayurl url is not string");
+    debug("insertRoomPlayurl url is not string:",url);
+    logger.error("insertRoomPlayurl url is not string:",url);
     return -1;
   }
   var key = 'room_' + id + '_playurl';
   this.client.set(key, url);
+  debug("insertRoomPlayurl:",key,url);
+  logger.info("insertRoomPlayurl:",key,url);
 };
 
 //删除房间仅仅删除房间信息和播放地址，但是不能删除频道房间列表中的字段，需要单独修改频道房间列表
 epgd.prototype.delRoom = function(id) {
-  if (!((typeof id == 'number') && id.constructor == Number)) {
-    debug("delRoom id is not number");
-    logger.info("delRoom id is not number");
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
+    debug("delRoom id is not number:",id);
+    logger.error("delRoom id is not number:",id);
     return -1;
   }
   //删除房间信息
   var key = 'room_' + id + '_info';
   this.client.del(key);
+  debug("delRoom:",key);
+  logger.error("delRoom:",key);
   //删除频道房间播放地址
   key = 'room_' + id + '_playurl';
   this.client.del(key);
+  debug("delRoom:",key);
+  logger.info("delRoom:",key);
 };
 
 //删除频道，只删除频道信息，频道房间列表，频道的上下频道，但是无法删除关联此频道的上下频道，需要重新组合,还要注意需要修改默认频道
 epgd.prototype.delChannel = function(id) {
-  if (!((typeof id == 'number') && id.constructor == Number)) {
-    debug("delChannel id is not number");
-    logger.info("delChannel id is not number");
+  if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
+    debug("delChannel id is not number:",id);
+    logger.error("delChannel id is not number:",id);
     return -1;
   }
   //删除频道信息
   var key = 'channel_' + id + '_info';
   this.client.del(key);
+  debug("delChannel:",key);
+  logger.info("delChannel:",key);
   //删除频道房间列表
   key = 'channel_' + id + '_room_list';
   this.client.del(key);
+  debug("delChannel:",key);
+  logger.info("delChannel:",key);
   //删除此频道上下频道
   key = 'channel_' + id + '_switch_info';
   this.client.del(key);
+  debug("delChannel:",key);
+  logger.info("delChannel:",key);
 };
 //删除所有数据
 epgd.prototype.delAll = function() {

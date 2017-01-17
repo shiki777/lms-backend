@@ -1,12 +1,15 @@
 var log4js = require('log4js');
-var logger = log4js.getLogger("epgd/redisClient");
+var logger = log4js.getLogger('epgd/redisClient');
 var redis = require("redis");
 var config = require('../config/config.js');
-var debug = require('debug')('lms:epgd');
+var debug = require('debug')('epgd/redisClient');
 
 var redisClient = redis.createClient(config.redis.port, config.redis.host);
 
+
 redisClient.on("error", function(err) {
+  debug("redis address ",config.redis.host,config.redis.port);
+  logger.info("redis address ",config.redis.host,config.redis.port);
   debug("redis Error " + err);
   logger.error("Error " + err);
 });
@@ -15,6 +18,8 @@ redisClient.on("end", function(err) {
   logger.info("redis end ");
 });
 redisClient.on("ready", function(err) {
+  debug("redis address ",config.redis.host,config.redis.port);
+  logger.info("redis address ",config.redis.host,config.redis.port);
   debug("redis ready ");
   logger.info("redis ready" );
   redisClient.select(config.redis.db_number, function(err){

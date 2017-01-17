@@ -42,6 +42,7 @@ function login(name,pwd){
                     defer.reject(err);
                   }
                   else {
+                    console.log("SDK login name:" + name + " token:" + token);
                     defer.resolve(token);
                   }
           				connection.release();
@@ -59,6 +60,7 @@ function login(name,pwd){
 }
 
 function logout(token){
+  console.log("SDK logout token:" + token);
   var defer = q.defer();
   if(!token){defer.reject(new Error("logout failed for token == null."));}
   else {
@@ -90,6 +92,7 @@ function logout(token){
 }
 
 function getPushUrl(token){
+  console.log("SDK getPushUrl token:" + token);
   var defer = q.defer();
   if(!token){defer.reject(new Error("getPushUrl failed for token == null."));}
   else {
@@ -125,6 +128,7 @@ function getPushUrl(token){
 }
 
 function getUserInfo(token){
+  console.log("SDK getUserInfo token:" + token);
   var defer = q.defer();
   if(!token){defer.reject(new Error("getUserInfo failed for token == null."));}
   else {
@@ -140,6 +144,7 @@ function getUserInfo(token){
 }
 
 function getRoomInfo(token){
+  console.log("SDK getRoomInfo token:" + token);
   var defer = q.defer();
   if(!token){defer.reject(new Error("getRoomInfo failed for token == null."));}
   else {
@@ -176,6 +181,7 @@ function getRoomInfo(token){
 }
 
 function getChatInfo(token){
+  console.log("SDK getChatInfo token:" + token);
   var defer = q.defer();
   if(!token){defer.reject(new Error("getChatInfo failed for token == null."));}
   else {
@@ -248,12 +254,13 @@ function startPushStream(token){
               else {
                 defer.resolve("startPushStream success.");
                 //通知礼物系统
-                gift.room_play_stop(rows[0].roomId.toString(),rows[0].uid.toString(),true)
+                console.log('SDK startPushStream send to gift roomid : ' + rows[0].roomId + ' uid : ' + rows[0].uid);
+                gift.room_play_stop(rows[0].roomId,rows[0].uid,true)
                   .then(function(resbody){
-                    console.log(resbody);
+                    console.log("gift startPushStream res msg:" + resbody);
                   })
                   .catch(function(errmsg){
-                    console.log(errmsg);
+                    console.log("gift startPushStream res msg:" + errmsg);
                   });
                 redis.insertRoomInfo(rows[0].roomId);
                 redis.insertChannelRoomList(rows[0].channelId);
@@ -271,6 +278,7 @@ function startPushStream(token){
 }
 
 function stopPushStream(token){
+  console.log("SDK stopPushStream token:" + token);
   var defer = q.defer();
   if(!token){defer.reject(new Error("stopPushStream failed for token == null."));}
   else {
@@ -306,12 +314,12 @@ function stopPushStream(token){
               else {
                 defer.resolve("stopPushStream success.");
                 //通知礼物系统
-                gift.room_play_stop(rows[0].roomId.toString(),rows[0].uid.toString(),false)
+                gift.room_play_stop(rows[0].roomId,rows[0].uid,false)
                   .then(function(resbody){
-                    console.log(resbody);
+                    console.log("gift stopPushStream res msg:" + resbody);
                   })
                   .catch(function(errmsg){
-                    console.log(errmsg);
+                    console.log("gift stopPushStream res msg:" + errmsg);
                   });
                 redis.insertRoomInfo(rows[0].roomId);
                 redis.insertChannelRoomList(rows[0].channelId);

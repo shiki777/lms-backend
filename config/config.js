@@ -1,7 +1,11 @@
 var config = {
+  lms:{
+    port:3000
+  },
   snail_cloud: {
     host: '192.168.5.233',
-    port: 8999
+    port: 8999,
+    apply_playtoken_port : 8104
   },
   /*mysql访问*/
   db_mysql: {
@@ -14,7 +18,7 @@ var config = {
   },
   push_stream: {
     host: '0.0.0.0',
-    port: 6969,
+    port: 3010,
   },
   user_system:{
     host:'192.168.5.137',
@@ -23,10 +27,10 @@ var config = {
   redis: {
     host: '192.168.5.137',
     port: 6379,
-    db_number: 5,
+    db_number: 0,
   },
   chatroom:{
-    host:'192.168.5.225',
+    host:'58.247.47.106',
     port: 8166
   },
   host : 'http://58.247.47.106:3000'

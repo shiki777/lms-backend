@@ -336,6 +336,7 @@ router.post('/channel/update',function(req,res){
               redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
               redis.insertChannelList();
+              redis.insertChannelRoomList(cid);
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
@@ -345,6 +346,7 @@ router.post('/channel/update',function(req,res){
               redis.insertSwitchChannelInfo();
               redis.insertChannel(cid);
               redis.insertChannelList();
+              redis.insertChannelRoomList(cid);
             }
             connection.release();
           });
@@ -505,12 +507,12 @@ router.post('/room/add',function(req,res){
           }
           else {
             console.log('connected as id ' + connection.threadId);
-            var pushUrl = (roomUrl.pushUrl instanceof Array) ? pool.escape(roomUrl.pushUrl[0]) : pool.escape(roomUrl.pushUrl);
-            var liveUrl = (roomUrl.liveUrl instanceof Array) ? pool.escape(roomUrl.liveUrl[0]) : pool.escape(roomUrl.liveUrl);
+            var pushUrl = (roomUrl.pushUrl instanceof Array) ? roomUrl.pushUrl[0] : roomUrl.pushUrl;
+            var liveUrl = (roomUrl.liveUrl instanceof Array) ? roomUrl.liveUrl[0] : roomUrl.liveUrl;
             var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
             'room.desc,charge,price,dependencyChange,room.order,tag,viewAngle,controlModel,projectStyle,eyeStyle) VALUES(' +
-            pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pushUrl + ',' +
-            liveUrl + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
+            pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(pushUrl) + ',' +
+            pool.escape(liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
             pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
             pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyCharge) + ',' +
             pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
@@ -533,7 +535,7 @@ router.post('/room/add',function(req,res){
                   res.status(200).send({code:0,msg:'add room success.'});
                   redis.insertDefaultChannel(room_insert_id);
                   //通知礼物系统
-                  gift.room_add_del(room_insert_id.toString(),true)
+                  gift.room_add_del(room_insert_id,true)
                     .then(function(resbody){
                     })
                     .catch(function(errmsg){
@@ -569,7 +571,7 @@ router.post('/room/add',function(req,res){
                       res.status(200).send({code:0,msg:'add room success.'});
                       redis.insertDefaultChannel(room_insert_id);
                       //通知礼物系统
-                      gift.room_add_del(room_insert_id.toString(),true)
+                      gift.room_add_del(room_insert_id,true)
                         .then(function(resbody){
                         })
                         .catch(function(errmsg){
@@ -623,7 +625,7 @@ router.delete('/room/del',function(req,res){
             redis.insertChannelRoomList(result[0][0].channelId);
           }
           //通知礼物系统
-          gift.room_add_del(req.query.id.toString(),false)
+          gift.room_add_del(req.query.id,false)
             .then(function(resbody){
             })
             .catch(function(errmsg){
