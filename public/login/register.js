@@ -57,7 +57,6 @@
                 } else {
                     alert('注册失败请重试');
                 }
-
             }, function(e) {
                 alert('注册失败');
             })               
