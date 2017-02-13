@@ -20,6 +20,8 @@ service Communication {
   rpc RoomInfo(RoomInfoRequest) returns (RoomInfoReply) {}
 
   rpc ChatInfo(ChatInfoRequest) returns (ChatInfoReply) {}
+
+  rpc VrDomeScreenSize(VrDomeScreenSizeRequest) returns (VrDomeScreenSizeReply) {}
 }
 
 message LoginRequest {
@@ -106,4 +108,15 @@ message ChatInfoReply {
   int32 chat_id = 3;
   string host = 4;
   int32 port = 5;
+}
+
+message VrDomeScreenSizeRequest {
+  string creds = 1;
+  int32 horizontal = 2;
+  int32 vertical = 3;
+}
+
+message VrDomeScreenSizeReply {
+  int32 code = 1;
+  string message = 2;
 }
