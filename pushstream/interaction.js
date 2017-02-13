@@ -232,6 +232,41 @@ function getChatInfo(token){
   return defer.promise;
 }
 
+function setVRDomeScreenSize(token,dome_horizontal,dome_vertical){
+  logger.info("setVRDomeScreenSize token:" + token + ' dome_horizontal:' + dome_horizontal + ' dome_vertical:' + dome_vertical);
+  var defer = q.defer();
+  if(!token){defer.reject(new Error("setVRDomeScreenSize failed for token == null."));}
+  else {
+    pool.getConnection(function(err,connection){
+      if(err){
+        logger.error('setVRDomeScreenSize pool.getConnection :' , err);
+  			defer.reject(err);
+      }
+      else {
+        logger.info('connected as id ' + connection.threadId);
+        var setSql = 'UPDATE room SET domeHorizontal = ' + pool.escape(dome_horizontal) + ',domeVertical = ' + pool.escape(dome_vertical) +
+        ' WHERE id IN(SELECT roomId FROM room_user WHERE userId IN(SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + '));';
+        connection.query(setSql, function(err, result) {
+          if(err){
+            logger.error('setVRDomeScreenSize connection.query err:' , err);
+            defer.reject(err);
+          }
+          else if(result.affectedRows != 1){
+            logger.error('setVRDomeScreenSize err result.affectedRows != 1 :' , result);
+            defer.reject(new Error("setVRDomeScreenSize failed for update room set wrong."));
+          }
+          else {
+            logger.info('setVRDomeScreenSize success.');
+            defer.resolve("setVRDomeScreenSize success.");
+          }
+          connection.release();
+        });
+      }
+    });
+  }
+  return defer.promise;
+}
+
 function startPushStream(token){
   logger.info("startPushStream token:" + token);
   var defer = q.defer();
@@ -363,6 +398,7 @@ module.exports = {
   getUserInfo : getUserInfo,
   getRoomInfo : getRoomInfo,
   getChatInfo : getChatInfo,
+  setVRDomeScreenSize : setVRDomeScreenSize,
   startPushStream : startPushStream,
   stopPushStream : stopPushStream
 };
