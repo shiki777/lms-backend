@@ -347,8 +347,8 @@ function formatDefaultChannelInfo(rows) {
       project_style : rows[0].projectStyle,
       control_model : rows[0].controlModel,
       eye_style : rows[0].eyeStyle,
-      dome_horizontal : data.domeHorizontal,
-      dome_vertical : data.domeVertical
+      dome_horizontal : rows[0].domeHorizontal,
+      dome_vertical : rows[0].domeVertical
     }
   }
   logger.trace('formatDefaultChannelInfo rtn channel:',channel);
