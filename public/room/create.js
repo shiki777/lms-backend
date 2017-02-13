@@ -54,7 +54,7 @@ var vm = new Vue({
                 alert('请填写名字！');
                 return;
             }
-            if(!data.getUserIds.length) {
+            if(!data.userid.length) {
                 alert('请选择主播！');
                 return;
             }
