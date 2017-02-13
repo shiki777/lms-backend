@@ -23,7 +23,8 @@ server.prototype.start = function() {
     stopStream: communication_stopStream,
     userInfo: communication_userInfo,
     roomInfo: communication_roomInfo,
-    chatInfo: communication_chatInfo
+    chatInfo: communication_chatInfo,
+    vrDomeScreenSize: communication_vrDomeScreenSize,
   });
   host = host + ':' + port;
   server.bind(host, grpc.ServerCredentials.createInsecure());
@@ -222,4 +223,27 @@ var communication_chatInfo = function(call, callback) {
   });
 };
 
+var communication_vrDomeScreenSize = function(call, callback) {
+  var creds = call.request.creds;
+  var horizontal = call.request.horizontal;
+  var vertical = call.request.vertical;
+  logger.info('communication_vrDomeScreenSize creds:' + creds + ' horizontal:' + horizontal + ' vertical:' + vertical);
+  debug('communication_vrDomeScreenSize creds:' + creds + ' horizontal:' + horizontal + ' vertical:' + vertical);
+
+  interaction.setVRDomeScreenSize(creds, horizontal, vertical).then(function(result) {
+    logger.info('vrDomeScreenSize result:', result);
+    debug('vrDomeScreenSize result:', result);
+    callback(null, {
+      code: 0,
+      message: 'success'
+    });
+  }).catch(function(err) {
+    logger.error('vrDomeScreenSize err:', err.message);
+    debug('vrDomeScreenSize err:', err.message);
+    callback(null, {
+      code: 1,
+      message: 'creds is error'
+    });
+  });
+};
 module.exports = server;
