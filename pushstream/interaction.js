@@ -244,18 +244,25 @@ function setVRDomeScreenSize(token,dome_horizontal,dome_vertical){
       }
       else {
         logger.info('connected as id ' + connection.threadId);
+        var sql = 'SELECT id AS roomId,channelId FROM room WHERE id IN(SELECT roomId FROM room_user WHERE userId IN(SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + '));';
         var setSql = 'UPDATE room SET domeHorizontal = ' + pool.escape(dome_horizontal) + ',domeVertical = ' + pool.escape(dome_vertical) +
         ' WHERE id IN(SELECT roomId FROM room_user WHERE userId IN(SELECT id FROM backinfo WHERE token = ' + pool.escape(token) + '));';
-        connection.query(setSql, function(err, result) {
+        connection.query(sql + setSql, function(err, result) {
           if(err){
             logger.error('setVRDomeScreenSize connection.query err:' , err);
             defer.reject(err);
           }
-          else if(result.affectedRows != 1){
-            logger.error('setVRDomeScreenSize err result.affectedRows != 1 :' , result);
+          else if(result[1].affectedRows != 1){
+            logger.error('setVRDomeScreenSize err result[1].affectedRows != 1 :' , result[1]);
             defer.reject(new Error("setVRDomeScreenSize failed for update room set wrong."));
           }
           else {
+            //redis操作
+            redis.insertDefaultChannel(result[0][0].roomId);
+            redis.insertChannel(result[0][0].channelId);
+            redis.insertSwitchChannelInfo();
+            redis.insertRoomInfo(result[0][0].roomId);
+
             logger.info('setVRDomeScreenSize success.');
             defer.resolve("setVRDomeScreenSize success.");
           }

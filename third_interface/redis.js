@@ -50,7 +50,7 @@ function insertChannelList(channelid) {
 /*拿符合redis格式的一个频道数据*/
 function getChannelData(channelid){
   logger.info('getChannelData channelid :' + channelid);
- var defer = q.defer();
+  var defer = q.defer();
       pool.getConnection(function(err,connection){
         if(err){
           logger.error('getChannelData pool.getConnection error :',err);
@@ -58,7 +58,7 @@ function getChannelData(channelid){
         }
         else {
           logger.info('connected as id ' + connection.threadId);
-          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.order,channel.desc,channel.defaultRoom,room.id as id2,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.tag,room.viewAngle,room.price as price1,room.controlModel,room.projectStyle,room.eyeStyle from channel,room where channel.id = ' + pool.escape(channelid) + ' AND room.id = channel.defaultRoom;';
+          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.order,channel.desc,channel.defaultRoom,room.id as id2,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.tag,room.viewAngle,room.price as price1,room.controlModel,room.projectStyle,room.eyeStyle,domeHorizontal,domeVertical from channel,room where channel.id = ' + pool.escape(channelid) + ' AND room.id = channel.defaultRoom;';
           var sql2= 'select * from channel_discount where channel_discount.channelId = ' + pool.escape(channelid) + ';';
           var sql3 = 'select * from channel,room_discount where channel.id = ' + pool.escape(channelid) + ' and room_discount.roomId = channel.defaultRoom;';
           connection.query(sql + sql2 + sql3, function(err, result) {
@@ -89,7 +89,7 @@ function getDefaultData(roomid) {
         }
         else {
           logger.info('connected as id ' + connection.threadId);
-          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle from channel,room where room.id=' + pool.escape(roomid) + ' and channel.id = room.channelId';
+          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle,domeHorizontal,domeVertical from channel,room where room.id=' + pool.escape(roomid) + ' and channel.id = room.channelId';
           connection.query(sql, function(err, rows, fields) {
             if(err){
               logger.error('getDefaultData connection.query error :',err);
@@ -306,7 +306,9 @@ function formatChannelInfo(data,channelrows,roomrows) {
       view_angle : data.viewAngle,
       project_style : data.projectStyle,
       control_model : data.controlModel,
-      eye_style : data.eyeStyle
+      eye_style : data.eyeStyle,
+      dome_horizontal : data.domeHorizontal,
+      dome_vertical : data.domeVertical
     }
   }
   if(!channel.charge){
@@ -344,7 +346,9 @@ function formatDefaultChannelInfo(rows) {
       view_angle : rows[0].viewAngle,
       project_style : rows[0].projectStyle,
       control_model : rows[0].controlModel,
-      eye_style : rows[0].eyeStyle
+      eye_style : rows[0].eyeStyle,
+      dome_horizontal : data.domeHorizontal,
+      dome_vertical : data.domeVertical
     }
   }
   logger.trace('formatDefaultChannelInfo rtn channel:',channel);
@@ -397,7 +401,9 @@ function formatRoomInfo(roomRows,discountRows){
     view_angle : roomRows[0].viewAngle,
     project_style : roomRows[0].projectStyle,
     control_model : roomRows[0].controlModel,
-    eye_style : roomRows[0].eyeStyle
+    eye_style : roomRows[0].eyeStyle,
+    dome_horizontal : roomRows[0].domeHorizontal,
+    dome_vertical : roomRows[0].domeVertical
   };
   /*不收费不需要字段，为了兼容U3D*/
   if(!roomInfo.charge){

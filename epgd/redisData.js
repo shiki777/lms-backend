@@ -45,7 +45,9 @@ function epgd(client) {
 //     view_angle: 60, //视角:60-130
 //     project_style: 0,//投影方式:360-3D-Left-Right(0),360-3D-Up-Down(1),360-2D(2),180-3D-Left-Right(3),180-3D-Up-Down(4),180-2D(5),2D(6)
 //     control_model: 0,//控制模式:陀螺仪-0,触摸-1,陀螺仪+触摸-2
-//     eye_style: 0 //单目双目,单目-0,双目-1
+//     eye_style: 0, //单目双目,单目-0,双目-1
+//     dome_horizontal,//Number,水平度数（默认140，全180视频时值为180）
+//     dome_vertical //Number,垂直度数（默认100，全180视频时值为180）
 //   }
 // };
 epgd.prototype.insertDefaultChannel = function(info) {
@@ -171,6 +173,8 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
 //   project_style: xx, //投影方式:360-3D-Left-Right(0),360-3D-Up-Down(1),360-2D(2),180-3D-Left-Right(3),180-3D-Up-Down(4),180-2D(5),2D(6)
 //   control_model: xxx, //控制模式:陀螺仪-0,触摸-1,陀螺仪+触摸-2
 //   eye_style: xx ,//单目双目,单目-0,双目-1
+//   dome_horizontal,//Number,水平度数（默认140，全180视频时值为180）
+//   dome_vertical //Number,垂直度数（默认100，全180视频时值为180）
 // };
 epgd.prototype.insertRoomInfo = function(info) {
   if (!((typeof info == 'object') && info.constructor == Object)) {
