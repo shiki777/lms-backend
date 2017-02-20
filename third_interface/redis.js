@@ -100,7 +100,7 @@ function getDefaultData(roomid) {
                 rows[0] = {};
               }
               if(!rows[0].charge && !rows[0].charge1){
-                var channel = formatDefaultChannelInfo(rows);
+                var channel = formatDefaultChannelInfo(rows,roomid);
                 logger.info('getDefaultData success:',channel);
                 defer.resolve(channel);
               } else {
@@ -321,7 +321,7 @@ function formatChannelInfo(data,channelrows,roomrows) {
   return channel;
 }
 /*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
-function formatDefaultChannelInfo(rows) {
+function formatDefaultChannelInfo(rows,roomid) {
   logger.trace('formatDefaultChannelInfo enter rows:',rows);
   if(rows.length == 0){
     rows[0] ={};
@@ -334,7 +334,7 @@ function formatDefaultChannelInfo(rows) {
     desc : rows[0].desc,
     charge : false,
     default_room_info : {
-      id : rows[0].defaultRoom,
+      id : roomid,
       name : rows[0].name1,
       thumb : rows[0].thumb1,
       desc : rows[0].desc1,
