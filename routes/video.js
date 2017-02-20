@@ -174,7 +174,7 @@ router.get('/video/list', function(req, res) {
                     }
                     var pageEnd = pageStart + pageSize;
                     for (var i = pageStart; i < pageEnd && i < rows.length; i++) {
-                        videolist.push(rows[i]);
+                        videolist.push(rows[i]);·
                     }
                     res.status(200).jsonp({
                         code: 0,

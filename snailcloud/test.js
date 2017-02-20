@@ -7,7 +7,7 @@ var api = require('./api');
      .catch(function(e) {
          console.log(e);
      })*/
-var pushUrl = 'rtmp://s3-push.woniucloud.com:1937/push3/lhcgh2am';
+var pushUrl = 'rtmp://readyer.push.woniucloud.com:1936/readyer/uxc2f9ro';
 // var pushUrlws = api.getRoomPushUrl(pushUrl);
 var pushUrlws = api.getRoomPushUrl(pushUrl);
 console.log(pushUrlws);
