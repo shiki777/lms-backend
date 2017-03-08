@@ -11,7 +11,7 @@ var logger = log4js.getLogger('redis_sys');
 /*通知EPG 进入APP默认播放的房间，条件为免费的频道下的免费房间*/
 function insertDefaultChannel(roomid){
   logger.info('insertDefaultChannel roomid :' + roomid);
-  getDefaultData(roomid)
+  getDefaultData()
     .then(function(data) {
       logger.info('insertDefaultChannel report fired:',data);
       epgd.insertDefaultChannel(data);
@@ -79,8 +79,8 @@ function getChannelData(channelid){
 }
 
 /*判断房间是否符合免费房间免费频道的要求*/
-function getDefaultData(roomid) {
-  logger.info('getDefaultData roomid :' + roomid);
+function getDefaultData() {
+  logger.info('getDefaultData');
  var defer = q.defer();
       pool.getConnection(function(err,connection){
         if(err){
@@ -89,24 +89,16 @@ function getDefaultData(roomid) {
         }
         else {
           logger.info('connected as id ' + connection.threadId);
-          var sql = 'select channel.id,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle,domeHorizontal,domeVertical from channel,room where room.id=' + pool.escape(roomid) + ' and channel.id = room.channelId';
+          var sql = 'select channel.id,channel.tag,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag as tag1,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle,domeHorizontal,domeVertical from room LEFT JOIN channel on room.channelId = channel.id';
           connection.query(sql, function(err, rows, fields) {
             if(err){
               logger.error('getDefaultData connection.query error :',err);
               defer.reject(err);
             }
             else {//查询成功
-              if(rows.length == 0){
-                rows[0] = {};
-              }
-              if(!rows[0].charge && !rows[0].charge1){
-                var channel = formatDefaultChannelInfo(rows,roomid);
+                var channel = formatDefaultChannelInfo(rows);
                 logger.info('getDefaultData success:',channel);
                 defer.resolve(channel);
-              } else {
-                logger.error('getDefaultData !rows[0].charge && !rows[0].charge1:',rows[0]);
-                defer.reject();
-              }
             }
             connection.release();
           });
@@ -312,38 +304,48 @@ function formatChannelInfo(data,channelrows,roomrows) {
   return channel;
 }
 /*拼接默认播放频道数据，与一般频道区别在于频道和默认房间都不收费*/
-function formatDefaultChannelInfo(rows,roomid) {
-  logger.trace('formatDefaultChannelInfo enter rows:',rows);
-  if(rows.length == 0){
-    rows[0] ={};
-  }
-  var channel = {
-    id : rows[0].id,
-    name : rows[0].name,
-    thumb : rows[0].thumb,
-    icon : rows[0].icon,
-    desc : rows[0].desc,
-    charge : false,
-    default_room_info : {
-      id : roomid,
-      name : rows[0].name1,
-      thumb : rows[0].thumb1,
-      desc : rows[0].desc1,
-      charge : false,
-      living : rows[0].living ? true : false,
-      online : 100,
-      tag : rows[0].tag,
-      u3d_bg : rows[0].u3dbg,
-      view_angle : rows[0].viewAngle,
-      project_style : rows[0].projectStyle,
-      control_model : rows[0].controlModel,
-      eye_style : rows[0].eyeStyle,
-      dome_horizontal : rows[0].domeHorizontal,
-      dome_vertical : rows[0].domeVertical
+function formatDefaultChannelInfo(rows) {
+  logger.trace('formatDefaultChannelInfo enter');
+  var l = rows.length;
+  var list = {};
+  for (var i = 0; i < l; i++) {
+    var r = rows[i];
+    var tag = r.tag || 'default';
+    if (!list[tag]) {
+      list[tag] = null;
+    }
+    if (!r.charge && !r.charge1) {
+      if (list[tag] === null) {
+        list[tag] = {
+          id: r.id,
+          name: r.name,
+          thumb: r.thumb,
+          icon: r.icon,
+          desc: r.desc,
+          charge: false,
+          default_room_info: {
+            id: r.id1,
+            name: r.name1,
+            thumb: r.thumb1,
+            desc: r.desc1,
+            charge: false,
+            living: r.living ? true : false,
+            online: 100,
+            tag: r.tag1,
+            u3d_bg: r.u3dbg,
+            view_angle: r.viewAngle,
+            project_style: r.projectStyle,
+            control_model: r.controlModel,
+            eye_style: r.eyeStyle,
+            dome_horizontal: r.domeHorizontal,
+            dome_vertical: r.domeVertical
+          }
+        }
+      }
     }
   }
-  logger.trace('formatDefaultChannelInfo rtn channel:',channel);
-  return channel;
+  logger.trace('formatDefaultChannelInfo rtn channel:', list);
+  return list;
 }
 
 function formatChannelRoomList(rows) {
