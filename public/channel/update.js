@@ -45,6 +45,7 @@ function formatRoomData(data) {
         price : data.chargeStrategy.price,
         desc : data.desc,
         thumb : data.thumb,
+        tag : data.tag,
         icon : data.icon,
         dependencyCharge : data.charge ? 1 : 0,
         chargeStrategy  : discount,
@@ -139,6 +140,7 @@ var vm = new Vue({
                 charge : parseInt(this.dependencyCharge,10) ? 1 : 0,
                 order : this.order,
                 icon : this.getIcon(),
+                tag : this.tag,
                 chargeStrategy : this.getChargeStrategy(),
                 defaultRoom : this.getDefaultRoom()
             };

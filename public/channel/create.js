@@ -11,6 +11,7 @@ var vm = new Vue({
         desc : '',
         thumb : '',
         icon : '',
+        tag : '',
         dependencyCharge : 1,
         chargeStrategy  : [{
             discount : 9,
@@ -70,7 +71,8 @@ var vm = new Vue({
                 charge : parseInt(this.dependencyCharge,10) ? 1 : 0,
                 order : this.order,
                 icon : this.getIcon(),
-                chargeStrategy : this.getChargeStrategy()
+                chargeStrategy : this.getChargeStrategy(),
+                tag : this.tag
             };
             return res;
         },
