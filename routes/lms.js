@@ -219,10 +219,11 @@ router.post('/channel/add',function(req,res){
           var channel_insert_id = result.insertId;
           if(discount.length <= 0){
             res.status(200).send({code:0,msg:"add channel success with no discount info."});
-              redis.insertSwitchChannelInfo();
-              redis.insertChannel(channel_insert_id);
-              redis.insertChannelList();
-              redis.insertChannelRoomList(channel_insert_id);          
+            /*频道创建时不更新redis是因为此时没有频道默认房间！默认房间和频道互相依赖这是产品逻辑不通*/
+              // redis.insertSwitchChannelInfo();
+              // redis.insertChannel(channel_insert_id);
+              // redis.insertChannelList();
+              // redis.insertChannelRoomList(channel_insert_id);          
             return connection.release();
           }
           var cd_values = ' VALUES';
@@ -241,10 +242,11 @@ router.post('/channel/add',function(req,res){
             }
             else {
               res.status(200).send({code:0,msg:"add channel success."});
-              redis.insertSwitchChannelInfo();
-              redis.insertChannel(channel_insert_id);
-              redis.insertChannelList();
-              redis.insertChannelRoomList(channel_insert_id);              
+               /*频道创建时不更新redis是因为此时没有频道默认房间！默认房间和频道互相依赖这是产品逻辑不通*/
+              // redis.insertSwitchChannelInfo();
+              // redis.insertChannel(channel_insert_id);
+              // redis.insertChannelList();
+              // redis.insertChannelRoomList(channel_insert_id);              
             }
             connection.release();
           });
