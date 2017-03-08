@@ -12,7 +12,7 @@ var vm = new Vue({
         thumb : '',
         icon : '',
         tag : '',
-        dependencyCharge : 1,
+        dependencyCharge : 0,
         chargeStrategy  : [{
             discount : 9,
             duration : 3,

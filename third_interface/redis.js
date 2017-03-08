@@ -37,7 +37,7 @@ function insertChannel(channelid) {
 /*通知EPG 频道列表更新*/
 function insertChannelList(channelid) {
   logger.info('insertChannelList channelid :' + channelid);
-  getChannelListData(channelid)
+  getChannelListData()
     .then(function(data) {
       logger.info('insertChannelList insert fired:',data);
       epgd.insertChannelList(data);
@@ -252,14 +252,18 @@ function formatChannelList(rows) {
   if(rows.length == 0){
     rows[0] ={};
   }
-  var list = [];
-  for(var i = 0; i < rows.length; i++){
-    list.push({
-      id : rows[i].id,
-      name : rows[i].name,
-      thumb : rows[i].thumb,
-      default_room_info : {
-        id : rows[i].defaultRoom
+  var list = {};
+  for (var i = 0; i < rows.length; i++) {
+    var tag = rows[i].tag || 'default';
+    if (!list[tag]) {
+      list[tag] = [];
+    }
+    list[tag].push({
+      id: rows[i].id,
+      name: rows[i].name,
+      thumb: rows[i].thumb,
+      default_room_info: {
+        id: rows[i].defaultRoom
       }
     })
   }

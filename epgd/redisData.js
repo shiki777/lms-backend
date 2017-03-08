@@ -73,9 +73,9 @@ epgd.prototype.insertDefaultChannel = function(info) {
 //     }
 // }]
 epgd.prototype.insertChannelList = function(list) {
-  if (!((typeof list == 'object') && list.constructor == Array)) {
-    debug("insertChannelList list is not array:", list);
-    logger.error("insertChannelList list is not array:", list);
+  if (!(typeof list == 'object')) {
+    debug("insertChannelList list is not object:", list);
+    logger.error("insertChannelList list is not object:", list);
     return -1;
   }
   var key = 'channellist';
