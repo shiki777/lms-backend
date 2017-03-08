@@ -153,7 +153,7 @@ function insertChannelRoomList(chid){
     }
     else {
       logger.info('connected as id ' + connection.threadId);
-      var sql = 'SELECT id,name,thumb,room.desc,charge,living FROM room WHERE channelId = '
+      var sql = 'SELECT id,name,thumb,room.desc,charge,living,tag FROM room WHERE channelId = '
        + pool.escape(chid) + ';';
       connection.query(sql, function(err, rows, fields) {
         if(err){

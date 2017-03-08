@@ -105,6 +105,7 @@ epgd.prototype.insertChannelInfo = function(info) {
 //   desc: '测试房间', //String 房间简介
 //   charge: xx, //Boolean 房间是否（独立）收费
 //   living: xx //Boolean 房间是否在直播
+//   tag : xx //tag
 // }]
 epgd.prototype.insertChannelRoomList = function(id, list) {
   if (!((typeof id == 'number') && id.constructor == Number && !isNaN(id))) {
