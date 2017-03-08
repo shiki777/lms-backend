@@ -199,10 +199,10 @@ router.post('/channel/add',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var sql = 'INSERT INTO channel(name,companyId,charge,price,icon,thumb,channel.order,channel.desc,defaultRoom) VALUES('
+      var sql = 'INSERT INTO channel(name,companyId,charge,price,icon,thumb,channel.order,channel.desc,defaultRoom,tag) VALUES('
       + pool.escape(req.body.name) + ',' + pool.escape(companyId) + ',' + pool.escape(req.body.charge) + ','
       + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.icon) + ',' + pool.escape(req.body.thumb)
-      + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ',' + pool.escape(req.body.defaultRoom) + ');';
+      + ',' + pool.escape(req.body.order) + ',' + pool.escape(req.body.desc) + ',' + pool.escape(req.body.defaultRoom) + ',' + pool.escape(req.body.tag) + ');';
       connection.query(sql, function(err, result) {//insert channel.
         var channel_insert_id = result.insertId;
         if(err){
@@ -304,7 +304,7 @@ router.post('/channel/update',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' AND companyId = ' + pool.escape(user.companyId));
       var sql = 'UPDATE channel SET name = ' + pool.escape(req.body.name) + ',charge = ' + pool.escape(req.body.charge)
       + ',price = ' + pool.escape(req.body.chargeStrategy.price) + ',icon = ' + pool.escape(req.body.icon)
-      + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order)
+      + ',thumb = ' + pool.escape(req.body.thumb) + ',channel.order = ' + pool.escape(req.body.order) + ',channel.tag = ' + pool.escape(req.body.tag)
       + ',channel.desc = ' + pool.escape(req.body.desc) + ',defaultRoom = ' + pool.escape(req.body.defaultRoom)
       + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(sql, function(err, result) {
@@ -394,6 +394,7 @@ router.get('/channel/get',function(req,res){
             thumb : result[0][0].thumb,
             desc : result[0][0].desc,
             order : result[0][0].order,
+            tag : result[0][0].tag,
             chargeStrategy : {
               price : result[0][0].price,
               discount : discount_arr
