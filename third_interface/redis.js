@@ -246,19 +246,6 @@ function deleteAllData(){
   epgd.delAll();
 }
 
-module.exports = {
-  insertDefaultChannel : insertDefaultChannel,
-  insertChannel : insertChannel,
-  insertChannelList : insertChannelList,
-  insertChannelRoomList : insertChannelRoomList,
-  insertSwitchChannelInfo : insertSwitchChannelInfo,
-  insertRoomInfo : insertRoomInfo,
-  insertRoomPlayurl : insertRoomPlayurl,
-  deleteRoom : deleteRoom,
-  deleteChannel : deleteChannel,
-  deleteAllData : deleteAllData
-};
-
 /*拼接频道列表数据*/
 function formatChannelList(rows) {
   logger.trace('formatChannelList enter rows:',rows);
@@ -365,7 +352,8 @@ function formatChannelRoomList(rows) {
       thumb: rows[i].thumb, //String 房间封面
       desc: rows[i].desc, //String 房间简介
       charge: rows[i].charge ? true : false, //Boolean 房间是否（独立）收费
-      living: rows[i].living ? true : false //Boolean 房间是否在直播
+      living: rows[i].living ? true : false, //Boolean 房间是否在直播
+      tag :  rows[i].tag
     });
   }
   logger.trace('formatChannelRoomList rtn list:',res);
@@ -475,3 +463,16 @@ function insertUpAndDown(selfid,upid,downid){
       logger.info('insertUpAndDown getChannelData1 err chid:' + selfid,e);
     })
 }
+
+module.exports = {
+  insertDefaultChannel : insertDefaultChannel,
+  insertChannel : insertChannel,
+  insertChannelList : insertChannelList,
+  insertChannelRoomList : insertChannelRoomList,
+  insertSwitchChannelInfo : insertSwitchChannelInfo,
+  insertRoomInfo : insertRoomInfo,
+  insertRoomPlayurl : insertRoomPlayurl,
+  deleteRoom : deleteRoom,
+  deleteChannel : deleteChannel,
+  deleteAllData : deleteAllData
+};
