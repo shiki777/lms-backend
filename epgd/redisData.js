@@ -2,6 +2,8 @@ var log4js = require('log4js');
 var logger = log4js.getLogger('epgd');
 var debug = require('debug')('epgd/redisClient');
 //var client = require('../epgd/redisClient').redisClient;
+var headkey = 'epg_';
+
 function epgd(client) {
   this.client = client;
 }
@@ -56,7 +58,7 @@ epgd.prototype.insertDefaultChannel = function(info) {
     logger.error("insertDefaultChannel info is not object:", info);
     return -1;
   }
-  var key = 'default_channel';
+  var key = headkey + 'default_channel';
   this.client.set(key, JSON.stringify(info));
   logger.info("insertDefaultChannel:", key, info);
   return 0;
@@ -78,7 +80,7 @@ epgd.prototype.insertChannelList = function(list) {
     logger.error("insertChannelList list is not object:", list);
     return -1;
   }
-  var key = 'channellist';
+  var key = headkey + 'channellist';
   this.client.set(key, JSON.stringify(list));
   logger.info("insertChannelList:", key, list);
   return 0;
@@ -90,7 +92,7 @@ epgd.prototype.insertChannelInfo = function(info) {
     logger.error("insertChannelInfo info is not object:", info);
     return -1;
   }
-  var key = 'channel_' + info.id + '_info';
+  var key = headkey + 'channel_' + info.id + '_info';
   this.client.set(key, JSON.stringify(info));
   logger.info("insertChannelInfo:", key, info);
   return 0;
@@ -119,7 +121,7 @@ epgd.prototype.insertChannelRoomList = function(id, list) {
     logger.error("insertChannelRoomList list is not array:", list);
     return -1;
   }
-  var key = 'channel_' + id + '_room_list';
+  var key = headkey + 'channel_' + id + '_room_list';
   this.client.set(key, JSON.stringify(list));
   logger.info("insertChannelRoomList:", key, list);
   return 0;
@@ -143,7 +145,7 @@ epgd.prototype.insertSwitchChannelInfo = function(id, up, down) {
     logger.error("insertSwitchChannelInfo down is not object:", up);
     return -1;
   }
-  var key = 'channel_' + id + '_switch_info';
+  var key = headkey + 'channel_' + id + '_switch_info';
   var channelSwitchInfo = {
     up: up,
     down: down
@@ -183,7 +185,7 @@ epgd.prototype.insertRoomInfo = function(info) {
     logger.error("insertRoomInfo info is not object:", info);
     return -1;
   }
-  var key = 'room_' + info.id + '_info';
+  var key = headkey + 'room_' + info.id + '_info';
   this.client.set(key, JSON.stringify(info));
   debug("insertRoomInfo:", key, info);
   logger.info("insertRoomInfo:", key, info);
@@ -200,7 +202,7 @@ epgd.prototype.insertRoomPlayurl = function(id, url) {
     logger.error("insertRoomPlayurl url is not string:", url);
     return -1;
   }
-  var key = 'room_' + id + '_playurl';
+  var key = headkey + 'room_' + id + '_playurl';
   this.client.set(key, url);
   debug("insertRoomPlayurl:", key, url);
   logger.info("insertRoomPlayurl:", key, url);
@@ -214,12 +216,12 @@ epgd.prototype.delRoom = function(id) {
     return -1;
   }
   //删除房间信息
-  var key = 'room_' + id + '_info';
+  var key = headkey + 'room_' + id + '_info';
   this.client.del(key);
   debug("delRoom:", key);
   logger.error("delRoom:", key);
   //删除频道房间播放地址
-  key = 'room_' + id + '_playurl';
+  key = headkey + 'room_' + id + '_playurl';
   this.client.del(key);
   debug("delRoom:", key);
   logger.info("delRoom:", key);
@@ -233,17 +235,17 @@ epgd.prototype.delChannel = function(id) {
     return -1;
   }
   //删除频道信息
-  var key = 'channel_' + id + '_info';
+  var key = headkey + 'channel_' + id + '_info';
   this.client.del(key);
   debug("delChannel:", key);
   logger.info("delChannel:", key);
   //删除频道房间列表
-  key = 'channel_' + id + '_room_list';
+  key = headkey + 'channel_' + id + '_room_list';
   this.client.del(key);
   debug("delChannel:", key);
   logger.info("delChannel:", key);
   //删除此频道上下频道
-  key = 'channel_' + id + '_switch_info';
+  key = headkey + 'channel_' + id + '_switch_info';
   this.client.del(key);
   debug("delChannel:", key);
   logger.info("delChannel:", key);
