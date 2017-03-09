@@ -27,6 +27,8 @@ function insertChannel(channelid) {
   getChannelData(channelid)
     .then(function(data) {
       logger.info('insertChannel insert fired:',data);
+      /*查询出频道没有默认频道 则返回不写入redis*/
+      if(!data.id) return;
       epgd.insertChannelInfo(data);
     })
     .catch(function(e) {
@@ -49,6 +51,7 @@ function insertChannelList(channelid) {
 
 /*拿符合redis格式的一个频道数据*/
 function getChannelData(channelid){
+  channelid = parseInt(channelid,10);
   logger.info('getChannelData channelid :' + channelid);
   var defer = q.defer();
       pool.getConnection(function(err,connection){
@@ -162,25 +165,28 @@ function insertChannelRoomList(chid){
   });
 }
 
-function insertSwitchChannelInfo(){
+function insertSwitchChannelInfo() {
   logger.info('insertSwitchChannelInfo enter.');
-  pool.getConnection(function(err,connection){
-    if(err){
-      logger.error('insertSwitchChannelInfo pool.getConnection error :',err);
-    }
-    else {
+  pool.getConnection(function(err, connection) {
+    if (err) {
+      logger.error('insertSwitchChannelInfo pool.getConnection error :', err);
+    } else {
       logger.info('connected as id ' + connection.threadId);
-      var sql = 'SELECT id,channel.order AS chorder FROM channel WHERE defaultRoom IS NOT NULL ORDER BY channel.order DESC,id;';
+      /*按照tag分组查询*/
+      var sql = 'select GROUP_CONCAT(id) from channel where defaultRoom IS NOT NULL GROUP BY tag ORDER BY channel.`order`;';
       connection.query(sql, function(err, rows, fields) {
-        if(err){
-          logger.error('insertSwitchChannelInfo connection.query error :',err);
-        }
-        else {
-          var upid = 0,downid = 0;
-          for(var i = 0;i < rows.length;i ++){
-              upid = (i == 0) ? rows[rows.length - 1].id : rows[i - 1].id;
-              downid = (i == rows.length - 1) ? rows[0].id : rows[i + 1].id;
-              insertUpAndDown(rows[i].id,upid,downid);
+        if (err) {
+          logger.error('insertSwitchChannelInfo connection.query error :', err);
+        } else {
+          for (var r = 0; r < rows.length; r++) {
+            /*每一个cs都是一个tag下的频道id数组*/
+            var cs = rows[r]['GROUP_CONCAT(id)'].split(',');
+            var upid = 0,downid = 0;
+            for (var i = 0; i < cs.length; i++) {
+              upid = (i == 0) ? cs[cs.length - 1] : cs[i - 1];
+              downid = (i == cs.length - 1) ? cs[0] : cs[i + 1];
+              insertUpAndDown(cs[i], upid, downid);
+            }
           }
         }
         connection.release();
