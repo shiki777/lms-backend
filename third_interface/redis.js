@@ -92,7 +92,7 @@ function getDefaultData() {
         }
         else {
           logger.info('connected as id ' + connection.threadId);
-          var sql = 'select channel.id,channel.tag,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag as tag1,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle,domeHorizontal,domeVertical from room LEFT JOIN channel on room.channelId = channel.id';
+          var sql = 'select channel.id,channel.tag,channel.name,channel.charge,channel.price,channel.icon,channel.thumb,channel.desc,channel.defaultRoom,room.id as id1,room.name as name1,room.thumb as thumb1,room.u3dbg,room.desc as desc1,room.charge as charge1,room.price as price1,room.tag as tag1,room.viewAngle,room.controlModel,room.projectStyle,room.eyeStyle,domeHorizontal,domeVertical from room LEFT JOIN channel on room.channelId = channel.id ORDER BY room.order DESC';
           connection.query(sql, function(err, rows, fields) {
             if(err){
               logger.error('getDefaultData connection.query error :',err);
