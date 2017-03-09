@@ -172,12 +172,14 @@ function insertSwitchChannelInfo() {
       logger.error('insertSwitchChannelInfo pool.getConnection error :', err);
     } else {
       logger.info('connected as id ' + connection.threadId);
+      /*按照tag分组查询*/
       var sql = 'select GROUP_CONCAT(id) from channel where defaultRoom IS NOT NULL GROUP BY tag ORDER BY channel.`order`;';
       connection.query(sql, function(err, rows, fields) {
         if (err) {
           logger.error('insertSwitchChannelInfo connection.query error :', err);
         } else {
           for (var r = 0; r < rows.length; r++) {
+            /*每一个cs都是一个tag下的频道id数组*/
             var cs = rows[r]['GROUP_CONCAT(id)'].split(',');
             var upid = 0,downid = 0;
             for (var i = 0; i < cs.length; i++) {
