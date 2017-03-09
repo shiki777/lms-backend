@@ -347,6 +347,7 @@ router.post('/channel/update',function(req,res){
               redis.insertChannel(cid);
               redis.insertChannelList();
               redis.insertChannelRoomList(cid);
+              redis.insertDefaultChannel();
             }
             else if(result[1].affectedRows != discount.length){
               res.status(200).send({code:1,msg:('insert channel_discount.affectedRows != ' + discount.length)});
@@ -357,6 +358,7 @@ router.post('/channel/update',function(req,res){
               redis.insertChannel(cid);
               redis.insertChannelList();
               redis.insertChannelRoomList(cid);
+              redis.insertDefaultChannel();
             }
             connection.release();
           });

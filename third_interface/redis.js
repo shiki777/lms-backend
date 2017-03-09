@@ -320,6 +320,9 @@ function formatDefaultChannelInfo(rows) {
     if (!list[tag]) {
       list[tag] = null;
     }
+    if(r.id == 20){
+      console.log(r)
+    }
     if (!r.charge && !r.charge1) {
       if (list[tag] === null) {
         list[tag] = {
