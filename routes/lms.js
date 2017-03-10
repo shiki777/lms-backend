@@ -440,7 +440,7 @@ router.get('/channel/list',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       /*var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
       + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';*/
-      var sql = 'SELECT name,thumb,icon,id FROM channel' + condition + ';';
+      var sql = 'SELECT name,thumb,icon,id,tag FROM channel' + condition + 'ORDER BY tag DESC;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
