@@ -7,8 +7,8 @@
 .room-item {
     float: left;
     width: 150px;
-    height: 280px;
-    margin: 0 20px;
+    height: 305px;
+    margin: 10px 20px;
 }
 
 .thumb {
@@ -30,6 +30,10 @@
     text-align: center;
     font-size: 18px;
     margin-bottom: 3px;
+    height: 19px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;    
 }
 
 .room-btn {
