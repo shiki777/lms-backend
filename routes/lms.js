@@ -141,6 +141,42 @@ router.post('/admin/register',function(req,res){
     })
 });
 
+/*暴露出去直接注册的接口*/
+router.get('/re', function(req,res) {
+  Users.register('mw@snailgame.net','mw123')
+    .then(function(resbody){
+      pool.getConnection(function(err,connection){
+        if(err){
+          console.log(err);
+          res.status(200).send({code:1,msg:err.message});
+        }
+        else {
+          console.log('connected as id ' + connection.threadId);
+          var sql = 'INSERT INTO user(name,pwd,permission,companyId) VALUES('
+          + pool.escape(resbody.data.username) + ',' + pool.escape(pwd) + ','
+          + pool.escape(2) + ',' + pool.escape(1) + ');';
+          console.log(sql);
+          connection.query(sql, function(err, result) {
+            if(err){
+              console.log(err);
+              res.status(200).send({code:1,msg:err.message});
+            }
+            else if (result.affectedRows == 1) {
+              res.status(200).send({code:0,msg:"register success."});
+            }
+            else {
+              res.status(200).send({code:1,msg:'register failed for insert wrong.'});
+            }
+            connection.release();
+          });
+        }
+      });
+    })
+    .catch(function(errmsg){
+      res.status(200).send({code:1,msg:errmsg});
+    })  
+})
+
 /*此接口用于房间创建时候获取可以当主播的用户列表*/
 router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
