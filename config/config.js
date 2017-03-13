@@ -24,11 +24,19 @@ var config = {
     host:'192.168.5.137',
     port:'3050'
   },
+  redis_cluster : true,
   redis: {
     host: '192.168.5.137',
     port: 6379,
     db: 14,
   },
+  redisCluster : [{
+  port: 6380,
+  host: '127.0.0.1'
+}, {
+  port: 6381,
+  host: '127.0.0.1'
+}],
   chatroom:{
     host:'58.247.47.106',
     port: 8166

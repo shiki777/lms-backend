@@ -4,8 +4,11 @@ var Redis = require("ioredis");
 var config = require('../config/config.js');
 var debug = require('debug')('epgd/redisClient');
 
-// var redisClient = redis.createClient(config.redis.port, config.redis.host);
-var redisClient = new Redis(config.redis);
+if(config.redis_cluster){
+  var redisClient = new Redis.Cluster(config.redisCluster);
+} else {
+  var redisClient = new Redis(config.redis);
+}
 
 redisClient.on("error", function(err) {
   debug("redis address ", config.redis.host, config.redis.port);
