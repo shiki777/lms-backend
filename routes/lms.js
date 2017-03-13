@@ -859,7 +859,7 @@ router.get('/room/list',function(req,res){
       (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
       /*var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
       + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';*/
-      var sql = 'SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ';';
+      var sql = 'SELECT name,id,thumb,living,hostName,channelId AS user FROM room' + condition + ' ORDER BY channelId;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
