@@ -143,6 +143,7 @@ router.post('/admin/register',function(req,res){
 
 /*暴露出去直接注册的接口*/
 router.get('/re', function(req,res) {
+  res.header("Access-Control-Allow-Origin", "*");
   Users.register('mw@snailgame.net','mw123')
     .then(function(resbody){
       pool.getConnection(function(err,connection){
@@ -154,7 +155,7 @@ router.get('/re', function(req,res) {
           console.log('connected as id ' + connection.threadId);
           var sql = 'INSERT INTO user(name,pwd,permission,companyId) VALUES('
           + pool.escape(resbody.data.username) + ',' + pool.escape(pwd) + ','
-          + pool.escape(2) + ',' + pool.escape(1) + ');';
+          + pool.escape(2) + ',' + pool.escape(7) + ');';
           console.log(sql);
           connection.query(sql, function(err, result) {
             if(err){

@@ -24,7 +24,7 @@ var config = {
     host:'192.168.5.137',
     port:'3050'
   },
-  redis_cluster : true,
+  redis_cluster : false,
   redis: {
     host: '192.168.5.137',
     port: 6379,

@@ -20,7 +20,6 @@
     "morgan": "~1.7.0",
     "mysql": "^2.12.0",
     "node-schedule": "^1.2.0",
-    "redis": "^2.6.3",
     "serve-favicon": "~2.3.0"
   },
   "devDependencies": {
