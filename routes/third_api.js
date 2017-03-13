@@ -57,6 +57,38 @@ router.get('/room/info', function(req, res) {
     });
 });
 
+/*tag分类*/
+router.get('/room/list', function(req,res) {
+    res.header("Access-Control-Allow-Origin", "*");
+    pool.getConnection(function(err, connection) {
+        if (err) {
+            res.status(200).jsonp({
+                code: 1,
+                msg: err.message
+            });
+            thirdLogger.error('/room/info db error :' + err.message);
+        } else {
+            //超级管理员可以获取任何房间信息，公司管理员只能获取该公司所有的房间信息，而公司普通用户只能获取该用户所对应的房间信息
+            var r_sql = 'select room.thumb,room.name,channel.tag from room left join channel on room.channelId = channel.id order by channel.tag';
+            connection.query(r_sql, function(err, rows, field) {
+                if (err) {
+                    res.status(200).jsonp({
+                        code: 1,
+                        msg: err.message
+                    });
+                    thirdLogger.error('/room/info query error :' + err.message);
+                } else {
+                    res.status(200).jsonp({
+                        msg : 'ok',
+                        code : 0,
+                        data : rows
+                    });
+                }
+                connection.release();
+            });
+        }
+    });    
+})
 
 /*给苏州网站使用*/
 router.get('/videolist', function(req,res) {
