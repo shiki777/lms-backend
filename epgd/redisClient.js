@@ -1,14 +1,10 @@
 var log4js = require('log4js');
 var logger = log4js.getLogger('epgd');
-var Redis = require("ioredis");
+var Redis = require("redis");
 var config = require('../config/config.js');
 var debug = require('debug')('epgd/redisClient');
 
-if(config.redis_cluster){
-  var redisClient = new Redis.Cluster(config.redisCluster);
-} else {
-  var redisClient = new Redis(config.redis);
-}
+var redisClient = redis.createClient(config.redis.port, config.redis.host);
 
 redisClient.on("error", function(err) {
   debug("redis address ", config.redis.host, config.redis.port);
