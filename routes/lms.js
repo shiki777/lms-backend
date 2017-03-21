@@ -894,8 +894,7 @@ router.get('/room/list',function(req,res){
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' WHERE room.companyId = ' + pool.escape(user.companyId)) : (' WHERE room.id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      var sql = 'select room.name,room.id,room.thumb,room.living,room.hostName,room.channelId,channel.`name` AS cname from room LEFT JOIN channel on room.channelId = channel.id' + condition + ' ORDER BY channelId,room.order DESC;';
-      console.log(sql)
+      var sql = 'select room.name,room.id,room.thumb,room.living,room.hostName,room.channelId,channel.`name` AS cname from room LEFT JOIN channel on room.channelId = channel.id' + condition + ' ORDER BY channel.order DESC,room.order DESC;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -903,6 +902,11 @@ router.get('/room/list',function(req,res){
         }
         else {
           var roomlist = [];
+          /*pagesize999代表输出全部数据*/
+          if(parseInt(req.query.pageSize,10) ==999){
+            res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
+            return;
+          }
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
