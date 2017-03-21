@@ -893,10 +893,9 @@ router.get('/room/list',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
-      (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      /*var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';*/
-      var sql = 'SELECT name,id,thumb,living,hostName,channelId AS user FROM room' + condition + ' ORDER BY channelId;';
+      (' WHERE room.companyId = ' + pool.escape(user.companyId)) : (' WHERE room.id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
+      var sql = 'select room.name,room.id,room.thumb,room.living,room.hostName,room.channelId,channel.`name` AS cname from room LEFT JOIN channel on room.channelId = channel.id' + condition + ' ORDER BY channelId,room.order DESC;';
+      console.log(sql)
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
