@@ -1,6 +1,6 @@
 var log4js = require('log4js');
 var logger = log4js.getLogger('epgd');
-var Redis = require("redis");
+var redis = require("redis");
 var config = require('../config/config.js');
 var debug = require('debug')('epgd/redisClient');
 
