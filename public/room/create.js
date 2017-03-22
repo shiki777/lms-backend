@@ -2,6 +2,8 @@
 
 var id = 1;
 
+var submitting = false;
+
 var vm = new Vue({
     el : '#page',
     data : {
@@ -45,6 +47,9 @@ var vm = new Vue({
             this.removeStrategy(e.id);
         },
         submit : function(e) {
+            if(submitting){
+                return;
+            }
             var data = this.formatData();
             if(!data.channelId){
                 alert('请选择默认频道！');
@@ -60,6 +65,7 @@ var vm = new Vue({
             }
             var url = window.hosturl + '/lms/room/add';
             var self = this;
+            submitting = true;
             Vue.http.post(url,data)
             .then(function(data) {
                 if(data.body.code == 0){
@@ -70,10 +76,12 @@ var vm = new Vue({
                     }, 1500);
                 } else {
                     alert('提交失败：' + data.body.msg);
+                    submitting = false;
                 }
 
             }, function(e) {
                 alert('提交失败');
+                submitting = false;
             })           
             return false;
         },
