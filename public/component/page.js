@@ -12,8 +12,8 @@ Vue.component('pagination', {
         load: function() {
             var self = this;
             var url = this.url;
-            /*配合后台，第一页是1*/
             Vue.http.jsonp(url, {
+                /*配合后台，第一页是1*/
                     params: {page : this.currentPage,pageSize : this.pageSize}
                 })
                 .then(this.onDataLoaded, this.onLoadFail);

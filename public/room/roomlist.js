@@ -3,22 +3,43 @@
 var vm = new Vue({
     el : '#page',
     data : {
-        rooms : [],
-        url : window.hosturl + '/lms/room/list'
+        rooms : {},
+        channels : [],
+        url : window.hosturl + '/lms/room/list',
+        selectChannel : 'all'
+    },
+    computed : {
+        filterChannels : function() {
+            if(this.selectChannel == 'all'){
+                return this.channels;
+            }
+            return [this.selectChannel];
+        }
     },
     methods : {
         pageLoaded : function(data) {
-            this.rooms = this.formatRooms(data.data);
+            formatedData = this.formatRooms(data.data);
+            this.rooms = formatedData.rooms;
+            this.channels = formatedData.channels;
         },
         formatRooms : function(data) {
-            var res = [];
+            /*对象key需要排序，所以要把频道名字单独排序*/
+            var res = {
+                rooms :{},
+                channels : []
+            };
             data.map(function(item) {
-                res.push({
+                if(!res.rooms[item.cname]){
+                    res.rooms[item.cname] = [];
+                    res.channels.push(item.cname);
+                }
+                res.rooms[item.cname].push({
                   name : item.name,
                   thumb : item.thumb,
                   living : item.living,
                   user : item.user,
                   id : item.id,
+                  cname : item.cname,
                   link : window.hosturl + '/lms/page/roomupdate?id=' + item.id
                 });
             })
