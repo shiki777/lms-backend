@@ -477,7 +477,7 @@ router.get('/channel/list',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       /*var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
       + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';*/
-      var sql = 'SELECT name,thumb,icon,id,tag FROM channel' + condition + ' ORDER BY tag DESC;';
+      var sql = 'SELECT name,thumb,icon,id,tag FROM channel' + condition + ' ORDER BY tag DESC, channel.order DESC;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -485,6 +485,11 @@ router.get('/channel/list',function(req,res){
         }
         else {
           var chanlist = [];
+          /*pagesize999代表输出全部数据*/
+          if(parseInt(req.query.pageSize,10) ==999){
+            res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
+            return;
+          }          
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
