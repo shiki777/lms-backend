@@ -1,17 +1,28 @@
 <link rel="stylesheet" href="../../channel/channellist.css">
         <div class="ui middle aligned center aligned">
-            <div class="wrap">   
-                <div class="room-item" v-for="channel in channels">
-                    <a :href="channel.link" target="_blank">
-                        <img :src="channel.thumb" class="thumb">
-                        <div class="room-name">{{channel.name}}</div>
-                        <div class="room-name">标签:{{channel.tag}} Id:{{channel.id}}</div>
-                    </a>                    
-                </div>                                      
-                <div class="clear"></div>                               
+            <div class="wrap">
+                <h1 class="ui header aligned">频道列表</h1>
+                <div>
+                频道选择：
+                    <select class="ui dropdown" v-model="selectTag">
+                        <option value="all">全部标签</option>
+                        <option v-for="tag in tags" v-bind:value="tag">{{tag}}</option>
+                    </select>
+                </div>            
+                <div class="tag-item" v-for="tag in tagsFilter">
+                <div class="ui header aligned" style="margin-top:30px;">标签名：{{tag}}</div>
+                    <div class="room-item" v-for="channel in channels[tag]">
+                        <a :href="channel.link" target="_blank">
+                            <img :src="channel.thumb" class="thumb">    
+                            <div class="room-name">{{channel.name}}</div>
+                            <div class="room-name">标签:{{channel.tag}} Id:{{channel.id}}</div>
+                        </a>
+                    </div>
+                    <div class="clear"></div>
+                </div>
             </div>
-            <div class="page-wrap">
-                <pagination :url="url" size="12" @dataloaded="pageLoaded"></pagination>
+            <div class="page-wrap" style="display: none;">
+                <pagination :url="url" size="999" @dataloaded="pageLoaded"></pagination>
             </div>
         </div>
          <script><%- currentmsg %></script>
