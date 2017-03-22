@@ -55,8 +55,9 @@
                       window.location.reload();
                     },1000)
                 } else {
-                    alert('注册失败请重试');
+                    alert(data.body.msg);
                 }
+
             }, function(e) {
                 alert('注册失败');
             })               
