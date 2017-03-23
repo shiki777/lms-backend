@@ -22,6 +22,7 @@ function room_add_del(roomId,isAdd){
       giftLogger.info('deleteroom - roomid:' + body.rid);
     }
     request(options, function(err,res,resbody) {
+      resbody = resbody || {};
         if(err){
             defer.reject(err);
             if(isAdd){

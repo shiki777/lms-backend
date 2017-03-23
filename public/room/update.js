@@ -44,6 +44,7 @@ function formatRoomData(data) {
         order : data.order,
         tag : data.tag,
         users : data.users,
+        originUsers : JSON.parse(JSON.stringify(data.users)), //原始用户，用于提交时比较出差异
         price : data.chargeStrategy.price || 100,
         desc : data.desc,
         thumb : data.thumb,
@@ -58,7 +59,8 @@ function formatRoomData(data) {
         viewAngle : data.viewAngle,
         controlModel : data.controlModel + '',
         projectStyle : data.projectStyle + '',
-        eyeStyle : data.eyeStyle + ''
+        eyeStyle : data.eyeStyle + '',
+        modifyUser : false
     }
 }
 
@@ -154,8 +156,11 @@ var vm = new Vue({
                 viewAngle : this.viewAngle,
                 controlModel : parseInt(this.controlModel,10),
                 projectStyle : parseInt(this.projectStyle,10),
-                eyeStyle : parseInt(this.eyeStyle,10)                
+                eyeStyle : parseInt(this.eyeStyle,10)
             };
+            if(this.modifyUser){
+                res.users = this.getHostDif();
+            }
             return res;
         },
         getChargeStrategy : function() {
@@ -204,8 +209,84 @@ var vm = new Vue({
                     charge.del = true;
                 }
             })
+        },
+        onHostAdd : function() {
+            $('.small.modal')
+            .modal('show');
+        },
+        delHost : function(user) {
+            if(this.users.length <= 1){
+                alert('删除后主播为空，请先增加一位主播再删除！');
+                return;
+            }
+            this.removeUser(user);
+        },
+        removeUser : function(user) {
+            var index = this.getUserIndex(user.id);
+            this.users.splice(index,1);
+            this.getUserList().addListUser(user);
+        },
+        getUserIndex : function(id) {
+            var index = -1;
+            this.users.map(function(v,ind) {
+                if(index == -1 && v.id == id){
+                    index = ind;
+                }
+            })
+            return index;
+        },
+        getUserList : function() {
+            return this.$refs.userlist;
+        },
+        resetUserList : function() {
+            this.getUserList().resetSelectUser();
+        },
+        updateUserList : function() {
+            this.modifyUser = true;
+            var selectedUser = this.getUserList().getSelectedUsers();
+            var self = this;
+            selectedUser.map(function(v) {
+                self.users.push(v);
+            })
+            this.getUserList().updateSelected();
+        },
+        /*找出提交时候主播的修改*/
+        getHostDif : function() {
+            var res = {
+                add : [],
+                del : []
+            };
+            var self = this;
+            this.users.map(function(u) {
+                if(!self.isHostinOrigin(u)){
+                    res.add.push(u.id);
+                }
+            })
+            this.originUsers.map(function(u) {
+                if(!self.isHostinSelect(u)){
+                    res.del.push(u.id);
+                }
+            });
+            return res;
+        },
+        isHostinOrigin: function(user) {
+            var res = false;
+            this.originUsers.map(function(u) {
+                if(!res && u.id == user.id){
+                    res = true;
+                }
+            });
+            return res;
+        },
+        isHostinSelect: function(user) {
+            var res = false;
+            this.users.map(function(u) {
+                if(!res && u.id == user.id){
+                    res = true;
+                }
+            });
+            return res;
         }
-
     }
 });    
 }

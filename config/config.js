@@ -16,6 +16,14 @@ var config = {
     database: 'lms2',
     multipleStatements : true
   },
+  db_mysql: {
+    host: '127.0.0.1',
+    port: '3306',
+    user: 'root',
+    password: '',
+    database: 'lms2',
+    multipleStatements : true
+  },  
   push_stream: {
     host: '0.0.0.0',
     port: 3010,
@@ -33,7 +41,7 @@ var config = {
     host:'58.247.47.106',
     port: 8166
   },
-  host : 'http://58.247.47.106:3000'
+  host : 'http://127.0.0.1:3000'
 };
 
 module.exports = config;

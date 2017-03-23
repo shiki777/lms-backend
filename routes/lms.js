@@ -709,6 +709,10 @@ router.post('/room/update',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
+      var updateHosts = req.query.users;
+      if(updateHosts){
+        updateUser(connection,updateHosts,req.query.id);
+      }
       //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
@@ -975,5 +979,19 @@ router.options('/channel/delete', function(req, res) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
   res.status(200).end();
 });
+
+function updateUser(connection, users,roomid) {
+  var addUsers = users.add;
+  var delUsers = users.del;
+  var addSql = 'INSERT INTO `room_user`(roomId,userId) VALUES ';
+  var addValues = '('
+  addUsers.map(function(k) {
+    addUsers += pool.escape(roomid) + ',' + pool.escape(k);
+  });
+  addUsers + ');';
+  var delSql = 'DELETE FROM `room_user` where userId IN (' + delUsers.join(',') + ')'; 
+  console.log(addSql);
+  console.log(delSql);
+}
 
 module.exports = router;
