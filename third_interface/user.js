@@ -38,9 +38,6 @@ function register(name,pwd){
 
 function authentication(name,pwd){
   var defer = q.defer();
-  /*test code*/
-  defer.resolve();
-  return defer.promise;
   if(!name || !pwd){defer.reject('name or pwd == null.');}
   else {
     var pwd_md5 = crypto.createHash('md5').update(pwd).digest('hex');
