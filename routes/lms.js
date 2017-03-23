@@ -709,7 +709,7 @@ router.post('/room/update',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
-      var updateHosts = req.query.users;
+      var updateHosts = req.body.users;
       if(updateHosts){
         updateUser(connection,updateHosts,req.query.id);
       }
@@ -984,14 +984,18 @@ function updateUser(connection, users,roomid) {
   var addUsers = users.add;
   var delUsers = users.del;
   var addSql = 'INSERT INTO `room_user`(roomId,userId) VALUES ';
-  var addValues = '('
+  var addValues = [];
   addUsers.map(function(k) {
-    addUsers += pool.escape(roomid) + ',' + pool.escape(k);
+    addValues.push('(' + pool.escape(roomid) + ',' + pool.escape(k) + ')');
   });
-  addUsers + ');';
+  addSql += addValues.join(',') + ';';
   var delSql = 'DELETE FROM `room_user` where userId IN (' + delUsers.join(',') + ')'; 
-  console.log(addSql);
-  console.log(delSql);
+  if(addUsers.length > 0){
+    connection.query(addSql);
+  }
+  if(delUsers.length > 0){
+    connection.query(delSql);
+  }
 }
 
 module.exports = router;

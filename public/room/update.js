@@ -102,7 +102,7 @@ var vm = new Vue({
                 Vue.http.delete(delurl, {params : {id : roomid}})
                     .then(function(data) {
                         if(data.body.code == 0){
-                            $('.ui.modal').modal('show');
+                            $('.ui.modal.sub').modal('show');
                     window.setTimeout(function() {
                         location.href= '/lms/page/roomlist';
                     }, 1500);
@@ -123,7 +123,7 @@ var vm = new Vue({
             Vue.http.post(url,body,{params : {id : roomid}})
             .then(function(data) {
                 if(data.body.code == 0){
-                    $('.ui.modal')
+                    $('.ui.modal.sub')
                     .modal('show'); 
                     window.setTimeout(function() {
                         window.location.reload();
@@ -219,6 +219,7 @@ var vm = new Vue({
                 alert('删除后主播为空，请先增加一位主播再删除！');
                 return;
             }
+            this.modifyUser = true;
             this.removeUser(user);
         },
         removeUser : function(user) {
