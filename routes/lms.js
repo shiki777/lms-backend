@@ -208,6 +208,35 @@ router.get('/user/list',function(req,res){
   });
 });
 
+/*此接口用于主播列表页*/
+router.get('/host/list',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
+    return res.status(400).jsonp({code:1,msg:'user-list failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(200).jsonp({code:1,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'select ut.`name`as username,rut.roomId as roomid,rt.`name` as roomname from user ut left join room_user rut on ut.id = rut.userId LEFT JOIN room rt on rut.roomId = rt.id where ut.companyId = ?';
+      connection.query(sql,[user.companyId], function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(200).jsonp({code:1,msg:err.message});
+        }
+        else {
+          res.status(200).jsonp({code:0,msg:'get user list success.',list:rows});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
 //可以一次插入多条记录，形式如：insert into table(……) values(……),(……),(……)……
 //在插入操作时可以据affectedRows知道影响的行的数目，而且通过insertId知道第一个记录生成的id
 /*需要考虑一个问题，不论是频道的操作还是房间的操作，对用户都有鉴权需求，特别是在删除、修改、查询上面，
@@ -980,6 +1009,7 @@ router.options('/channel/delete', function(req, res) {
   res.status(200).end();
 });
 
+/*更新用户没有与response同步，并且没有做事务性*/
 function updateUser(connection, users,roomid) {
   var addUsers = users.add;
   var delUsers = users.del;

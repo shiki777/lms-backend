@@ -40,7 +40,7 @@
                 if(data.body.code == 0){
                     location.href= window.hosturl + '/lms/page/index';
                 } else {
-                    alert('登录失败请重试');
+                    alert(data.body.msg);
                 }
 
             }, function(e) {
