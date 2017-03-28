@@ -67,6 +67,35 @@ function authentication(name,pwd){
   return defer.promise;
 }
 
+function modifyPwd(pw,new_pw,name) {
+  var defer = q.defer();
+  var pwd_md5 = crypto.createHash('md5').update(pwd).digest('hex');
+  var new_pwd_md5 = crypto.createHash('md5').update(new_pw).digest('hex');
+  var path = '/app/account/modify';
+  var body = {username : name,password : md5To16(pwd_md5),type : 'MD5',password_new : md5To16(new_pwd_md5)};
+  userLogger.info('login - modifyPWD:' + body.username + 'password:' + body.password + 'new PWD:' + body.password_new);
+  var options = {
+    url : 'http://' + config.user_system.host + ':' + config.user_system.port + path,
+    method : 'POST',
+    json : true,
+    body : body
+  };  
+  request(options, function(err,res,resbody) {
+    if(err){
+      defer.reject(err);
+      userLogger.error('modify request failed - user:' + body.username + 'error msg is ' + err);
+    } else {
+      if(resbody.code == 0){
+        defer.resolve(resbody);
+      } else {
+        defer.reject(resbody.message);
+      }
+      userLogger.info('modify request success - user:' + body.username + ' code is ' + resbody.code + ' msg is ' + resbody.message);
+    }
+  });   
+  return defer.promise;
+}
+
 function userinfo(token){
   var defer = q.defer();
   if(!token){defer.reject('token == null.');}
@@ -108,5 +137,6 @@ function md5To16(data_32){
 module.exports = {
   register  : register,
   authentication : authentication,
-  userinfo : userinfo
+  userinfo : userinfo,
+  modifyPwd : modifyPwd
 };

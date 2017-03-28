@@ -208,6 +208,35 @@ router.get('/user/list',function(req,res){
   });
 });
 
+/*修改密码，明文传输，影响不大*/
+router.get('/user/modifypwd', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
+    return res.status(400).jsonp({code:1,msg:'user-list failed for no login or have no right.'});
+  }
+  var username = req.query.username;
+  var pw = req.query.pw;
+  var npw = req.query.npw;
+  Users.modifyPwd(pw,npw,username)
+  .then(function() {
+    pool.getConnection(function(err,connection) {
+      connection.query('UPDATE users SET pwd = ?',[npw], function(err,rows) {
+        if(err){
+          console.log(err);
+          res.status(200).jsonp({code:2,msg:err.message});
+        } else {
+          res.status(200).jsonp({code : 0, msg : 'ok'});
+        }
+        connection.release();
+      });
+    });
+  })
+  .catch(function(err) {
+    res.status(200).jsonp({code : 11,msg : err})
+  });
+});
+
 /*此接口用于主播列表页*/
 router.get('/host/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
@@ -679,6 +708,31 @@ router.post('/room/add',function(req,res){
     })
 });
 
+/*添加单个主播*/
+router.get('/room/addhost', function(req,res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.roomid){return res.status(200).send({code:1,msg:'addhost failed for no roomid.'});}
+  if(!req.query.userid){return res.status(200).send({code:2,msg:'addhost failed for no userid.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除房间
+    return res.status(401).send({code:1,msg:'room-addhost failed for no login or have no right.'});
+  };
+  pool.getConnection(function(err,connection) {
+    if(err){
+      res.status(200).send({code : 3,msg : err.msg});
+    } else {
+      connection.query('INSERT INTO room_user SET ?',{roomId : req.query.roomid,userId : req.query.userid}, function(err,result) {
+        if(err){
+          res.status(200).send({code : 4,msg : err});
+        } else {
+          res.status(200).send({code : 0,msg : 'ok'});
+        }
+      });
+    }
+    connection.release();
+  });
+})
+
 router.delete('/room/del',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(200).send({code:1,msg:'room-del failed for no id.'});}
@@ -688,7 +742,6 @@ router.delete('/room/del',function(req,res){
   }
   pool.getConnection(function(err,connection){
     if(err){
-      console.log(err);
       res.status(200).send({code:1,msg:err.message});
     }
     else {
@@ -958,7 +1011,6 @@ router.get('/room/list',function(req,res){
     }
   });
 });
-
 
 router.options('/login', function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
