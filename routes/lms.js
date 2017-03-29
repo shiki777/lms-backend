@@ -178,6 +178,17 @@ router.get('/re', function(req,res) {
     })  
 })
 
+router.post('/user/email', function(req,res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  Users.sendCodetoEmail(req.body.email,req.body.name)
+    .then(function() {
+      res.status(200).send({code : 0,msg : 'ok'});
+    })
+    .catch(function(e) {
+      res.status(200).send({code : 1, msg : e});
+    })
+})
+
 /*此接口用于房间创建时候获取可以当主播的用户列表*/
 router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
@@ -217,11 +228,11 @@ router.get('/user/modifypwd', function(req, res) {
   }
   var username = req.query.username;
   var pw = req.query.pw;
-  var npw = req.query.npw;
-  Users.modifyPwd(pw,npw,username)
+  var code = req.query.code;
+  Users.modifyPwd(pw,username,code)
   .then(function() {
     pool.getConnection(function(err,connection) {
-      connection.query('UPDATE users SET pwd = ?',[npw], function(err,rows) {
+      connection.query('UPDATE user SET pwd = ? where name = ?',[pw,username], function(err,rows) {
         if(err){
           console.log(err);
           res.status(200).jsonp({code:2,msg:err.message});
@@ -1055,6 +1066,12 @@ router.options('/room/update', function(req, res) {
   res.status(200).end();
 });
 router.options('/channel/delete', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+router.options('/user/email', function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
