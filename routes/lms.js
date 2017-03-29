@@ -26,7 +26,7 @@ router.post('/login',function(req,res){
         }
         else {
           console.log('connected as id ' + connection.threadId);
-          var sql = 'SELECT * FROM user WHERE name = ' + pool.escape(name) + ';';
+          var sql = 'SELECT user.name as name,user.permission as permission,company.name as cname FROM user LEFT JOIN company on user.companyId = company.id WHERE user.name = ' + pool.escape(name) + ';';
           connection.query(sql, function(err, rows, fields) {
             if(err){
               console.log(err);

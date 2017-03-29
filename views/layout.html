@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title><%- title %></title>
+    <link rel="icon" href="data:;base64,=">
     <link rel="stylesheet" href="../../lib/css/semantic.min.css"></head>
     <link rel="stylesheet" href="../../stylesheets/common/common.css">
     <link rel="stylesheet" href="../../stylesheets/common/paganation.css">
@@ -20,6 +21,11 @@
             <div class="menu">
                 <h2><span>直播管理系统后台</span></h2>
                 <hr class="line-mod">
+                <div class="user">
+                    尊敬的<%- cname %>用户：
+                    <%- user %>
+                </div>
+                
                 <dl class="menu-list def-scroll keyboard-focus-obj" id="menu">
                 </dl>
             </div>
