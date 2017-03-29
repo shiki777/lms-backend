@@ -1,0 +1,51 @@
+<link rel="stylesheet" href="../../host/index.css">  
+<div class="wrap">
+<div class="ui segments">
+  <div class="ui segment" v-for="user in users">
+    <span class="username">主播：{{user.username}}</span>
+    <a v-if="user.roomid" class="roomname" :href="getLink(user.roomid)" target="_blank">开播房间：{{user.roomname}}(房间id {{user.roomid}})</a>
+    <div v-else class="roomname">该主播没有直播房间</div>
+    <div class="modifybtn">
+      <div class="ui primary button charge-btn" @click="modifyPwd(user)">修改密码</div>
+    </div>
+  </div>
+</div>
+<!-- 修改密码popup -->
+<div class="ui modal pop">
+  <div class="image content">
+    <div class="description">
+      <div class="ui header">用户密码修改</div>
+      <div class="ui black button" @click="sendEmail">发送验证码到邮箱</div>
+      <div class="input-line">
+        <div class="ui input">请输入验证码<input type="text" v-model="icode"></div>
+      </div>
+      <div class="input-line">
+        <div class="ui input">请输入新密码<input type="password" v-model="newpw"></div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+
+    <div class="ui black deny button" @click="resetInput">取消</div>
+    <div class="ui positive button" @click="submitPwd">修改</div>
+  </div>
+  <!-- 修改成功popup -->
+  <div class="ui modal suc">
+    <div class="image content">
+      <div class="description">
+        <div class="ui header">密码修改成功！</div>
+      </div>
+    </div>   
+  </div>
+  <!-- 修改失败popup -->
+  <div class="ui modal fail">
+    <div class="image content">
+      <div class="description">
+        <div class="ui header">密码修改失败！{{errmsg}}</div>
+      </div>
+    </div>   
+  </div>   
+  </div>
+  <script><%- currentmsg %></script>
+  <script><%- sidemsg %></script>  
+  <script src="../../host/index.js"></script>

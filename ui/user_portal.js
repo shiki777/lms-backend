@@ -10,7 +10,8 @@ var rolePage = {
         '房间创建页' : '/lms/page/roomcreate',
         '频道创建页' : '/lms/page/channelcreate',
         '视频创建页' : '/lms/page/videocreate',
-        '视频列表页' : '/lms/page/videolist'
+        '视频列表页' : '/lms/page/videolist',
+        '主播列表页' : '/lms/page/hostlist'
     },
     4 : {
         '房间列表页' : '/lms/page/roomlist',
@@ -19,7 +20,8 @@ var rolePage = {
         '房间创建页' : '/lms/page/roomcreate',
         '频道创建页' : '/lms/page/channelcreate',
         '视频创建页' : '/lms/page/videocreate',
-        '视频列表页' : '/lms/page/videolist'      
+        '视频列表页' : '/lms/page/videolist',
+        '主播列表页' : '/lms/page/hostlist'    
     }
 }
 
@@ -80,6 +82,10 @@ function getSide(role) {
             g : {
                 name : '视频列表',
                 link : '/lms/page/videolist'
+            },
+            h : {
+                name : '主播列表',
+                link : '/lms/page/hostlist'
             }
         });
     }

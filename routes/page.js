@@ -152,7 +152,6 @@ router.get('/videoupdate', function(req, res) {
 
 router.get('/videolist', function(req, res) {
   var user = req.session.user || {permission : 1};
-  console.log(user)
   var isSuper = user.permission == 8 ? true : false;
   var html = '';
   res.render('./video/videolist',{
@@ -163,5 +162,18 @@ router.get('/videolist', function(req, res) {
     currentmsg : 'var currentUrl = "/lms/page/videolist"'
   });
 });
+
+router.get('/hostlist', function(req,res) {
+  var user = req.session.user || {permission : 1};
+  var isSuper = user.permission == 8 ? true : false;
+  var html = '';
+  res.render('./host/hostlist',{
+    message : html,
+    user : user.name,
+    title : '主播列表',
+    sidemsg : 'var side =' + portal.getSide(user.permission),
+    currentmsg : 'var currentUrl = "/lms/page/hostlist"'
+  });  
+})
 
 module.exports = router;

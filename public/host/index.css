@@ -1,0 +1,51 @@
+body {
+  background-color: #DADADA;
+}
+body > .grid {
+  height: 100%;
+}
+.image {
+  margin-top: -100px;
+}
+.column {
+  max-width: 450px;
+}
+
+.wrap {
+    width: 800px;
+    margin: 0 auto;
+}
+
+.username {
+    width: 230px;
+    display: inline-block;
+    overflow: hidden;
+    height: 18px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.roomname {
+    width: 400px;
+    margin-left: 10px;
+    display: inline-block;
+    overflow: hidden;
+    height: 18px;
+    text-overflow: ellipsis;
+     white-space: nowrap;
+}
+
+.modifybtn {
+    width: 120px;
+    display: inline-block;
+}
+
+.input-line {
+    height: 38px;
+    line-height: 38px;
+    margin : 5px 0;
+}
+
+.input-line input {
+    margin-left: 3px !important;
+}
