@@ -137,9 +137,9 @@ Vue.use(VueI18n)
 
 
 // set lang
-Vue.config.lang = 'ja'
+Vue.config.lang = 'jp'
 
 var i18n = new VueI18n({
-    locale: 'ja',
+    locale: Vue.config.lang,
     messages: messages
 });
