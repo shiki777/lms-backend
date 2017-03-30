@@ -3,8 +3,10 @@
 var id = 1;
 
 var submitting = false;
+var l = Vue.config.lang;
 
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
     data : {
         name : '',
@@ -14,6 +16,8 @@ var vm = new Vue({
         price : 100,
         desc : '',
         thumb : '',
+        thumbstr : window.messages[l].message.thumb,
+        u3dstr : window.messages[l].message.u3d,
         u3dbg : '',
         dependencyCharge : 0,
         chargeStrategy  : [{
@@ -52,15 +56,15 @@ var vm = new Vue({
             }
             var data = this.formatData();
             if(!data.channelId){
-                alert('请选择默认频道！');
+                alert(getAlertMsg('morenpindao'));
                 return;
             }
             if(!data.name){
-                alert('请填写名字！');
+                 alert(getAlertMsg('roomName'));
                 return;
             }
             if(!data.userid.length) {
-                alert('请选择主播！');
+                alert(getAlertMsg('host'));
                 return;
             }
             var url = window.hosturl + '/lms/room/add';
@@ -75,12 +79,12 @@ var vm = new Vue({
                          location.href= '/lms/page/roomlist';
                     }, 1500);
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert(window.messages[l].message['submit'] + window.messages[l].message['fail'] + ' : ' + data.body.msg);
                     submitting = false;
                 }
 
             }, function(e) {
-                alert('提交失败');
+                alert(window.messages[l].message['submit'] + window.messages[l].message['fail']);
                 submitting = false;
             })           
             return false;
@@ -160,7 +164,15 @@ var vm = new Vue({
         }
 
     }
-});
+})
+
+function getAlertMsg(role) {
+    console.log(role)
+    if(l == 'jp'){
+        return window.messages[l].message[role] + window.messages[l].message['select'];
+    }
+    return window.messages[l].message['select'] + window.messages[l].message[role];
+}
 
 function getId() {
     return id++;
