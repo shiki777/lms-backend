@@ -4,7 +4,7 @@
       <div class="ui segment" v-for="user in users">
         <span class="username">{{$t("message.userNmae")}}：{{user.username}}</span>
         <a v-if="user.roomid" class="roomname" :href="getLink(user.roomid)" target="_blank">
-          {{$t("message.roomName")}}：{{user.roomname}}(房间id {{user.roomid}})
+          {{$t("message.roomName")}}：{{user.roomname}}({{$t("message.rr")}}id {{user.roomid}})
         </a>
         <div v-else class="roomname">{{$t("message.noroom")}}</div>
         <div class="modifybtn">
