@@ -1,11 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var portal = require('../ui/user_portal');
+var titleMsg = require('../ui/title');
 router.get('/login', function(req,res) {
   var isSuper = req.query.reg ? true : false;
   res.render('./login/login',{
     message : 'var isSuper = ' + isSuper,
-    title : '登录',
+    title : titleMsg.getTitle('/login'),
     user : '1',
     cname : '1'
   });
@@ -24,7 +25,7 @@ router.get('/index', function(req, res) {
   var user = req.session.user || {permission : 1};
   res.render('./user/portal',{
     pagelist : portal.renderPortal(user.permission),
-    title : '后台首页',
+    title : titleMsg.getTitle('/index'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     user : user.name,
     cname : user.cname,
@@ -39,7 +40,7 @@ router.get('/register', function(req,res) {
     message : 'var isSuper = ' + isSuper,
     user : user.name,
     cname : user.cname,
-    title : '注册',
+    title : titleMsg.getTitle('/register'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/register"'
   });
@@ -55,7 +56,7 @@ router.get('/channelcreate', function(req,res) {
     user : user.name,
     cname : user.cname,
     sidemsg : 'var side =' + portal.getSide(user.permission),
-    title : '频道创建',
+    title : titleMsg.getTitle('/channelcreate'),
     currentmsg : 'var currentUrl = "/lms/page/channelcreate"'
   });
 });
@@ -69,7 +70,7 @@ router.get('/channelupdate', function(req,res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '频道修改',
+    title : titleMsg.getTitle('/channelupdate'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/channelupdate"'
   });
@@ -84,7 +85,7 @@ router.get('/channellist', function(req,res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '频道列表',
+    title : titleMsg.getTitle('/channellist'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/channellist"'
   });
@@ -99,7 +100,7 @@ router.get('/roomcreate', function(req,res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '房间创建',
+    title : titleMsg.getTitle('/roomcreate'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/roomcreate"'
   });
@@ -114,7 +115,7 @@ router.get('/roomupdate', function(req, res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '房间修改',
+    title : titleMsg.getTitle('/roomupdate'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/roomupdate"'
   });
@@ -129,7 +130,7 @@ router.get('/roomlist', function(req, res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '房间列表',
+    title : titleMsg.getTitle('/roomlist'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/roomlist"'
   });
@@ -143,7 +144,7 @@ router.get('/videocreate', function(req, res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '创建视频',
+    title : titleMsg.getTitle('/videocreate'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/videocreate"'
   });
@@ -157,7 +158,7 @@ router.get('/videoupdate', function(req, res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '创建视频',
+    title : titleMsg.getTitle('/videoupdate'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/videoupdate"'
   });
@@ -171,7 +172,7 @@ router.get('/videolist', function(req, res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '创建视频',
+    title : titleMsg.getTitle('/videolist'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/videolist"'
   });
@@ -185,7 +186,7 @@ router.get('/hostlist', function(req,res) {
     message : html,
     user : user.name,
     cname : user.cname,
-    title : '主播列表',
+    title : titleMsg.getTitle('/hostlist'),
     sidemsg : 'var side =' + portal.getSide(user.permission),
     currentmsg : 'var currentUrl = "/lms/page/hostlist"'
   });  

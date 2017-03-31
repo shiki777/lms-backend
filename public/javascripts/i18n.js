@@ -101,7 +101,9 @@ var messages = {
             receivesuc : '验证码获取成功，请去邮箱查看',
             receivefail : '往该邮箱发送验证码失败！',
             noroom : '该用户无房间',
-            rr : '房间'
+            rr : '房间',
+            zunjin : '尊敬的',
+            userr : '用户'
         }
     },
     jp : {
@@ -206,7 +208,9 @@ var messages = {
             receivesuc : '検証コード取得成功、郵便箱に行ってください',
             receivefail : 'このメールには検証コードの失敗を送信する！',
             noroom : 'ユーザーは部屋がない',
-            rr : '部屋'                        
+            rr : '部屋',
+            zunjin : '尊敬の',
+            userr : 'ユーザー'                         
         }
     }
 };

@@ -1,11 +1,6 @@
 /*服务端渲染首页对象，管理对应权限能看到的页面*/
 
-var LANG = {
-    cn : 'CN',
-    jp : 'JP'
-};
-
-var lang = LANG['jp']
+var lang = require('../config/config').lang;
 
 var rolePageCN = {
     1 : {
@@ -14,7 +9,7 @@ var rolePageCN = {
     },
     2 : {
         '房间列表页' : '/lms/page/roomlist',
-        'チャンネルリスト页' : '/lms/page/channellist',
+        '频道列表页' : '/lms/page/channellist',
         '注册页' : '/lms/page/register',
         '房间创建页' : '/lms/page/roomcreate',
         '频道创建页' : '/lms/page/channelcreate',
