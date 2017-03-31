@@ -80,7 +80,7 @@ var vm = new Vue({
             return this.living ? 'block' : 'none';
         },
         roomStatus : function() {
-            return this.living ? 'window.messages[l].message.living' : 'window.messages[l].message.noliving';
+            return this.living ? window.messages[l].message.living : window.messages[l].message.noliving;
         }
     },
     methods : {
