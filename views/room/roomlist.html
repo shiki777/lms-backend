@@ -20,10 +20,10 @@
                                 <div class="room-status" :class="{show : room.living, unshow : !room.living}">{{$t("message.living")}}</div>
                                 <div class="room-status" :class="{show : !room.living, unshow : room.living}">{{$t("message.noliving")}}</div>
                                 <div class="room-btn">
-                                    <div :roomid="room.id" class="negative ui button delete-btn" @click="onDeleteBtnClick">{{$t("message.roomdelete")}}</div>
+                                    <div :roomid="room.id" class="negative ui button delete-btn" @click.prevent="onDeleteBtnClick(channel,$event)">{{$t("message.roomdelete")}}</div>
                                 </div>
                                 <div class="room-btn" :class="{show : room.living, unshow : !room.living}">
-                                    <div :roomid="room.id" class="negative ui button delete-btn" @click="onCloseBtnClick">{{$t("message.closeliving")}}</div>
+                                    <div :roomid="room.id" class="negative ui button delete-btn" @click.prevent="onCloseBtnClick(channel,$event)">{{$t("message.closeliving")}}</div>
                                 </div>
                             </a>
                         </div>

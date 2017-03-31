@@ -37,6 +37,10 @@ var messages = {
             closeliving : '关闭直播',
             roommodify : '修改房间',
             roomdelete : '删除直播房间',
+            roomlist : '房间列表',
+            pindaoxuanze : '频道选择',
+            quanbupindao : '全部频道',
+            pindaoming : '频道名',
             livingstatus : '直播状态',
             jcprice : '基础定价',
             yuanyue : '元/月',
@@ -109,6 +113,10 @@ var messages = {
             closeliving : '実況をやめる',
             roommodify : '部屋を変える',
             roomdelete : '部屋を削除',
+            roomlist : '部屋リスト',
+            pindaoxuanze : 'チャンネルを選択',
+            quanbupindao : '全部チャンネル',
+            pindaoming : 'チャンネル名',            
             livingstatus : '中継中',
             jcprice : '基本価格',
             yuanyue : '元/月',
@@ -149,7 +157,7 @@ Vue.use(VueI18n)
 
 
 // set lang
-Vue.config.lang = 'jp'
+Vue.config.lang = 'cn'
 
 var i18n = new VueI18n({
     locale: Vue.config.lang,
