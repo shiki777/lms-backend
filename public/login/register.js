@@ -1,9 +1,19 @@
   $(document)
     .ready(function() {
-
+      var l = Vue.config.lang;
       $.fn.form.settings.rules.samepasword = function() {
         return $('#pw').val() == $('#pw2').val();
       };
+
+      var vm = new Vue({
+        i18n : i18n,
+        el : '#page',
+        data : {
+          ep : window.messages[l].message.email1,
+          pp : window.messages[l].message.pw,
+          p2p : window.messages[l].message.pw2
+        }
+      });
 
       $('.ui.form')
         .form({
@@ -13,11 +23,11 @@
               rules: [
                 {
                   type   : 'empty',
-                  prompt : '用户名不能为空'
+                  prompt : window.messages[l].message.emptyUser
                 },
                 {
                   type : 'email',
-                  prompt : '请输入正确的邮箱格式'
+                  prompt : window.messages[l].message.email
                 }
               ]
             },
@@ -26,11 +36,11 @@
               rules: [
                 {
                   type   : 'empty',
-                  prompt : '密码不能为空'
+                  prompt : window.messages[l].message.epmtyPw
                 },
                 {
                   type   : 'length[6]',
-                  prompt : '密码至少需要6位'
+                  prompt : window.messages[l].message.pw6
                 }
               ]
             },
@@ -39,7 +49,7 @@
               rules: [
               {
                 type   : 'samepasword',
-                prompt : '请输入相同的密码'
+                prompt : window.messages[l].message.pwsame
               }
               ]
             }
@@ -59,7 +69,7 @@
                 }
 
             }, function(e) {
-                alert('注册失败');
+                alert(window.messages[l].message.fail);
             })               
             return false;
           }
