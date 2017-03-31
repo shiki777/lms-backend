@@ -70,9 +70,15 @@ var messages = {
             gongxi : '恭喜您',
             link : '面将跳转到....',
             roomloadfail : '房间信息加载失败，请重试!',
+            channelloadfail : '频道信息加载失败，请重试!',
             deletefail : '删除失败',
             morenroommodify : '该房间是频道默认房间，请先修改对应频道的默认房间！',
-            hostempty : '主播不能为空'
+            deletefail : '删除失败，该频道下还有房间，请先处理对应房间！',
+            hostempty : '主播不能为空',
+            nameempty :'频道名不可为空',
+            channelmodify : '频道更新',
+            channeldelete : '频道删除',
+            selectroom : '请选择默认房间'
         }
     },
     jp : {
@@ -146,9 +152,15 @@ var messages = {
             gongxi : 'おめでとうございます',
             link : 'ページジャンプする....',
             roomloadfail : '部屋の情報をロードしてくださいリトライ！',
+            channelloadfail : 'チャンネルの情報をロードしてくださいリトライ！',
             deletefail : '失敗を削除する',
             morenroommodify : '部屋を削除することはできません、先に部屋を改正して下さい',
-            hostempty : '実況主は空っぽにならない'           
+            deletefail : 'チャンネルの所属部屋を削除して下さい！',
+            hostempty : '実況主は空っぽにならない',
+            nameempty :'チャンネル名称は空っぽにならない',
+            channelmodify : 'チャンネルを変える',
+            channeldelete : 'チャンネルを削除',
+            selectroom : 'デフォルトの部屋を選択してください'   
         }
     }
 };
@@ -157,7 +169,7 @@ Vue.use(VueI18n)
 
 
 // set lang
-Vue.config.lang = 'cn'
+Vue.config.lang = 'jp'
 
 var i18n = new VueI18n({
     locale: Vue.config.lang,

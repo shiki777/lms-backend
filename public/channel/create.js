@@ -1,8 +1,10 @@
 (function() {
 
 var id = 1;
+var l = Vue.config.lang;
 
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
     data : {
         name : '',
@@ -18,7 +20,9 @@ var vm = new Vue({
             duration : 3,
             id : getId()
         }],
-        onlineRatio : 1
+        onlineRatio : 1,
+        thumbstr : window.messages[l].message.thumb,
+        iconstr : window.messages[l].message.icon
     },
     computed : {
         changeShow : function() {
@@ -43,7 +47,7 @@ var vm = new Vue({
             var url = window.hosturl + '/lms/channel/add';
             var self = this;
             if(!data.name){
-                alert('请填写频道名称!');
+                alert(window.messages[l].message.nameempty)
                 return;
             }
             Vue.http.post(url,data)
@@ -55,11 +59,11 @@ var vm = new Vue({
                          window.location.reload();
                     }, 1500);
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert(window.messages[l].message.submit + window.messages[l].message.fail + data.body.msg);
                 }
 
             }, function(e) {
-                alert('提交失败');
+                alert(window.messages[l].message.submit + window.messages[l].message.fail);
             })           
             return false;
         },
