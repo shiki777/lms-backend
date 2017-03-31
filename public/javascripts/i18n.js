@@ -38,6 +38,7 @@ var messages = {
             roommodify : '修改房间',
             roomdelete : '删除直播房间',
             roomlist : '房间列表',
+            channellist : '频道列表',
             pindaoxuanze : '频道选择',
             quanbupindao : '全部频道',
             pindaoming : '频道名',
@@ -78,7 +79,9 @@ var messages = {
             nameempty :'频道名不可为空',
             channelmodify : '频道更新',
             channeldelete : '频道删除',
-            selectroom : '请选择默认房间'
+            selectroom : '请选择默认房间',
+            quanbutag : '全部标签',
+            defaulttag : '默认标签(空标签)'
         }
     },
     jp : {
@@ -120,6 +123,7 @@ var messages = {
             roommodify : '部屋を変える',
             roomdelete : '部屋を削除',
             roomlist : '部屋リスト',
+            channellist : 'チャンネルリスト',
             pindaoxuanze : 'チャンネルを選択',
             quanbupindao : '全部チャンネル',
             pindaoming : 'チャンネル名',            
@@ -160,7 +164,9 @@ var messages = {
             nameempty :'チャンネル名称は空っぽにならない',
             channelmodify : 'チャンネルを変える',
             channeldelete : 'チャンネルを削除',
-            selectroom : 'デフォルトの部屋を選択してください'   
+            selectroom : 'デフォルトの部屋を選択してください',
+            quanbutag : '全ラベル',
+            defaulttag : 'デフォルトラベル（空きラベル）' 
         }
     }
 };

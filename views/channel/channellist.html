@@ -1,21 +1,21 @@
 <link rel="stylesheet" href="../../channel/channellist.css">
         <div class="ui middle aligned center aligned">
-            <div class="wrap">
-                <h1 class="ui header aligned">频道列表</h1>
+            <div class="wrap"> 
+                <h1 class="ui header aligned">{{$t("message.channellist")}}</h1>
                 <div>
-                频道选择：
+                {{$t("message.pindaoxuanze")}}：
                     <select class="ui dropdown" v-model="selectTag">
-                        <option value="all">全部标签</option>
+                        <option value="all">{{$t("message.quanbutag")}}</option>
                         <option v-for="tag in tags" v-bind:value="tag">{{tag}}</option>
                     </select>
                 </div>            
                 <div class="tag-item" v-for="tag in tagsFilter">
-                <div class="ui header aligned" style="margin-top:30px;">标签名：{{tag}}</div>
+                <div class="ui header aligned" style="margin-top:30px;">{{$t("message.tag")}}：{{tag}}</div>
                     <div class="room-item" v-for="channel in channels[tag]">
                         <a :href="channel.link" target="_blank">
                             <img :src="channel.thumb" class="thumb">    
                             <div class="room-name">{{channel.name}}</div>
-                            <div class="room-name">标签:{{channel.tag}} Id:{{channel.id}}</div>
+                            <div class="room-name">{{$t("message.tag")}}:{{channel.tag}} Id:{{channel.id}}</div>
                         </a>
                     </div>
                     <div class="clear"></div>

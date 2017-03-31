@@ -1,12 +1,15 @@
 (function() {
 
+var l = Vue.config.lang;
+
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
-    data : {
-        channels : {},
-        tags : [],
-        url : window.hosturl + '/lms/channel/list',
-        selectTag : 'all'
+    data : {  
+      channels : {},
+      tags : [],
+      url : window.hosturl + '/lms/channel/list',
+      selectTag : 'all'
     },
     computed : {
       tagsFilter : function() {
@@ -24,7 +27,7 @@ var vm = new Vue({
             var res = {};
             var self = this;
             data.map(function(item) {
-              var tag = item.tag || '默认标签(空标签)';
+              var tag = item.tag || window.messages[l].message.defaulttag;
               if(!res[tag]){
                 res[tag] = [];
                 self.tags.push(tag);
