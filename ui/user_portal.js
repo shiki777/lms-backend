@@ -9,7 +9,8 @@ var lang = LANG['jp']
 
 var rolePageCN = {
     1 : {
-        '房间列表页' : '/lms/page/roomlist'
+        '房间列表页' : '/lms/page/roomlist',
+        '登出' : '/lms/page/login'
     },
     2 : {
         '房间列表页' : '/lms/page/roomlist',
@@ -19,7 +20,8 @@ var rolePageCN = {
         '频道创建页' : '/lms/page/channelcreate',
         '视频创建页' : '/lms/page/videocreate',
         '视频列表页' : '/lms/page/videolist',
-        '主播列表页' : '/lms/page/hostlist'
+        '主播列表页' : '/lms/page/hostlist',
+        '登出' : '/lms/page/login'
     },
     4 : {
         '房间列表页' : '/lms/page/roomlist',
@@ -29,13 +31,15 @@ var rolePageCN = {
         '频道创建页' : '/lms/page/channelcreate',
         '视频创建页' : '/lms/page/videocreate',
         '视频列表页' : '/lms/page/videolist',
-        '主播列表页' : '/lms/page/hostlist'    
+        '主播列表页' : '/lms/page/hostlist',
+        '登出' : '/lms/page/login'    
     }
 };
 
 var rolePageJP = {
     1 : {
-        '部屋リスト' : '/lms/page/roomlist'
+        '部屋リスト' : '/lms/page/roomlist',
+        'おかげで' : '/lms/page/login'
     },
     2 : {
         '部屋リスト' : '/lms/page/roomlist',
@@ -45,7 +49,8 @@ var rolePageJP = {
         'チャンネルを作る' : '/lms/page/channelcreate',
         'ビデオを作る' : '/lms/page/videocreate',
         'ビデオリスト' : '/lms/page/videolist',
-        '実況主リスト' : '/lms/page/hostlist'
+        '実況主リスト' : '/lms/page/hostlist',
+        'おかげで' : '/lms/page/login'
     },
     4 : {
         '部屋リスト' : '/lms/page/roomlist',
@@ -55,7 +60,8 @@ var rolePageJP = {
         'チャンネルを作る' : '/lms/page/channelcreate',
         'ビデオを作る' : '/lms/page/videocreate',
         'ビデオリスト' : '/lms/page/videolist',
-        '実況主リスト' : '/lms/page/hostlist'    
+        '実況主リスト' : '/lms/page/hostlist',
+        'おかげで' : '/lms/page/login'    
     }
 };
 var rolePage = {
@@ -85,6 +91,10 @@ function getSideCN(role) {
             a : {
                 name : '房间列表',
                 link : '/lms/page/roomlist'
+            },
+            b : {
+                name : '登出',
+                link : '/lms/page/login'
             }
         });
     } else {
@@ -124,7 +134,11 @@ function getSideCN(role) {
             h : {
                 name : '主播列表',
                 link : '/lms/page/hostlist'
-            }
+            },
+            i : {
+                name : '登出',
+                link : '/lms/page/login'
+            }            
         });
     }
 }
@@ -139,7 +153,11 @@ function getSideJP(role) {
             a : {
                 name : '部屋リスト',
                 link : '/lms/page/roomlist'
-            }
+            },
+            b : {
+                name : 'おかげで',
+                link : '/lms/page/login'
+            }            
         });
     } else {
         return JSON.stringify({
@@ -178,7 +196,11 @@ function getSideJP(role) {
             h : {
                 name : '実況主リスト',
                 link : '/lms/page/hostlist'
-            }
+            },
+            i : {
+                name : 'おかげで',
+                link : '/lms/page/login'
+            }            
         });
     }
 }
