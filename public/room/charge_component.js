@@ -1,11 +1,11 @@
 Vue.component('charge',{
     template : '<div class="inline" :cid="id">\
-                    <span class="charge-span">购买</span>\
+                    <span class="charge-span">{{$t("message.buy")}}</span>\
                     <input type="number" class="charge-input-duration" v-model="d"/>\
-                    <span class="charge-span">个月打</span>\
+                    <span class="charge-span">{{$t("message.mouth")}}</span>\
                     <input class="charge-input-money" v-model="m"/>\
-                        <span class="charge-span">折</span>\
-                        <div class="negative ui button delete-btn" v-on:click="remove"> <i class="minus icon delete-icon"></i>删除</div>\
+                        <span class="charge-span">{{$t("message.zhe")}}</span>\
+                        <div class="negative ui button delete-btn" v-on:click="remove"> <i class="minus icon delete-icon"></i>{{$t("message.delete")}}</div>\
                 </div>',
     props : ['discount','duration', 'id'],
     data : function() {

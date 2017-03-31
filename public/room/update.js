@@ -2,6 +2,7 @@
 
 var id = 1;
 var roomid = window.location.search.match(/id=(.*)/) ? window.location.search.match(/id=(.*)/)[1] : 0;
+var l = Vue.config.lang;
 loadRoomInfo(roomid);
 
 function getId() {
@@ -16,7 +17,7 @@ function loadRoomInfo(id) {
             var vmdata = formatRoomData(data.body.data);
             createVm(vmdata);
         } else {
-            alert('房间信息加载失败，请重试!');
+            alert(window.messages[l].message.roomloadfail);
             console.log(data.body.msg);
         }
 
@@ -60,12 +61,15 @@ function formatRoomData(data) {
         controlModel : data.controlModel + '',
         projectStyle : data.projectStyle + '',
         eyeStyle : data.eyeStyle + '',
-        modifyUser : false
+        modifyUser : false,
+        thumbstr : window.messages[l].message.thumb,
+        u3dstr : window.messages[l].message.u3d
     }
 }
 
 function createVm(data) {
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
     data : data,
     computed : {
@@ -76,7 +80,7 @@ var vm = new Vue({
             return this.living ? 'block' : 'none';
         },
         roomStatus : function() {
-            return this.living ? '正在直播' : '未直播';
+            return this.living ? 'window.messages[l].message.living' : 'window.messages[l].message.noliving';
         }
     },
     methods : {
@@ -108,13 +112,13 @@ var vm = new Vue({
                     }, 1500);
                         } else {
                         if(data.body.code ==3){
-                            alert('删除失败，该房间是频道默认房间，请先修改对应频道的默认房间！')
+                            alert(window.messages[l].message.deletefail + window.messages[l].message.morenroommodify);
                         } else {
-                            alert('删除失败 : ' + data.body.msg);
+                            alert(window.messages[l].message.deletefail + data.body.msg);
                         }
                         }
                     }, function(e) {
-                        alert('提交失败');
+                        alert(window.messages[l].message.submit + window.messages[l].message.fail);
                         console.log(e)
                     })
                     return;
@@ -129,11 +133,11 @@ var vm = new Vue({
                         window.location.reload();
                     }, 1500);
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert(window.messages[l].message.submit + window.messages[l].message.fail + data.body.msg);
                 }
 
             }, function(e) {
-                alert('提交失败');
+                alert(window.messages[l].message.submit + window.messages[l].message.fail);
                 console.log(e)
             })           
             return false;
@@ -216,7 +220,7 @@ var vm = new Vue({
         },
         delHost : function(user) {
             if(this.users.length <= 1){
-                alert('删除后主播为空，请先增加一位主播再删除！');
+                alert(window.messages[l].message.hostempty);
                 return;
             }
             this.modifyUser = true;

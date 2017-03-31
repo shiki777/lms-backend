@@ -47,6 +47,8 @@ var messages = {
             delete : '删除',
             tianjiacelue : '添加策略',
             zhubomingdan : '主播名单',
+            tianjiazhubo : '添加主播',
+            xiugaizhubo : '修改主播',
             channelcreate : '创建频道',
             channelname : '频道名称',
             channelorder : '频道权重',
@@ -62,10 +64,14 @@ var messages = {
             fail : '失败',
             suc : '成功',
             gongxi : '恭喜您',
-            link : '面将跳转到....'
+            link : '面将跳转到....',
+            roomloadfail : '房间信息加载失败，请重试!',
+            deletefail : '删除失败',
+            morenroommodify : '该房间是频道默认房间，请先修改对应频道的默认房间！',
+            hostempty : '主播不能为空'
         }
     },
-    ja : {
+    jp : {
         message : {
             lmsName : '実況管理システム',
             userNmae : 'ユーザー名',
@@ -113,6 +119,8 @@ var messages = {
             delete : '削除',
             tianjiacelue : '割引を追加',
             zhubomingdan : '実況主リスト',
+            tianjiazhubo : '実況主を追加',
+            xiugaizhubo : '実況主を変える',
             channelcreate : 'チャンネルを作る',
             channelname : 'チャンネル名',
             channelorder : 'チャンネルレベル',
@@ -128,7 +136,11 @@ var messages = {
             fail : '失敗',
             suc : '成功',  
             gongxi : 'おめでとうございます',
-            link : 'ページジャンプする....'            
+            link : 'ページジャンプする....',
+            roomloadfail : '部屋の情報をロードしてくださいリトライ！',
+            deletefail : '失敗を削除する',
+            morenroommodify : '部屋を削除することはできません、先に部屋を改正して下さい',
+            hostempty : '実況主は空っぽにならない'           
         }
     }
 };
