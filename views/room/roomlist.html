@@ -1,40 +1,40 @@
 <link rel="stylesheet" href="../../room/roomlist.css">
-<div class="ui middle aligned center aligned">
-    <div class="wrap">
-        <h1 class="ui header aligned">房间列表</h1>
-        <div>
-            频道选择：
-            <select class="ui dropdown" v-model="selectChannel">
-                <option value="all">全部频道</option>
-                <option v-for="channel in channels" v-bind:value="channel">{{channel}}</option>
-            </select>
-        </div>
-        <div class="channel-item" v-for="channel in filterChannels">
-            <div class="ui header aligned" style="margin-top:30px;">频道名：{{channel}}</div>
-            <div class="room-wrap">
-                <div class="room-item" v-for="room in rooms[channel]">
-                    <a :href="room.link" target="_blank">
-                        <img :src="room.thumb" class="thumb">
-                        <div class="room-name">{{room.name}}</div>
-                        <div class="room-status" :class="{show : room.living, unshow : !room.living}">{{room.user}}</div>
-                        <div class="room-status" :class="{show : room.living, unshow : !room.living}">正在直播</div>
-                        <div class="room-status" :class="{show : !room.living, unshow : room.living}">尚未开播</div>
-                        <div class="room-btn">
-                            <div :roomid="room.id" class="negative ui button delete-btn" @click="onDeleteBtnClick">删除房间</div>
-                        </div>
-                        <div class="room-btn" :class="{show : room.living, unshow : !room.living}">
-                            <div :roomid="room.id" class="negative ui button delete-btn" @click="onCloseBtnClick">关闭直播</div>
-                        </div>
-                    </a>
+        <div class="ui middle aligned center aligned">
+            <div class="wrap">
+                <h1 class="ui header aligned">{{$t("message.roomlist")}}</h1>
+                <div>
+                {{$t("message.pindaoxuanze")}}
+                    <select class="ui dropdown" v-model="selectChannel">
+                        <option value="all">{{$t("message.quanbupindao")}}</option>
+                        <option v-for="channel in channels" v-bind:value="channel">{{channel}}</option>
+                    </select>
                 </div>
-                <div class="clear"></div>
+                <div class="channel-item" v-for="channel in filterChannels">
+                    <div class="ui header aligned" style="margin-top:30px;">{{$t("message.pindaoming")}}：{{channel}}</div>
+                    <div class="room-wrap">
+                        <div class="room-item" v-for="room in rooms[channel]">
+                            <a :href="room.link" target="_blank">
+                                <img :src="room.thumb" class="thumb">    
+                                <div class="room-name">{{room.name}}</div>
+                                <div class="room-status" :class="{show : room.living, unshow : !room.living}">{{room.user}}</div>
+                                <div class="room-status" :class="{show : room.living, unshow : !room.living}">{{$t("message.living")}}</div>
+                                <div class="room-status" :class="{show : !room.living, unshow : room.living}">{{$t("message.noliving")}}</div>
+                                <div class="room-btn">
+                                    <div :roomid="room.id" class="negative ui button delete-btn" @click="onDeleteBtnClick">{{$t("message.roomdelete")}}</div>
+                                </div>
+                                <div class="room-btn" :class="{show : room.living, unshow : !room.living}">
+                                    <div :roomid="room.id" class="negative ui button delete-btn" @click="onCloseBtnClick">{{$t("message.closeliving")}}</div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-wrap" style="display: none;">
+                <pagination :url="url" size="999" @dataloaded="pageLoaded"></pagination>
             </div>
         </div>
-    </div>
-    <div class="page-wrap" style="display: none;">
-        <pagination :url="url" size="999" @dataloaded="pageLoaded"></pagination>
-    </div>
-</div>
 <script><%- currentmsg %></script>
 <script><%- sidemsg %></script>
 <script src="../../component/page.js"></script>

@@ -1,6 +1,7 @@
 (function() {
 
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
     data : {
         rooms : {},
@@ -60,13 +61,13 @@ var vm = new Vue({
                         self.deleteRoom(id);
                     } else {
                         if(data.body.code ==3){
-                            alert('删除失败，该房间是频道默认房间，请先修改对应频道的默认房间！')
+                           alert(window.messages[l].message.deletefail + window.messages[l].message.morenroommodify);
                         } else {
-                            alert('删除失败 : ' + data.body.msg);
+                            alert(window.messages[l].message.deletefail + data.body.msg);
                         }
                     }
                 }, function(e) {
-                    alert('网络原因删除失败，请重试!');
+                    alert(window.messages[l].message.submit + window.messages[l].message.fail);
                 });
             }
         },
@@ -86,11 +87,11 @@ var vm = new Vue({
                     .modal('show'); 
                     this.updateRoom(id);
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert(window.messages[l].message.submit + window.messages[l].message.fail + data.body.msg);
                 }
 
             }, function(e) {
-                alert('网络原因关闭失败，请重试');
+                alert(window.messages[l].message.submit + window.messages[l].message.fail);
             });      
             this.updateRoom(id);
         },
