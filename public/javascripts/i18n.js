@@ -87,7 +87,13 @@ var messages = {
             channeldelete : '频道删除',
             selectroom : '请选择默认房间',
             quanbutag : '全部标签',
-            defaulttag : '默认标签(空标签)'
+            defaulttag : '默认标签(空标签)',
+            videoadd : '添加视频',
+            videoname : '视频名称',
+            videourl : '视频地址',
+            videodesc : '视频描述',
+            videoorder : '视频权重',
+            videoupdate : '视频修改'
         }
     },
     jp : {
@@ -178,7 +184,13 @@ var messages = {
             channeldelete : 'チャンネルを削除',
             selectroom : 'デフォルトの部屋を選択してください',
             quanbutag : '全ラベル',
-            defaulttag : 'デフォルトラベル（空きラベル）' 
+            defaulttag : 'デフォルトラベル（空きラベル）',
+            videoadd : 'ビデオの追加',
+            videoname : 'ビデオ名',
+            videourl : 'ビデオアドレス',
+            videodesc : 'ビデオ説明',
+            videoorder : 'ビデオソート',
+            videoupdate : 'ビデオ改正'             
         }
     }
 };

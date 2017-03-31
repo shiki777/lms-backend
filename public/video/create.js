@@ -1,15 +1,18 @@
 (function() {
 
 var id = 1;
+var l = Vue.config.lang;
 
 var vm = new Vue({
+    i18n : i18n,
     el : '#page',
     data : {
         name : '',
         url : '',
         thumb : '',
         order : 1,
-        desc : ''
+        desc : '',
+        thumbstr : window.messages[l].message.thumb
     },
     computed : {
         changeShow : function() {
@@ -25,7 +28,9 @@ var vm = new Vue({
                 if(data.body.code == 0){
                     $('.ui.modal')
                     .modal('show'); 
-                    // location.href= '';
+                    window.setTimeout(function() {
+                         location.href= '/lms/page/videolist';
+                    }, 1500);
                 } else {
                     alert('提交失败：' + data.body.msg);
                 }
