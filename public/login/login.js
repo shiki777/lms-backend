@@ -1,5 +1,14 @@
   $(document)
     .ready(function() {
+      var l = Vue.config.lang;
+      var vm = new Vue({
+        i18n : i18n,
+        el : '#page',
+        data : {
+          ep : window.messages[l].message.userNmae,
+          pp : window.messages[l].message.pw
+        }
+      });
 
       $('.ui.form')
         .form({
@@ -9,7 +18,7 @@
               rules: [
                 {
                   type   : 'empty',
-                  prompt : '用户名不能为空'
+                  prompt : window.messages[l].message.emptyUser
                 }
               ]
             },
@@ -18,11 +27,11 @@
               rules: [
                 {
                   type   : 'empty',
-                  prompt : '密码不能为空'
+                  prompt : window.messages[l].message.epmtyPw
                 },
                 {
-                  type   : 'length[1]',
-                  prompt : '密码至少需要1位'
+                  type   : 'length[6]',
+                  prompt : window.messages[l].message.pw6
                 }
               ]
             }
