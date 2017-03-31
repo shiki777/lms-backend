@@ -1,7 +1,9 @@
 (function() {
 
+var l = Vue.config.lang;
 var id = 9999;
 load();
+
 
 function getId() {
     return id++;
@@ -15,7 +17,7 @@ function load(id) {
             var vmdata = formatRoomData(data.body.list);
             createVm(vmdata);
         } else {
-            alert('主播列表加载失败，请重试!');
+            alert(window.messages[l].message.fail)
             console.log(data.body.msg);
         }
 
@@ -38,6 +40,7 @@ function formatRoomData(data) {
 
 function createVm(data) {
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
     data : data,
     computed : {
@@ -51,19 +54,19 @@ var vm = new Vue({
             Vue.http.post(url, {email : this.currentUser.username,name : this.currentUser.username})
             .then(function(body) {
                 if(body.data.code == 0){
-                     alert('验证码获取成功，请去邮箱查收!');
+                     alert(window.messages[l].message.receivesuc);
                 } else {
                     if(body.data.msg == 'Internal Server Error.'){
-                        alert('往该邮箱发送验证码失败！');
+                        alert(window.messages[l].message.receivefail);
                     } else {
-                        alert('验证码获取失败' + body.data.msg);
+                        alert(window.messages[l].message.fail + body.data.msg);
                     }
                     
                 }
                
             })
             .catch(function(e) {
-                alert('验证码获取失败！')
+                 alert(window.messages[l].message.fail);
             })
         },
         modifyPwd : function(user) {
@@ -83,7 +86,7 @@ var vm = new Vue({
                     $('.ui.modal.suc').modal('show');
                 setTimeout(function() {
                     $('.ui.modal.suc').modal('hide');
-                },1500);                    
+                },1500);                     
                 } else {
                     self.errmsg = data.body.msg;
                     $('.ui.modal.fail').modal('show');

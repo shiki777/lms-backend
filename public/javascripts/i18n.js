@@ -93,7 +93,14 @@ var messages = {
             videourl : '视频地址',
             videodesc : '视频描述',
             videoorder : '视频权重',
-            videoupdate : '视频修改'
+            videoupdate : '视频修改',
+            pwmodify : '修改密码',
+            sendcheck : '发送验证码到邮箱',
+            inputcheck : '请输入验证码',
+            inputpw : '请输入新密码',
+            receivesuc : '验证码获取成功，请去邮箱查看',
+            receivefail : '往该邮箱发送验证码失败！',
+            noroom : '该用户无房间'
         }
     },
     jp : {
@@ -190,7 +197,14 @@ var messages = {
             videourl : 'ビデオアドレス',
             videodesc : 'ビデオ説明',
             videoorder : 'ビデオソート',
-            videoupdate : 'ビデオ改正'             
+            videoupdate : 'ビデオ改正',
+            pwmodify : 'パスワードを改正する',
+            sendcheck : '検証の検証を送信する',
+            inputcheck : '入力検証コードを入力してください',
+            inputpw : '新しいパスワードを入力してください',
+            receivesuc : '検証コード取得成功、郵便箱に行ってください',
+            receivefail : 'このメールには検証コードの失敗を送信する！',
+            noroom : 'ユーザーは部屋がない'                         
         }
     }
 };
