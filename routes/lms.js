@@ -117,7 +117,7 @@ router.post('/admin/register',function(req,res){
         else {
           console.log('connected as id ' + connection.threadId);
           var sql = 'INSERT INTO user(name,pwd,permission,companyId) VALUES('
-          + pool.escape(resbody.data.username) + ',' + pool.escape(pwd) + ','
+          + pool.escape(name) + ',' + pool.escape(pwd) + ','
           + pool.escape(permission) + ',' + pool.escape(companyId) + ');';
           console.log(sql);
           connection.query(sql, function(err, result) {
@@ -144,7 +144,7 @@ router.post('/admin/register',function(req,res){
 /*暴露出去直接注册的接口*/
 router.get('/re', function(req,res) {
   res.header("Access-Control-Allow-Origin", "*");
-  Users.register('mw@snailgame.net','mw123')
+  Users.register('277398527@qq.com','1111111')
     .then(function(resbody){
       pool.getConnection(function(err,connection){
         if(err){
@@ -177,6 +177,15 @@ router.get('/re', function(req,res) {
       res.status(200).send({code:1,msg:errmsg});
     })  
 })
+
+router.get('/com', function(req,res) {
+  pool.getConnection(function(err,connection) {
+    var sql = 'INSERT INTO company(id,name,account,company.order) VALUES(7,"R18",3333,1)';
+    connection.query(sql, function(err,result) {
+      res.status(200).send('ok');
+    });
+  })
+});
 
 router.post('/user/email', function(req,res) {
   res.header("Access-Control-Allow-Origin", "*");
