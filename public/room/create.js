@@ -30,7 +30,9 @@ var vm = new Vue({
         viewAngle : 90,
         controlModel : '0',
         projectStyle : '0',
-        eyeStyle : '0'
+        eyeStyle : '0',
+        domeHorizontal : 0,
+        domeVertical : 0
     },
     computed : {
         changeShow : function() {
@@ -108,7 +110,9 @@ var vm = new Vue({
                 viewAngle : this.viewAngle,
                 controlModel : parseInt(this.controlModel,10),
                 projectStyle : parseInt(this.projectStyle,10),
-                eyeStyle : parseInt(this.eyeStyle,10)
+                eyeStyle : parseInt(this.eyeStyle,10),
+                domeVertical : this.domeVertical,
+                domeHorizontal : this.domeHorizontal
             };
             return res;
         },

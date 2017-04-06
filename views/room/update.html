@@ -114,6 +114,16 @@
                                 </select>
                             </div>
                         </div>
+                    <div class="fields two">
+                        <div class="field">
+                            <label>{{$t("message.ver")}}</label>
+                            <input type="number" v-model="domeVertical"/>    
+                        </div> 
+                        <div class="field">
+                            <label>{{$t("message.hor")}}</label>
+                            <input type="number" v-model="domeHorizontal"/>    
+                        </div>                                                 
+                    </div>                        
                         <div class="ui primary submit button" v-on:click="submit">{{$t("message.submit")}}</div>
                     </form>
                 </div>

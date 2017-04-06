@@ -643,13 +643,13 @@ router.post('/room/add',function(req,res){
             var pushUrl = (roomUrl.pushUrl instanceof Array) ? roomUrl.pushUrl[0] : roomUrl.pushUrl;
             var liveUrl = (roomUrl.liveUrl instanceof Array) ? roomUrl.liveUrl[0] : roomUrl.liveUrl;
             var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
-            'room.desc,charge,price,dependencyChange,room.order,tag,viewAngle,controlModel,projectStyle,eyeStyle) VALUES(' +
+            'room.desc,charge,price,dependencyChange,room.order,tag,viewAngle,controlModel,projectStyle,eyeStyle,domeVertical,domeHorizontal) VALUES(' +
             pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(pushUrl) + ',' +
             pool.escape(liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
             pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
             pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyCharge) + ',' +
             pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
-            pool.escape(req.body.controlModel) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ');';
+            pool.escape(req.body.controlModel) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ',' + pool.escape(req.body.domeVertical) + ',' + pool.escape(req.body.domeHorizontal) + ');';
             connection.query(room_sql, function(err, result) {//insert room
               if(err){
                 console.log(err);
@@ -825,6 +825,7 @@ router.post('/room/update',function(req,res){
       + ',charge = ' + pool.escape(req.body.charge) + ',price = ' + pool.escape(req.body.chargeStrategy.price)
       + ',dependencyChange = ' + pool.escape(req.body.dependencyCharge) + ',room.order = ' + pool.escape(req.body.order)
       + ',tag = ' + pool.escape(req.body.tag) + ',viewAngle = ' + pool.escape(req.body.viewAngle)
+      + ',domeHorizontal = ' + pool.escape(req.body.domeHorizontal) + ',domeVertical = ' + pool.escape(req.body.domeVertical)
       + ',controlModel = ' + pool.escape(req.body.controlModel) + ',projectStyle = ' + pool.escape(req.body.projectStyle)
       + ',eyeStyle = ' + pool.escape(req.body.eyeStyle) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(s_sql + u_sql, function(err, result) {
@@ -974,6 +975,8 @@ router.get('/room/get',function(req,res){
             controlModel : result[0][0].controlModel,
             projectStyle : result[0][0].projectStyle,
             eyeStyle : result[0][0].eyeStyle,
+            domeVertical : result[0][0].domeVertical,
+            domeHorizontal : result[0][0].domeHorizontal,
             chargeStrategy : {
               price : result[0][0].price,
               discount : discount_arr

@@ -103,7 +103,9 @@ var messages = {
             noroom : '该用户无房间',
             rr : '房间',
             zunjin : '尊敬的',
-            userr : '用户'
+            userr : '用户',
+            ver : 'u3d垂直角度',
+            hor : 'u3d水平角度'
         }
     },
     jp : {
@@ -210,7 +212,9 @@ var messages = {
             noroom : 'ユーザーは部屋がない',
             rr : '部屋',
             zunjin : '尊敬の',
-            userr : 'ユーザー'                         
+            userr : 'ユーザー',
+            ver : 'u3d垂直角度',
+            hor : 'u3d水平角度'                                     
         }
     }
 };

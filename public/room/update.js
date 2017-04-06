@@ -61,6 +61,8 @@ function formatRoomData(data) {
         controlModel : data.controlModel + '',
         projectStyle : data.projectStyle + '',
         eyeStyle : data.eyeStyle + '',
+        domeHorizontal : data.domeHorizontal,
+        domeVertical : data.domeVertical,
         modifyUser : false,
         thumbstr : window.messages[l].message.thumb,
         u3dstr : window.messages[l].message.u3d
@@ -160,7 +162,9 @@ var vm = new Vue({
                 viewAngle : this.viewAngle,
                 controlModel : parseInt(this.controlModel,10),
                 projectStyle : parseInt(this.projectStyle,10),
-                eyeStyle : parseInt(this.eyeStyle,10)
+                eyeStyle : parseInt(this.eyeStyle,10),
+                domeVertical : this.domeVertical,
+                domeHorizontal : this.domeHorizontal
             };
             if(this.modifyUser){
                 res.users = this.getHostDif();
