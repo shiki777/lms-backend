@@ -10,14 +10,6 @@ var config = {
   },
   /*mysql访问*/
   db_mysql: {
-    host: '192.168.5.226',
-    port: '3306',
-    user: 'lms',
-    password: 'lms123',
-    database: 'lms2',
-    multipleStatements : true
-  },
-  db_mysql: {
     host: '127.0.0.1',
     port: '3306',
     user: 'root',
@@ -33,11 +25,16 @@ var config = {
     host:'192.168.5.137',
     port:'3050'
   },
+  redis_cluster : false,
   redis: {
     host: '192.168.5.137',
     port: 6379,
-    db: 14,
+    db_number: 14
   },
+  redisCluster : [{
+  port: 6379,
+  host: '10.133.131.253'
+}],  
   chatroom:{
     host:'58.247.47.106',
     port: 8166
