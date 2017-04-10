@@ -1,6 +1,7 @@
 (function() {
 
     var id = 1;
+    var l = Vue.config.lang;
     var videoid = window.location.search.match(/id=(.*)/) ? window.location.search.match(/id=(.*)/)[1] : 0;
     loadVideoInfo(videoid);
 
@@ -33,12 +34,14 @@
             url: data.downloadurl,
             thumb: data.thumb,
             desc: data.desc,
-            order: data.order
+            order: data.order,
+            thumbstr : window.messages[l].message.thumb
         }
     }
 
     function createVm(data) {
         var vm = new Vue({
+            i18n : i18n,
             el: '#page',
             data: data,
             methods: {
@@ -54,9 +57,9 @@
                             if (data.body.code == 0) {
                                 $('.ui.modal')
                                     .modal('show');
-                                window.setTimeout(function() {
-                                    // window.location.reload();
-                                }, 1500);
+                                    window.setTimeout(function() {
+                                       location.href= '/lms/page/videolist';
+                                   }, 1500);
                             } else {
                                 alert('提交失败：' + data.body.msg);
                             }

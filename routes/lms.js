@@ -26,7 +26,7 @@ router.post('/login',function(req,res){
         }
         else {
           console.log('connected as id ' + connection.threadId);
-          var sql = 'SELECT * FROM user WHERE name = ' + pool.escape(name) + ';';
+          var sql = 'SELECT user.name as name,user.permission as permission,company.name as cname,user.companyId as companyId FROM user LEFT JOIN company on user.companyId = company.id WHERE user.name = ' + pool.escape(name) + ';';
           connection.query(sql, function(err, rows, fields) {
             if(err){
               console.log(err);
@@ -117,7 +117,7 @@ router.post('/admin/register',function(req,res){
         else {
           console.log('connected as id ' + connection.threadId);
           var sql = 'INSERT INTO user(name,pwd,permission,companyId) VALUES('
-          + pool.escape(resbody.data.username) + ',' + pool.escape(pwd) + ','
+          + pool.escape(name) + ',' + pool.escape(pwd) + ','
           + pool.escape(permission) + ',' + pool.escape(companyId) + ');';
           console.log(sql);
           connection.query(sql, function(err, result) {
@@ -144,7 +144,7 @@ router.post('/admin/register',function(req,res){
 /*暴露出去直接注册的接口*/
 router.get('/re', function(req,res) {
   res.header("Access-Control-Allow-Origin", "*");
-  Users.register('mw@snailgame.net','mw123')
+  Users.register('277398527@qq.com','1111111')
     .then(function(resbody){
       pool.getConnection(function(err,connection){
         if(err){
@@ -178,6 +178,26 @@ router.get('/re', function(req,res) {
     })  
 })
 
+router.get('/com', function(req,res) {
+  pool.getConnection(function(err,connection) {
+    var sql = 'INSERT INTO company(id,name,account,company.order) VALUES(7,"R18",3333,1)';
+    connection.query(sql, function(err,result) {
+      res.status(200).send('ok');
+    });
+  })
+});
+
+router.post('/user/email', function(req,res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  Users.sendCodetoEmail(req.body.email,req.body.name)
+    .then(function() {
+      res.status(200).send({code : 0,msg : 'ok'});
+    })
+    .catch(function(e) {
+      res.status(200).send({code : 1, msg : e});
+    })
+})
+
 /*此接口用于房间创建时候获取可以当主播的用户列表*/
 router.get('/user/list',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
@@ -195,6 +215,64 @@ router.get('/user/list',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId) + ' AND id not in (select userId from room_user)');
       var sql = 'SELECT id,name FROM user' + condition + ';';
       connection.query(sql, function(err, rows, fields) {
+        if(err){
+          console.log(err);
+          res.status(200).jsonp({code:1,msg:err.message});
+        }
+        else {
+          res.status(200).jsonp({code:0,msg:'get user list success.',list:rows});
+        }
+        connection.release();
+      });
+    }
+  });
+});
+
+/*修改密码，明文传输，影响不大*/
+router.get('/user/modifypwd', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
+    return res.status(400).jsonp({code:1,msg:'user-list failed for no login or have no right.'});
+  }
+  var username = req.query.username;
+  var pw = req.query.pw;
+  var code = req.query.code;
+  Users.modifyPwd(pw,username,code)
+  .then(function() {
+    pool.getConnection(function(err,connection) {
+      connection.query('UPDATE user SET pwd = ? where name = ?',[pw,username], function(err,rows) {
+        if(err){
+          console.log(err);
+          res.status(200).jsonp({code:2,msg:err.message});
+        } else {
+          res.status(200).jsonp({code : 0, msg : 'ok'});
+        }
+        connection.release();
+      });
+    });
+  })
+  .catch(function(err) {
+    res.status(200).jsonp({code : 11,msg : err})
+  });
+});
+
+/*此接口用于主播列表页*/
+router.get('/host/list',function(req,res){
+  res.header("Access-Control-Allow-Origin", "*");
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能获取用户列表
+    return res.status(400).jsonp({code:1,msg:'user-list failed for no login or have no right.'});
+  }
+  pool.getConnection(function(err,connection){
+    if(err){
+      console.log(err);
+      res.status(200).jsonp({code:1,msg:err.message});
+    }
+    else {
+      console.log('connected as id ' + connection.threadId);
+      var sql = 'select ut.`name`as username,rut.roomId as roomid,rt.`name` as roomname from user ut left join room_user rut on ut.id = rut.userId LEFT JOIN room rt on rut.roomId = rt.id where ut.companyId = ?';
+      connection.query(sql,[user.companyId], function(err, rows, fields) {
         if(err){
           console.log(err);
           res.status(200).jsonp({code:1,msg:err.message});
@@ -477,7 +555,7 @@ router.get('/channel/list',function(req,res){
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : (' WHERE companyId = ' + pool.escape(user.companyId));
       /*var sql = 'SELECT * FROM (SELECT name,thumb,icon,id FROM channel' + condition + ') AS temTable LIMIT '
       + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize,10)) + ';';*/
-      var sql = 'SELECT name,thumb,icon,id,tag FROM channel' + condition + ' ORDER BY tag DESC;';
+      var sql = 'SELECT name,thumb,icon,id,tag FROM channel' + condition + ' ORDER BY tag DESC, channel.order DESC;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -485,6 +563,11 @@ router.get('/channel/list',function(req,res){
         }
         else {
           var chanlist = [];
+          /*pagesize999代表输出全部数据*/
+          if(parseInt(req.query.pageSize,10) ==999){
+            res.status(200).jsonp({code:0,msg:'channel-list success.',data:{count:rows.length,list:rows}});
+            return;
+          }          
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
@@ -560,13 +643,13 @@ router.post('/room/add',function(req,res){
             var pushUrl = (roomUrl.pushUrl instanceof Array) ? roomUrl.pushUrl[0] : roomUrl.pushUrl;
             var liveUrl = (roomUrl.liveUrl instanceof Array) ? roomUrl.liveUrl[0] : roomUrl.liveUrl;
             var room_sql = 'INSERT INTO room(name,channelId,companyId,pushUrl,liveUrl,living,onlineRatio,thumb,u3dbg,' +
-            'room.desc,charge,price,dependencyChange,room.order,tag,viewAngle,controlModel,projectStyle,eyeStyle) VALUES(' +
+            'room.desc,charge,price,dependencyChange,room.order,tag,viewAngle,controlModel,projectStyle,eyeStyle,domeVertical,domeHorizontal) VALUES(' +
             pool.escape(req.body.name) + ',' + pool.escape(req.body.channelId) + ',' + pool.escape(companyId) + ',' + pool.escape(pushUrl) + ',' +
             pool.escape(liveUrl) + ',' + pool.escape(req.body.living) + ',' + pool.escape(req.body.onlineRatio) + ',' +
             pool.escape(req.body.thumb) + ',' + pool.escape(req.body.u3dbg) + ',' + pool.escape(req.body.desc) + ',' +
             pool.escape(req.body.charge) + ',' + pool.escape(req.body.chargeStrategy.price) + ',' + pool.escape(req.body.dependencyCharge) + ',' +
             pool.escape(req.body.order) + ',' + pool.escape(req.body.tag) + ',' + pool.escape(req.body.viewAngle) + ',' +
-            pool.escape(req.body.controlModel) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ');';
+            pool.escape(req.body.controlModel) + ',' + pool.escape(req.body.projectStyle) + ',' + pool.escape(req.body.eyeStyle) + ',' + pool.escape(req.body.domeVertical) + ',' + pool.escape(req.body.domeHorizontal) + ');';
             connection.query(room_sql, function(err, result) {//insert room
               if(err){
                 console.log(err);
@@ -645,6 +728,31 @@ router.post('/room/add',function(req,res){
     })
 });
 
+/*添加单个主播*/
+router.get('/room/addhost', function(req,res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  if(!req.query.roomid){return res.status(200).send({code:1,msg:'addhost failed for no roomid.'});}
+  if(!req.query.userid){return res.status(200).send({code:2,msg:'addhost failed for no userid.'});}
+  var user = req.session.user;
+  if(user == null || user.permission == PER_COMPANY_NOMAL_USER){//未登录或权限不够则不能删除房间
+    return res.status(401).send({code:1,msg:'room-addhost failed for no login or have no right.'});
+  };
+  pool.getConnection(function(err,connection) {
+    if(err){
+      res.status(200).send({code : 3,msg : err.msg});
+    } else {
+      connection.query('INSERT INTO room_user SET ?',{roomId : req.query.roomid,userId : req.query.userid}, function(err,result) {
+        if(err){
+          res.status(200).send({code : 4,msg : err});
+        } else {
+          res.status(200).send({code : 0,msg : 'ok'});
+        }
+      });
+    }
+    connection.release();
+  });
+})
+
 router.delete('/room/del',function(req,res){
   res.header("Access-Control-Allow-Origin", "*");
   if(!req.query.id){return res.status(200).send({code:1,msg:'room-del failed for no id.'});}
@@ -654,7 +762,6 @@ router.delete('/room/del',function(req,res){
   }
   pool.getConnection(function(err,connection){
     if(err){
-      console.log(err);
       res.status(200).send({code:1,msg:err.message});
     }
     else {
@@ -704,6 +811,10 @@ router.post('/room/update',function(req,res){
     }
     else {
       console.log('connected as id ' + connection.threadId);
+      var updateHosts = req.body.users;
+      if(updateHosts){
+        updateUser(connection,updateHosts,req.query.id);
+      }
       //超级管理员可以修改任何房间，公司管理员只能修改该公司所有的房间，而公司普通用户只能修改该用户所对应的房间
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
       (' AND companyId = ' + pool.escape(user.companyId)) : (' AND id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
@@ -714,6 +825,7 @@ router.post('/room/update',function(req,res){
       + ',charge = ' + pool.escape(req.body.charge) + ',price = ' + pool.escape(req.body.chargeStrategy.price)
       + ',dependencyChange = ' + pool.escape(req.body.dependencyCharge) + ',room.order = ' + pool.escape(req.body.order)
       + ',tag = ' + pool.escape(req.body.tag) + ',viewAngle = ' + pool.escape(req.body.viewAngle)
+      + ',domeHorizontal = ' + pool.escape(req.body.domeHorizontal) + ',domeVertical = ' + pool.escape(req.body.domeVertical)
       + ',controlModel = ' + pool.escape(req.body.controlModel) + ',projectStyle = ' + pool.escape(req.body.projectStyle)
       + ',eyeStyle = ' + pool.escape(req.body.eyeStyle) + ' WHERE id = ' + pool.escape(req.query.id) + condition + ';';
       connection.query(s_sql + u_sql, function(err, result) {
@@ -863,6 +975,8 @@ router.get('/room/get',function(req,res){
             controlModel : result[0][0].controlModel,
             projectStyle : result[0][0].projectStyle,
             eyeStyle : result[0][0].eyeStyle,
+            domeVertical : result[0][0].domeVertical,
+            domeHorizontal : result[0][0].domeHorizontal,
             chargeStrategy : {
               price : result[0][0].price,
               discount : discount_arr
@@ -893,10 +1007,8 @@ router.get('/room/list',function(req,res){
       console.log('connected as id ' + connection.threadId);
       //超级用户可以获取所有房间列表，公司管理员只能获取该公司的房间列表，公司普通用户则只能获取自己对应的房间列表
       var condition = (user.permission == PER_SUPER_ADMIN_USER) ? '' : ((user.permission == PER_COMPANY_ADMIN_USER) ?
-      (' WHERE companyId = ' + pool.escape(user.companyId)) : (' WHERE id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
-      /*var sql = 'SELECT * FROM (SELECT name,id,thumb,living,hostName AS user FROM room' + condition + ') AS temTable LIMIT '
-      + pool.escape((parseInt(req.query.page) - 1)*parseInt(req.query.pageSize)) + ',' + pool.escape(parseInt(req.query.pageSize)) + ';';*/
-      var sql = 'SELECT name,id,thumb,living,hostName,channelId AS user FROM room' + condition + ' ORDER BY channelId;';
+      (' WHERE room.companyId = ' + pool.escape(user.companyId)) : (' WHERE room.id IN(SELECT roomId FROM room_user WHERE userId = ' + pool.escape(user.id) + ')'));
+      var sql = 'select room.name,room.id,room.thumb,room.living,room.hostName,room.channelId,channel.`name` AS cname from room LEFT JOIN channel on room.channelId = channel.id' + condition + ' ORDER BY channel.order DESC,room.order DESC;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           console.log(err);
@@ -904,6 +1016,11 @@ router.get('/room/list',function(req,res){
         }
         else {
           var roomlist = [];
+          /*pagesize999代表输出全部数据*/
+          if(parseInt(req.query.pageSize,10) ==999){
+            res.status(200).jsonp({code:0,msg:'room-list success.',data:{count:rows.length,list:rows}});
+            return;
+          }
           var pageStart = (parseInt(req.query.page) - 1)*parseInt(req.query.pageSize);
           if(pageStart < 0){pageStart = 0;}
           var pageEnd = pageStart + parseInt(req.query.pageSize);
@@ -917,7 +1034,6 @@ router.get('/room/list',function(req,res){
     }
   });
 });
-
 
 router.options('/login', function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -967,5 +1083,30 @@ router.options('/channel/delete', function(req, res) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
   res.status(200).end();
 });
+router.options('/user/email', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, **Authorization**");
+  res.status(200).end();
+});
+
+/*更新用户没有与response同步，并且没有做事务性*/
+function updateUser(connection, users,roomid) {
+  var addUsers = users.add;
+  var delUsers = users.del;
+  var addSql = 'INSERT INTO `room_user`(roomId,userId) VALUES ';
+  var addValues = [];
+  addUsers.map(function(k) {
+    addValues.push('(' + pool.escape(roomid) + ',' + pool.escape(k) + ')');
+  });
+  addSql += addValues.join(',') + ';';
+  var delSql = 'DELETE FROM `room_user` where userId IN (' + delUsers.join(',') + ')'; 
+  if(addUsers.length > 0){
+    connection.query(addSql);
+  }
+  if(delUsers.length > 0){
+    connection.query(delSql);
+  }
+}
 
 module.exports = router;

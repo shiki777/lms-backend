@@ -121,7 +121,7 @@ function getChannelListData() {
         }
         else {
           logger.info('connected as id ' + connection.threadId);
-          var sql = 'select * from channel';
+          var sql = 'select * from channel order by channel.order DESC';
           connection.query(sql, function(err, rows, fields) {
             if(err){
               logger.error('getChannelListData connection.query error :',err);
@@ -149,7 +149,7 @@ function insertChannelRoomList(chid){
     else {
       logger.info('connected as id ' + connection.threadId);
       var sql = 'SELECT id,name,thumb,room.desc,charge,living,tag FROM room WHERE channelId = '
-       + pool.escape(chid) + ';';
+       + pool.escape(chid) + ' order by room.order DESC;';
       connection.query(sql, function(err, rows, fields) {
         if(err){
           logger.error('insertChannelRoomList connection.query error :',err);

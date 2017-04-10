@@ -1,78 +1,77 @@
 <link rel="stylesheet" href="../../room/room.css"> 
         <div class="ui middle aligned center aligned grid">
             <div class="wrap">
-                <h1 class="ui header aligned">创建房间</h1>
+                <h1 class="ui header aligned">{{$t("message.roomCreate")}}</h1>
                 <form class="ui form segment room-container">
                     <div class="two fields">
                         <div class="field">
-                            <label>房间名称</label>
-                            <input placeholder="房间名称" name="name" type="text" v-model="name"></div>
+                            <label>{{$t("message.roomName")}}</label>
+                            <input name="name" type="text" v-model="name"></div>
                         <div class="field">
-                            <label>房间权重</label>
+                            <label>{{$t("message.roomOrder")}}</label>
                             <input type="number" v-model="order"/>    
                         </div>
                     </div>
                     <div class="fields two">
                         <div class="field">
-                            <label>标签</label>
-                            <input placeholder="标签" type="text" v-model="tag"/>
+                            <label>{{$t("message.tag")}}</label>
+                            <input type="text" v-model="tag"/>
                         </div>
                         <div class="field">
-                            <label>房间关联用户（用于推流，按住ctrl多选）</label>
-                            <!-- <input placeholder="标签" type="number" v-model="userNum"/> -->
+                            <label>{{$t("message.host")}}</label>
                             <userselect ref="userlist"></userselect>
                         </div>                        
                     </div>                    
                     <div class="field">
-                        <label>房间简介</label>
-                        <input placeholder="简介" name="username" type="text" v-model="desc"/>    
+                        <label>{{$t("message.roomDesc")}}</label>
+                        <input name="username" type="text" v-model="desc"/>    
                     </div>
                     <div class="fields three">
                         <div class="field">
-                            <label>独立收费</label>
+                            <label>{{$t("message.dulicharge")}}</label>
                             <select name="" id="" v-model="dependencyCharge">
-                                <option value="0">否</option>
-                                <option value="1">是</option>
+                                <option value="0">{{$t("message.no")}}</option>
+                                <option value="1">{{$t("message.yes")}}</option>
                             </select>
                         </div>
                         <div class="field">
-                            <label>所属频道</label>
+                            <label>{{$t("message.suoshuchannel")}}</label>
                             <channelselect :roomchannel="channelId" ref="channel"></channelselect>
                         </div>
                         <div class="field">
-                            <label>人气系数</label>
+                            <label>{{$t("message.popluar")}}</label>
                             <input type="number" v-model="onlineRatio"/>    
                         </div>
                     </div>
                     <div class="field" :style="{display : changeShow}">
-                        <label>基础定价</label>
+                        <label>{{$t("message.jcprice")}}</label>
                         <div class="inline price-line">
                             <input type="number" class="charge-input-money" v-model="price">                        
-                            <span class="charge-span">元/月</span>
+                            <span class="charge-span">{{$t("message.yuanyue")}}</span>
                         </div>
-                        <label>折扣策略</label>
+                        <label>{{$t("message.discount")}}</label>
                         <div class="charge-wrap">
                             <charge v-for="item in chargeStrategy" :discount="item.discount" :duration="item.duration" :id="item.id" ref="charges" v-on:remove="onChargeRemove"></charge>
                         </div>
-                        <div class="ui primary button charge-btn" @click="addStrategy">添加策略</div>
+                        <div class="ui primary button charge-btn" @click="addStrategy">{{$t("message.tianjiacelue")}}</div>
                     </div>
-                    <imguploader ref="thumbcom" title="封面上传(尺寸最好为350*200)" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
-                    <imguploader ref="u3dcom" title="U3D背景图片上传" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>   
+                    <imguploader ref="thumbcom" :title="thumbstr" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
+                    <imguploader ref="u3dcom" :title="u3dstr" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>   
                     <div class="fields four">
                         <div class="field">
-                            <label>视频视角</label>
+                            <label>{{$t("message.shijiao")}}</label>
                             <input type="number" v-model="viewAngle" min="60" max="130" @blur="onAngelBlur"/>    
                         </div>      
                         <div class="field">
-                            <label>控制模式</label>
+                            <label>{{$t("message.ctrl")}}</label>
                             <select v-model="controlModel">
-                                <option value="0">陀螺仪</option>
-                                <option value="1">触摸</option>
-                                <option value="2">陀螺仪+触摸</option>
+                                <option value="0">{{$t("message.tly")}}</option>
+                                <option value="1">{{$t("message.chumo")}}</option>
+                                <option value="2">{{$t("message.tly")}}+{{$t("message.chumo")}}</option>
                             </select>
                         </div>    
                         <div class="field">
-                            <label>投影方式</label>
+                            <label>{{$t("message.touying")}}</label>
                             <select v-model="projectStyle">
                                 <option value="0">360-3D-Left-Right</option>
                                 <option value="1">360-3D-Up-Down</option>
@@ -84,34 +83,44 @@
                             </select>
                         </div>    
                         <div class="field">
-                            <label>单双目</label>
+                            <label>{{$t("message.dsm")}}</label>
                             <select v-model="eyeStyle">
-                                <option value="0">单目</option>
-                                <option value="1">双目</option>
+                                <option value="0">{{$t("message.dm")}}</option>
+                                <option value="1">{{$t("message.sm")}}</option>
                             </select>
                         </div>                                                                                           
                     </div>  
-                    <div class="ui primary submit button" v-on:click="submit">提交</div>
+                    <div class="fields two">
+                        <div class="field">
+                            <label>{{$t("message.ver")}}</label>
+                            <input type="number" v-model="domeVertical"/>    
+                        </div> 
+                        <div class="field">
+                            <label>{{$t("message.hor")}}</label>
+                            <input type="number" v-model="domeHorizontal"/>    
+                        </div>                                                 
+                    </div>
+                    <div class="ui primary submit button" v-on:click="submit">{{$t("message.submit")}}</div>
                 </form>
             </div>
         </div>
     <div class="ui modal"> <i class="close icon"></i>
-        <div class="header">恭喜您</div>
+        <div class="header">{{$t("message.gongxi")}}</div>
         <div class="image content">
             <div class="description">
-                <div class="ui header">房间创建成功！</div>
+                <div class="ui header">{{$t("message.roomCreate")}}{{$t("message.suc")}}</div>
                 <p>
-                    页面将跳转到房间列表页
+                    {{$t("message.link")}}
                 </p>
             </div>
         </div>
         <div class="actions">
-            <div class="ui black deny button">知道了</div>
+            <div class="ui black deny button">{{$t("message.yes")}}</div>
 <!--             <div class="ui positive right labeled icon button">
                 Yep, that's me <i class="checkmark icon"></i>
             </div> -->
         </div>
-    </div>      
+    </div>    
          <script><%- currentmsg %></script>
          <script><%- sidemsg %></script>
 <script src="../../component/imguploader.js"></script> 

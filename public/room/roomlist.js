@@ -1,31 +1,54 @@
 (function() {
 
+var l = Vue.config.lang;
+
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
     data : {
-        rooms : [],
-        url : window.hosturl + '/lms/room/list'
+        rooms : {},
+        channels : [],
+        url : window.hosturl + '/lms/room/list',
+        selectChannel : 'all'
+    },
+    computed : {
+        filterChannels : function() {
+            if(this.selectChannel == 'all'){
+                return this.channels;
+            }
+            return [this.selectChannel];
+        }
     },
     methods : {
         pageLoaded : function(data) {
-            this.rooms = this.formatRooms(data.data);
+            formatedData = this.formatRooms(data.data);
+            this.rooms = formatedData.rooms;
+            this.channels = formatedData.channels;
         },
         formatRooms : function(data) {
-            var res = [];
+            /*对象key需要排序，所以要把频道名字单独排序*/
+            var res = {
+                rooms :{},
+                channels : []
+            };
             data.map(function(item) {
-                res.push({
+                if(!res.rooms[item.cname]){
+                    res.rooms[item.cname] = [];
+                    res.channels.push(item.cname);
+                }
+                res.rooms[item.cname].push({
                   name : item.name,
                   thumb : item.thumb,
                   living : item.living,
                   user : item.user,
                   id : item.id,
+                  cname : item.cname,
                   link : window.hosturl + '/lms/page/roomupdate?id=' + item.id
                 });
             })
             return res;
         },
-        onDeleteBtnClick : function(e) {
-            e.preventDefault();
+        onDeleteBtnClick : function(channel,e) {
             var ele = e.target;
             var id = ele.getAttribute('roomid');
             var self = this;
@@ -36,25 +59,24 @@ var vm = new Vue({
                     if(data.body.code == 0){
                     $('.ui.modal')
                     .modal('show');                         
-                        self.deleteRoom(id);
+                        self.deleteRoom(channel,id);
                     } else {
                         if(data.body.code ==3){
-                            alert('删除失败，该房间是频道默认房间，请先修改对应频道的默认房间！')
+                           alert(window.messages[l].message.deletefail + window.messages[l].message.morenroommodify);
                         } else {
-                            alert('删除失败 : ' + data.body.msg);
+                            alert(window.messages[l].message.deletefail + data.body.msg);
                         }
                     }
                 }, function(e) {
-                    alert('网络原因删除失败，请重试!');
+                    alert(window.messages[l].message.submit + window.messages[l].message.fail);
                 });
             }
         },
-        onCloseBtnClick : function(e) {
+        onCloseBtnClick : function(channel,e) {
             var url = window.hosturl + '/lms/room/closeliving';
             var body = {
                 living : 0
             };
-            e.preventDefault();
             var ele = e.target;
             var id = ele.getAttribute('roomid');
             var self = this;   
@@ -63,23 +85,23 @@ var vm = new Vue({
                 if(data.body.code == 0){
                     $('.ui.modal')
                     .modal('show'); 
-                    this.updateRoom(id);
+                    this.updateRoom(channel,id);
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert(window.messages[l].message.submit + window.messages[l].message.fail + data.body.msg);
                 }
 
             }, function(e) {
-                alert('网络原因关闭失败，请重试');
+                alert(window.messages[l].message.submit + window.messages[l].message.fail);
             });      
             this.updateRoom(id);
         },
-        deleteRoom : function(id) {
-            var index = getIndex(this.rooms, id);
-            this.rooms.splice(index, 1);
+        deleteRoom : function(channel,id) {
+            var index = getIndex(this.rooms[channel], id);
+            this.rooms[channel].splice(index, 1);
         },
-        updateRoom : function(id) {
-            var index = getIndex(this.rooms, id);
-            this.rooms[index].living = false;        
+        updateRoom : function(channel,id) {
+            var index = getIndex(this.rooms[channel], id);
+            this.rooms[channel][index].living = false;        
         }
     }
 })

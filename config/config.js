@@ -1,4 +1,5 @@
 var config = {
+  lang : 'JP', //目前可选JP,CN,注意大小写
   lms:{
     port:3000
   },
@@ -9,13 +10,13 @@ var config = {
   },
   /*mysql访问*/
   db_mysql: {
-    host: '192.168.5.226',
+    host: '127.0.0.1',
     port: '3306',
-    user: 'lms',
-    password: 'lms123',
+    user: 'root',
+    password: '',
     database: 'lms2',
     multipleStatements : true
-  },
+  },  
   push_stream: {
     host: '0.0.0.0',
     port: 3010,
@@ -24,16 +25,21 @@ var config = {
     host:'192.168.5.137',
     port:'3050'
   },
+  redis_cluster : false,
   redis: {
     host: '192.168.5.137',
     port: 6379,
-    db: 15,
+    db_number: 14
   },
+  redisCluster : [{
+  port: 6379,
+  host: '10.133.131.253'
+}],  
   chatroom:{
     host:'58.247.47.106',
     port: 8166
   },
-  host : 'http://58.247.47.106:3000'
+  host : 'http://127.0.0.1:3000'
 };
 
 module.exports = config;

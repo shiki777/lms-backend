@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title><%- title %></title>
+    <link rel="icon" href="data:;base64,=">
     <link rel="stylesheet" href="../../lib/css/semantic.min.css"></head>
     <link rel="stylesheet" href="../../stylesheets/common/common.css">
     <link rel="stylesheet" href="../../stylesheets/common/paganation.css">
@@ -10,6 +11,8 @@
     <script src="../../lib/semantic.min.js"></script>
     <script src="../../lib/vue.js"></script>
     <script src="../../lib/vue-resource.js"></script>
+    <script src="../../lib/vue-i18n.min.js"></script>
+    <script src="../../javascripts/i18n.js"></script>
     <script src="../../javascripts/host.js"></script>    
        
 </head>
@@ -18,8 +21,13 @@
     <!-- 侧边栏 -->
         <div class="aside" id="sidebar">
             <div class="menu">
-                <h2><span>直播管理系统后台</span></h2>
+                <h2><span>{{$t("message.lmsName")}}</span></h2>
                 <hr class="line-mod">
+                <div class="user-panel">
+                    {{$t("message.zunjin")}}<%- cname %>{{$t("message.userr")}}：
+                    <%- user %>
+                </div>
+                
                 <dl class="menu-list def-scroll keyboard-focus-obj" id="menu">
                 </dl>
             </div>
@@ -32,5 +40,6 @@
         </div>
     </div>
     <script src="../../javascripts/side.js"></script> 
+    <script src="../../javascripts/title.js"></script> 
 </body>
 </html>

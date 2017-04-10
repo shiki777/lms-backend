@@ -2,6 +2,7 @@
 
 var id = 1;
 var roomid = window.location.search.match(/id=(.*)/) ? window.location.search.match(/id=(.*)/)[1] : 0;
+var l = Vue.config.lang;
 loadRoomInfo(roomid);
 
 function getId() {
@@ -16,7 +17,7 @@ function loadRoomInfo(id) {
             var vmdata = formatRoomData(data.body.data);
             createVm(vmdata);
         } else {
-            alert('房间信息加载失败，请重试!');
+            alert(window.messages[l].message.roomloadfail);
             console.log(data.body.msg);
         }
 
@@ -44,6 +45,7 @@ function formatRoomData(data) {
         order : data.order,
         tag : data.tag,
         users : data.users,
+        originUsers : JSON.parse(JSON.stringify(data.users)), //原始用户，用于提交时比较出差异
         price : data.chargeStrategy.price || 100,
         desc : data.desc,
         thumb : data.thumb,
@@ -58,12 +60,18 @@ function formatRoomData(data) {
         viewAngle : data.viewAngle,
         controlModel : data.controlModel + '',
         projectStyle : data.projectStyle + '',
-        eyeStyle : data.eyeStyle + ''
+        eyeStyle : data.eyeStyle + '',
+        domeHorizontal : data.domeHorizontal,
+        domeVertical : data.domeVertical,
+        modifyUser : false,
+        thumbstr : window.messages[l].message.thumb,
+        u3dstr : window.messages[l].message.u3d
     }
 }
 
 function createVm(data) {
 var vm = new Vue({
+    i18n: i18n,
     el : '#page',
     data : data,
     computed : {
@@ -74,7 +82,7 @@ var vm = new Vue({
             return this.living ? 'block' : 'none';
         },
         roomStatus : function() {
-            return this.living ? '正在直播' : '未直播';
+            return this.living ? window.messages[l].message.living : window.messages[l].message.noliving;
         }
     },
     methods : {
@@ -100,19 +108,19 @@ var vm = new Vue({
                 Vue.http.delete(delurl, {params : {id : roomid}})
                     .then(function(data) {
                         if(data.body.code == 0){
-                            $('.ui.modal').modal('show');
+                            $('.ui.modal.sub').modal('show');
                     window.setTimeout(function() {
                         location.href= '/lms/page/roomlist';
                     }, 1500);
                         } else {
                         if(data.body.code ==3){
-                            alert('删除失败，该房间是频道默认房间，请先修改对应频道的默认房间！')
+                            alert(window.messages[l].message.deletefail + window.messages[l].message.morenroommodify);
                         } else {
-                            alert('删除失败 : ' + data.body.msg);
+                            alert(window.messages[l].message.deletefail + data.body.msg);
                         }
                         }
                     }, function(e) {
-                        alert('提交失败');
+                        alert(window.messages[l].message.submit + window.messages[l].message.fail);
                         console.log(e)
                     })
                     return;
@@ -121,17 +129,17 @@ var vm = new Vue({
             Vue.http.post(url,body,{params : {id : roomid}})
             .then(function(data) {
                 if(data.body.code == 0){
-                    $('.ui.modal')
+                    $('.ui.modal.sub')
                     .modal('show'); 
                     window.setTimeout(function() {
                         window.location.reload();
                     }, 1500);
                 } else {
-                    alert('提交失败：' + data.body.msg);
+                    alert(window.messages[l].message.submit + window.messages[l].message.fail + data.body.msg);
                 }
 
             }, function(e) {
-                alert('提交失败');
+                alert(window.messages[l].message.submit + window.messages[l].message.fail);
                 console.log(e)
             })           
             return false;
@@ -154,8 +162,13 @@ var vm = new Vue({
                 viewAngle : this.viewAngle,
                 controlModel : parseInt(this.controlModel,10),
                 projectStyle : parseInt(this.projectStyle,10),
-                eyeStyle : parseInt(this.eyeStyle,10)                
+                eyeStyle : parseInt(this.eyeStyle,10),
+                domeVertical : this.domeVertical,
+                domeHorizontal : this.domeHorizontal
             };
+            if(this.modifyUser){
+                res.users = this.getHostDif();
+            }
             return res;
         },
         getChargeStrategy : function() {
@@ -204,8 +217,85 @@ var vm = new Vue({
                     charge.del = true;
                 }
             })
+        },
+        onHostAdd : function() {
+            $('.small.modal')
+            .modal('show');
+        },
+        delHost : function(user) {
+            if(this.users.length <= 1){
+                alert(window.messages[l].message.hostempty);
+                return;
+            }
+            this.modifyUser = true;
+            this.removeUser(user);
+        },
+        removeUser : function(user) {
+            var index = this.getUserIndex(user.id);
+            this.users.splice(index,1);
+            this.getUserList().addListUser(user);
+        },
+        getUserIndex : function(id) {
+            var index = -1;
+            this.users.map(function(v,ind) {
+                if(index == -1 && v.id == id){
+                    index = ind;
+                }
+            })
+            return index;
+        },
+        getUserList : function() {
+            return this.$refs.userlist;
+        },
+        resetUserList : function() {
+            this.getUserList().resetSelectUser();
+        },
+        updateUserList : function() {
+            this.modifyUser = true;
+            var selectedUser = this.getUserList().getSelectedUsers();
+            var self = this;
+            selectedUser.map(function(v) {
+                self.users.push(v);
+            })
+            this.getUserList().updateSelected();
+        },
+        /*找出提交时候主播的修改*/
+        getHostDif : function() {
+            var res = {
+                add : [],
+                del : []
+            };
+            var self = this;
+            this.users.map(function(u) {
+                if(!self.isHostinOrigin(u)){
+                    res.add.push(u.id);
+                }
+            })
+            this.originUsers.map(function(u) {
+                if(!self.isHostinSelect(u)){
+                    res.del.push(u.id);
+                }
+            });
+            return res;
+        },
+        isHostinOrigin: function(user) {
+            var res = false;
+            this.originUsers.map(function(u) {
+                if(!res && u.id == user.id){
+                    res = true;
+                }
+            });
+            return res;
+        },
+        isHostinSelect: function(user) {
+            var res = false;
+            this.users.map(function(u) {
+                if(!res && u.id == user.id){
+                    res = true;
+                }
+            });
+            return res;
         }
-
     }
 });    
 }

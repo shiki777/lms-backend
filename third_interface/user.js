@@ -67,6 +67,37 @@ function authentication(name,pwd){
   return defer.promise;
 }
 
+function modifyPwd(pw,name,code) {
+  var defer = q.defer();
+  var pwd_md5 = crypto.createHash('md5').update(pw).digest('hex');
+  var path = '/app/email/modify';
+  var body = {"email" : name,"password" : md5To16(pwd_md5),"type" : "md5",content: code};
+  userLogger.info('login - modifyPWD:' + name + 'password:' + pw + 'code:' + code);
+  console.log(body)
+  var options = {
+    url : 'http://' + config.user_system.host + ':' + config.user_system.port + path,
+    method : 'POST',
+    headers : {'Accept-version' : '1.0.0'},
+    json : true,
+    body : body
+  };  
+  request(options, function(err,res,resbody) {
+    console.log(resbody);
+    if(err){
+      defer.reject(err);
+      userLogger.error('modify request failed - user:' + body.username + 'error msg is ' + err);
+    } else {
+      if(resbody.code == 0){
+        defer.resolve(resbody);
+      } else {
+        defer.reject(resbody.message);
+      }
+      userLogger.info('modify request success - user:' + body.username + ' code is ' + resbody.code + ' msg is ' + resbody.message);
+    }
+  });   
+  return defer.promise;
+}
+
 function userinfo(token){
   var defer = q.defer();
   if(!token){defer.reject('token == null.');}
@@ -97,6 +128,34 @@ function userinfo(token){
   return defer.promise;
 }
 
+/*给邮箱发验证码*/
+function sendCodetoEmail(email,name) {
+  var defer = q.defer();
+  var path = '/app/email/verifycode';
+  var body = {"email" : email, name : name};
+  var options = {
+    url : 'http://' + config.user_system.host + ':' + config.user_system.port + path,
+    method : 'POST',
+    headers : {'Accept-version' : '1.0.0'},
+    json : true,
+    body : body
+  };  
+  console.log(body)
+  request(options, function(err,res,resbody) {
+    if(err){
+      defer.reject(err);
+    } else {
+      console.log(resbody)
+      if(resbody.code == 0){
+        defer.resolve(resbody);
+      } else {
+        defer.reject(resbody.message);
+      }
+    }
+  });   
+  return defer.promise;  
+}
+
 function md5To16(data_32){
   if(data_32.length != 32){
     return '';
@@ -108,5 +167,7 @@ function md5To16(data_32){
 module.exports = {
   register  : register,
   authentication : authentication,
-  userinfo : userinfo
+  userinfo : userinfo,
+  modifyPwd : modifyPwd,
+  sendCodetoEmail : sendCodetoEmail
 };

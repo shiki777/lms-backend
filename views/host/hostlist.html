@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="../../host/index.css">  
+<div class="wrap">
+    <div class="ui segments">
+      <div class="ui segment" v-for="user in users">
+        <span class="username">{{$t("message.userNmae")}}：{{user.username}}</span>
+        <a v-if="user.roomid" class="roomname" :href="getLink(user.roomid)" target="_blank">
+          {{$t("message.roomName")}}：{{user.roomname}}({{$t("message.rr")}}id {{user.roomid}})
+        </a>
+        <div v-else class="roomname">{{$t("message.noroom")}}</div>
+        <div class="modifybtn">
+          <div class="ui primary button charge-btn" @click="modifyPwd(user)">{{$t("message.pwmodify")}}</div>
+        </div>
+      </div>
+    <!-- 修改密码popup -->
+    <div class="ui modal pop">
+      <div class="image content">
+        <div class="description">
+          <div class="ui header">{{$t("message.pwmodify")}}</div>
+          <div class="ui black button" @click="sendEmail">{{$t("message.sendcheck")}}</div>
+          <div class="input-line">
+            <div class="ui input">
+              {{$t("message.inputcheck")}}
+              <input type="text" v-model="icode"></div>
+          </div>
+          <div class="input-line">
+            <div class="ui input">
+              {{$t("message.inputpw")}}
+              <input type="password" v-model="newpw"></div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <div class="ui black deny button" @click="resetInput">{{$t("message.no")}}</div>
+        <div class="ui positive button" @click="submitPwd">{{$t("message.yes")}}</div>
+      </div>
+      <!-- 修改成功popup -->
+      <div class="ui modal suc">
+        <div class="image content">
+          <div class="description">
+            <div class="ui header">{{$t("message.suc")}}</div>
+          </div>
+        </div>
+      </div>
+      <!-- 修改失败popup -->
+      <div class="ui modal fail">
+        <div class="image content">
+          <div class="description">
+            <div class="ui header">{{$t("message.fail")}}！{{errmsg}}</div>
+          </div>
+        </div>
+      </div>
+    </div> 
+</div>
+  <script><%- currentmsg %></script>
+  <script><%- sidemsg %></script>  
+  <script src="../../host/index.js"></script>

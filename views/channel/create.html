@@ -1,67 +1,70 @@
 <link rel="stylesheet" href="../../channel/channel.css">
         <div class="ui middle aligned center aligned grid">
             <div class="wrap">
-                <h1 class="ui header aligned">创建频道</h1>
+                <h1 class="ui header aligned">{{$t("message.channelcreate")}}</h1>
                 <form class="ui form segment room-container">
                     <div class="two fields">
                         <div class="field">
-                            <label>频道名称</label>
-                            <input placeholder="频道名称" name="name" type="text" v-model="name"/>
+                            <label>{{$t("message.pindaoming")}}</label>
+                            <input name="name" type="text" v-model="name"/>                        
                         </div>
                         <div class="field">
-                            <label>频道权重</label>
+                            <label>{{$t("message.channelorder")}}</label>
                             <input type="number" v-model="order"/>    
                         </div>
                     </div>
                     <div class="fields two"> 
                         <div class="field">
-                            <label>收费</label>
+                            <label>{{$t("message.shoufei")}}</label>
                             <select v-model="dependencyCharge">
-                                <option value="0">否</option>
-                                <option value="1">是</option>
+                                <option value="0">{{$t("message.no")}}</option>
+                                <option value="1">{{$t("message.yes")}}</option>
                             </select>
-                        </div>  
+                        </div>    
                         <div class="field">
-                            <label>标签</label>
+                            <label>{{$t("message.tag")}}</label>
                             <input type="text" v-model="tag"/>  
-                        </div>                                                                    
+                        </div>                                       
                     </div>                   
                     <div class="field">
-                        <label>频道简介</label>
-                        <input placeholder="简介" name="username" type="text" v-model="desc"/>    
+                        <label>{{$t("message.channeldesc")}}</label>
+                        <input name="username" type="text" v-model="desc"/>    
                     </div>
                     <div class="field" :style="{display : changeShow}">
-                        <label>基础定价</label>
+                        <label>{{$t("message.jcprice")}}</label>
                         <div class="inline price-line">
-                            <input type="number" class="charge-input-money" v-model="price"/>                        
-                            <span class="charge-span">元/月</span>
+                            <input type="number" class="charge-input-money" v-model="price">                        
+                            <span class="charge-span">{{$t("message.yuanyue")}}</span>
                         </div>
-                        <label>折扣策略</label>
+                        <label>{{$t("message.discount")}}</label>
                         <div class="charge-wrap">
                             <charge v-for="item in chargeStrategy" :discount="item.discount" :duration="item.duration" :id="item.id" ref="charges" v-on:remove="onChargeRemove"></charge>
                         </div>
-                        <div class="ui primary button charge-btn" @click="addStrategy">添加策略</div>
+                        <div class="ui primary button charge-btn" @click="addStrategy">{{$t("message.tianjiacelue")}}</div>
                     </div>
                     <div class="field">
-                        <imguploader ref="thumbcom" title="封面上传" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
+                        <imguploader ref="thumbcom" :title="thumbstr" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
                     </div>
                     <div class="field">
-                        <imguploader ref="iconcom" title="角标上传" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
+                        <imguploader ref="iconcom" :title="iconstr" thumb="http://epg.readyvr.woniucloud.com/mz/cache/snailTV/pagefile/b54a2cbbca38c793e01c63febcef6da7.jpg"></imguploader>
                     </div>                    
-                    <div class="ui primary submit button" v-on:click="submit">提交</div>
+                    <div class="ui primary submit button" v-on:click="submit">{{$t("message.submit")}}</div>
                 </form>
             </div>
         </div>
     <div class="ui modal"> <i class="close icon"></i>
-        <div class="header">恭喜您</div>
+        <div class="header">{{$t("message.gongxi")}}</div>
         <div class="image content">
             <div class="description">
-                <div class="ui header">频道创建成功！</div>
-                <p>页面将跳转到频道列表页</p>
+                <div class="ui header">{{$t("message.channelcreate")}}{{$t("message.suc")}}</div>
+                <p>{{$t("message.link")}}</p>
             </div>
         </div>
         <div class="actions">
-            <div class="ui black deny button">知道了</div>
+            <div class="ui black deny button">{{$t("message.yes")}}</div>
+<!--             <div class="ui positive right labeled icon button">
+                Yep, that's me <i class="checkmark icon"></i>
+            </div> -->
         </div>
     </div>    
          <script><%- currentmsg %></script>
