@@ -25,9 +25,9 @@ redisClient.on("ready", function(err) {
   logger.info("redis address ", config.redis.host, config.redis.port);
   debug("redis ready ");
   logger.info("redis ready");
-  redisClient.select(config.redis.db, function(err) {
-    debug('select redis db number:', config.redis.db);
-    logger.info('select redis db number:', config.redis.db);
+  redisClient.select(config.redis.db_number, function(err) {
+    debug('select redis db number:', config.redis.db_number);
+    logger.info('select redis db number:', config.redis.db_number);
     if (err) {
       debug(err.message);
       logger.info(err.message);

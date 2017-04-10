@@ -223,7 +223,7 @@ Vue.use(VueI18n)
 
 
 // set lang
-Vue.config.lang = 'jp'
+Vue.config.lang = 'cn'
 
 var i18n = new VueI18n({
     locale: Vue.config.lang,

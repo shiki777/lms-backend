@@ -1,5 +1,5 @@
 var config = {
-  lang : 'JP', //目前可选JP,CN,注意大小写
+  lang : 'CN', //目前可选JP,CN,注意大小写
   lms:{
     port:3000
   },
