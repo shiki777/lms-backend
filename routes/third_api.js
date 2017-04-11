@@ -272,5 +272,4 @@ function getAmount(count,discounts,price) {
     }
     return count * price;
 }
-
 module.exports = router;
