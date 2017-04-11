@@ -8,6 +8,7 @@ var session = require('express-session');
 var multer = require('multer');
 var multerupload = multer({ dest: './upload' });
 var log4js = require('log4js');
+var errorLogger = log4js.getLogger('error');
 
 var app = express();
 app.use(session({
@@ -62,29 +63,22 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-// error handlers
+app.use('/lms/test', function(req,res) {
+  res.status(200).send('ok');
+})
 
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err,
-      title : '错误页'
-    });
-  });
-}
 
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  res.render('error', {
+  errorLogger.info(err);
+  res.render('./error', {
     message: err.message,
     error: {},
-    title : '错误页'
+    title : '错误页',
+    cname : '',
+    user : ''
   });
 });
 
