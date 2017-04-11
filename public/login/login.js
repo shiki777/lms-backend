@@ -30,7 +30,7 @@
                   prompt : window.messages[l].message.epmtyPw
                 },
                 {
-                  type   : 'length[6]',
+                  type   : 'length[5]',
                   prompt : window.messages[l].message.pw6
                 }
               ]
